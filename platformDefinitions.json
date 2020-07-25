@@ -1,0 +1,9 @@
+[
+    {
+        "name": "unix",
+        "description": "Executable for Unix-like systems",
+        "baseFilePaths": ["testDir/test1"]
+    }
+]
+
+

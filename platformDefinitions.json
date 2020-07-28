@@ -3,7 +3,8 @@
         "name": "unix",
         "description": "Executable for Unix-like systems",
         "baseFilePaths": [
-            "memory/nativeHeapMemory"
+            "memory/nativeHeapMemory",
+            "memory/linkedListAllocation"
         ]
     }
 ]

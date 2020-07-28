@@ -2,9 +2,8 @@
 #include "../../intermediate/headers.h"
 
 int main(int argc, const char *argv[]) {
-    printf("Hello!\n");
-    printf("Adding numbers: %d\n", addNumbers(10, 20));
-    printf("Multiplying numbers: %d\n", multiplyNumbers(10, 20));
+    writeHeapMemoryInt8(10, 99);
+    printf("Value in heap memory: %d\n", readHeapMemoryInt8(10));
     return 0;
 }
 

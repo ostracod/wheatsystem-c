@@ -8,7 +8,11 @@
 
 #define NULL_ALLOC_POINTER 0
 
-int32_t createAllocation(int8_t type, int32_t size);
-int8_t deleteAllocation(int32_t pointer);
+#define DYNAMIC_ALLOC_IS_GUARDED_OFFSET 0
+#define DYNAMIC_ALLOC_CREATOR_OFFSET (DYNAMIC_ALLOC_IS_GUARDED_OFFSET + 1)
+#define DYNAMIC_ALLOC_DATA_OFFSET (DYNAMIC_ALLOC_CREATOR_OFFSET + sizeof(allocPointer_t))
+
+allocPointer_t createAllocation(int8_t type, heapMemoryOffset_t size);
+int8_t deleteAllocation(allocPointer_t pointer);
 
 

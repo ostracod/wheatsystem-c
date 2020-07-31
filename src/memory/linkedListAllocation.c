@@ -2,24 +2,24 @@
 #include "../../intermediate/headers.h"
 
 #define setAllocType(pointer, type) \
-    writeHeapMemoryInt8(convertPointerToAddress(pointer) + ALLOC_TYPE_OFFSET, type)
+    writeHeapMemory(convertPointerToAddress(pointer) + ALLOC_TYPE_OFFSET, int8_t, type)
 #define setAllocSize(pointer, size) \
-    writeHeapMemoryInt32(convertPointerToAddress(pointer) + ALLOC_SIZE_OFFSET, size)
+    writeHeapMemory(convertPointerToAddress(pointer) + ALLOC_SIZE_OFFSET, heapMemoryOffset_t, size)
 #define setAllocNext(pointer, nextPointer) \
-    writeHeapMemoryInt32(convertPointerToAddress(pointer) + ALLOC_NEXT_OFFSET, nextPointer)
+    writeHeapMemory(convertPointerToAddress(pointer) + ALLOC_NEXT_OFFSET, allocPointer_t, nextPointer)
 
-int32_t firstAllocation = NULL_ALLOC_POINTER;
+allocPointer_t firstAllocation = NULL_ALLOC_POINTER;
 
-int32_t createAllocation(int8_t type, int32_t size) {
+allocPointer_t createAllocation(int8_t type, heapMemoryOffset_t size) {
     
-    int32_t sizeWithHeader = size + ALLOC_DATA_OFFSET;
-    int32_t previousPointer = NULL_ALLOC_POINTER;
-    int32_t startAddress = 0;
-    int32_t nextPointer = firstAllocation;
+    heapMemoryOffset_t sizeWithHeader = size + ALLOC_DATA_OFFSET;
+    heapMemoryOffset_t startAddress = 0;
+    allocPointer_t previousPointer = NULL_ALLOC_POINTER;
+    allocPointer_t nextPointer = firstAllocation;
     
     // Find a gap which is large enough for the new allocation.
     while (nextPointer != NULL_ALLOC_POINTER) {
-        int32_t endAddress = convertPointerToAddress(nextPointer);
+        heapMemoryOffset_t endAddress = convertPointerToAddress(nextPointer);
         if (endAddress - startAddress >= sizeWithHeader) {
             break;
         }
@@ -34,7 +34,7 @@ int32_t createAllocation(int8_t type, int32_t size) {
     }
     
     // Set up output allocation.
-    int32_t output = convertAddressToPointer(startAddress);
+    allocPointer_t output = convertAddressToPointer(startAddress);
     setAllocType(output, type);
     setAllocSize(output, size);
     setAllocNext(output, nextPointer);
@@ -49,17 +49,17 @@ int32_t createAllocation(int8_t type, int32_t size) {
     return output;
 }
 
-int8_t deleteAllocation(int32_t pointer) {
+int8_t deleteAllocation(allocPointer_t pointer) {
     
-    int32_t previousPointer = NULL_ALLOC_POINTER;
-    int32_t nextPointer = firstAllocation;
+    allocPointer_t previousPointer = NULL_ALLOC_POINTER;
+    allocPointer_t nextPointer = firstAllocation;
     
     // Find previous and next allocations.
     while (1) {
         if (nextPointer == NULL_ALLOC_POINTER) {
             return 0;
         }
-        int32_t tempPointer = nextPointer;
+        allocPointer_t tempPointer = nextPointer;
         nextPointer = getAllocNext(nextPointer);
         if (tempPointer == pointer) {
             break;

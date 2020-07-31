@@ -1,10 +1,10 @@
 
 #define ALLOC_TYPE_OFFSET 0
 #define ALLOC_SIZE_OFFSET (ALLOC_TYPE_OFFSET + 1)
-#define ALLOC_NEXT_OFFSET (ALLOC_SIZE_OFFSET + 4)
-#define ALLOC_DATA_OFFSET (ALLOC_NEXT_OFFSET + 4)
+#define ALLOC_NEXT_OFFSET (ALLOC_SIZE_OFFSET + sizeof(heapMemoryOffset_t))
+#define ALLOC_DATA_OFFSET (ALLOC_NEXT_OFFSET + sizeof(allocPointer_t))
 
-int32_t firstAllocation;
+allocPointer_t firstAllocation;
 
 // We need the zero pointer to be null, so we offset
 // all addresses by one.
@@ -12,20 +12,15 @@ int32_t firstAllocation;
 #define convertAddressToPointer(address) (address + 1)
 
 #define getAllocType(pointer) \
-    readHeapMemoryInt8(convertPointerToAddress(pointer) + ALLOC_TYPE_OFFSET)
+    readHeapMemory(convertPointerToAddress(pointer) + ALLOC_TYPE_OFFSET, int8_t)
 #define getAllocSize(pointer) \
-    readHeapMemoryInt32(convertPointerToAddress(pointer) + ALLOC_SIZE_OFFSET)
+    readHeapMemory(convertPointerToAddress(pointer) + ALLOC_SIZE_OFFSET, heapMemoryOffset_t)
 #define getAllocNext(pointer) \
-    readHeapMemoryInt32(convertPointerToAddress(pointer) + ALLOC_NEXT_OFFSET)
+    readHeapMemory(convertPointerToAddress(pointer) + ALLOC_NEXT_OFFSET, allocPointer_t)
 
-#define readAllocInt8(pointer, index) \
-    readHeapMemoryInt8(convertPointerToAddress(pointer) + ALLOC_DATA_OFFSET + index)
-#define readAllocInt32(pointer, index) \
-    readHeapMemoryInt32(convertPointerToAddress(pointer) + ALLOC_DATA_OFFSET + index)
-
-#define writeAllocInt8(pointer, index, value) \
-    writeHeapMemoryInt8(convertPointerToAddress(pointer) + ALLOC_DATA_OFFSET + index, value)
-#define writeAllocInt32(pointer, index, value) \
-    writeHeapMemoryInt32(convertPointerToAddress(pointer) + ALLOC_DATA_OFFSET + index, value)
+#define readAlloc(pointer, index, type) \
+    readHeapMemory(convertPointerToAddress(pointer) + ALLOC_DATA_OFFSET + index, type)
+#define writeAlloc(pointer, index, type, value) \
+    writeHeapMemory(convertPointerToAddress(pointer) + ALLOC_DATA_OFFSET + index, type, value)
 
 

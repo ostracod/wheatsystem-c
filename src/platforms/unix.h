@@ -5,6 +5,9 @@
 #include <string.h>
 #include <inttypes.h>
 
-#define HEAP_MEMORY_SIZE (100 * 1000)
+#define HEAP_MEMORY_SIZE (30 * 1000)
+
+typedef int16_t heapMemoryOffset_t;
+typedef int16_t allocPointer_t;
 
 

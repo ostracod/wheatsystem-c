@@ -12,6 +12,13 @@
 #define DYNAMIC_ALLOC_CREATOR_OFFSET (DYNAMIC_ALLOC_IS_GUARDED_OFFSET + 1)
 #define DYNAMIC_ALLOC_DATA_OFFSET (DYNAMIC_ALLOC_CREATOR_OFFSET + sizeof(allocPointer_t))
 
+#define getDynamicAllocSize(pointer) \
+    (getAllocSize(pointer) - DYNAMIC_ALLOC_DATA_OFFSET)
+#define getDynamicAllocIsGuarded(pointer) \
+    readAlloc(pointer, DYNAMIC_ALLOC_IS_GUARDED_OFFSET, int8_t)
+#define getDynamicAllocCreator(pointer) \
+    readAlloc(pointer, DYNAMIC_ALLOC_CREATOR_OFFSET, allocPointer_t)
+
 #define readDynamicAlloc(pointer, index, type) \
     readAlloc(pointer, DYNAMIC_ALLOC_DATA_OFFSET + index, type)
 #define writeDynamicAlloc(pointer, index, type, value) \

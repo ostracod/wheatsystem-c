@@ -4,7 +4,8 @@
         "description": "Executable for Unix-like systems",
         "baseFilePaths": [
             "memory/nativeHeapMemory",
-            "memory/linkedListAllocation"
+            "memory/linkedListAllocation",
+            "fileSystem/unixFileSystem"
         ]
     }
 ]

@@ -4,12 +4,14 @@
 #define ALLOC_NEXT_OFFSET (ALLOC_SIZE_OFFSET + sizeof(heapMemoryOffset_t))
 #define ALLOC_DATA_OFFSET (ALLOC_NEXT_OFFSET + sizeof(allocPointer_t))
 
-allocPointer_t firstAllocation;
+allocPointer_t firstAlloc;
 
 // We need the zero pointer to be null, so we offset
 // all addresses by one.
 #define convertPointerToAddress(pointer) (pointer - 1)
 #define convertAddressToPointer(address) (address + 1)
+
+#define getFirstAlloc() firstAlloc
 
 #define getAllocType(pointer) \
     readHeapMemory(convertPointerToAddress(pointer) + ALLOC_TYPE_OFFSET, int8_t)

@@ -12,7 +12,17 @@
 #define DYNAMIC_ALLOC_CREATOR_OFFSET (DYNAMIC_ALLOC_IS_GUARDED_OFFSET + 1)
 #define DYNAMIC_ALLOC_DATA_OFFSET (DYNAMIC_ALLOC_CREATOR_OFFSET + sizeof(allocPointer_t))
 
-allocPointer_t createAllocation(int8_t type, heapMemoryOffset_t size);
-int8_t deleteAllocation(allocPointer_t pointer);
+#define readDynamicAlloc(pointer, index, type) \
+    readAlloc(pointer, DYNAMIC_ALLOC_DATA_OFFSET + index, type)
+#define writeDynamicAlloc(pointer, index, type, value) \
+    writeAlloc(pointer, DYNAMIC_ALLOC_DATA_OFFSET + index, type, value)
+
+allocPointer_t createAlloc(int8_t type, heapMemoryOffset_t size);
+int8_t deleteAlloc(allocPointer_t pointer);
+allocPointer_t createDynamicAlloc(
+    heapMemoryOffset_t size,
+    int8_t isGuarded,
+    allocPointer_t creator
+);
 
 

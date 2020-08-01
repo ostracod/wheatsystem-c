@@ -8,14 +8,14 @@
 #define setAllocNext(pointer, nextPointer) \
     writeHeapMemory(convertPointerToAddress(pointer) + ALLOC_NEXT_OFFSET, allocPointer_t, nextPointer)
 
-allocPointer_t firstAllocation = NULL_ALLOC_POINTER;
+allocPointer_t firstAlloc = NULL_ALLOC_POINTER;
 
-allocPointer_t createAllocation(int8_t type, heapMemoryOffset_t size) {
+allocPointer_t createAlloc(int8_t type, heapMemoryOffset_t size) {
     
     heapMemoryOffset_t sizeWithHeader = size + ALLOC_DATA_OFFSET;
     heapMemoryOffset_t startAddress = 0;
     allocPointer_t previousPointer = NULL_ALLOC_POINTER;
-    allocPointer_t nextPointer = firstAllocation;
+    allocPointer_t nextPointer = firstAlloc;
     
     // Find a gap which is large enough for the new allocation.
     while (nextPointer != NULL_ALLOC_POINTER) {
@@ -39,9 +39,9 @@ allocPointer_t createAllocation(int8_t type, heapMemoryOffset_t size) {
     setAllocSize(output, size);
     setAllocNext(output, nextPointer);
     
-    // Update previous allocation or firstAllocation.
+    // Update previous allocation or firstAlloc.
     if (previousPointer == NULL_ALLOC_POINTER) {
-        firstAllocation = output;
+        firstAlloc = output;
     } else {
         setAllocNext(previousPointer, output);
     }
@@ -49,10 +49,10 @@ allocPointer_t createAllocation(int8_t type, heapMemoryOffset_t size) {
     return output;
 }
 
-int8_t deleteAllocation(allocPointer_t pointer) {
+int8_t deleteAlloc(allocPointer_t pointer) {
     
     allocPointer_t previousPointer = NULL_ALLOC_POINTER;
-    allocPointer_t nextPointer = firstAllocation;
+    allocPointer_t nextPointer = firstAlloc;
     
     // Find previous and next allocations.
     while (1) {
@@ -67,10 +67,10 @@ int8_t deleteAllocation(allocPointer_t pointer) {
         previousPointer = tempPointer;
     }
     
-    // Update previous allocation or firstAllocation to
+    // Update previous allocation or firstAlloc to
     // point to the next allocation.
     if (previousPointer == NULL_ALLOC_POINTER) {
-        firstAllocation = nextPointer;
+        firstAlloc = nextPointer;
     } else {
         setAllocNext(previousPointer, nextPointer);
     }

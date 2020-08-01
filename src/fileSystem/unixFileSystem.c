@@ -15,13 +15,13 @@
 #define setFileHandleOpenDepth(pointer, openDepth) \
     writeDynamicAlloc(pointer, FILE_HANDLE_OPEN_DEPTH_OFFSET, int8_t, openDepth)
 
-allocPointer_t openFile(allocPointer_t name) {
+allocPointer_t openFile(heapMemoryOffset_t nameAddress, heapMemoryOffset_t nameSize) {
     // Copy name from heap memory to native memory.
-    heapMemoryOffset_t tempLength = getDynamicAllocSize(name);
-    int8_t *nativeName = malloc(tempLength + 1);
-    for (heapMemoryOffset_t index = 0; index < tempLength; index++) {
-        nativeName[index] = readDynamicAlloc(name, index, int8_t);
+    int8_t *nativeName = malloc(nameSize + 1);
+    for (heapMemoryOffset_t index = 0; index < nameSize; index++) {
+        nativeName[index] = readHeapMemory(nameAddress + index, int8_t);
     }
+    nativeName[nameSize - 1] = 0;
     // Return matching file handle if it already exists.
     allocPointer_t nextPointer = getFirstAlloc();
     while (nextPointer != NULL_ALLOC_POINTER) {

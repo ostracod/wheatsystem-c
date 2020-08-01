@@ -25,4 +25,7 @@ allocPointer_t firstAlloc;
 #define writeAlloc(pointer, index, type, value) \
     writeHeapMemory(convertPointerToAddress(pointer) + ALLOC_DATA_OFFSET + index, type, value)
 
+// TODO: Use this sort of macro function in more places.
+#define getAllocDataAddress(pointer) (convertPointerToAddress(pointer) + ALLOC_DATA_OFFSET)
+
 

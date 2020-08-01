@@ -1,18 +1,14 @@
 
 #include "../../intermediate/headers.h"
 
-#define setAllocType(pointer, type) \
-    writeHeapMemory(convertPointerToAddress(pointer) + ALLOC_TYPE_OFFSET, int8_t, type)
-#define setAllocSize(pointer, size) \
-    writeHeapMemory(convertPointerToAddress(pointer) + ALLOC_SIZE_OFFSET, heapMemoryOffset_t, size)
-#define setAllocNext(pointer, nextPointer) \
-    writeHeapMemory(convertPointerToAddress(pointer) + ALLOC_NEXT_OFFSET, allocPointer_t, nextPointer)
+#define setAllocMember(pointer, memberName, value) \
+    writeHeapMemory(getAllocMemberAddress(pointer, memberName), getStructMemberType(allocHeader_t, memberName), value)
 
 allocPointer_t firstAlloc = NULL_ALLOC_POINTER;
 
 allocPointer_t createAlloc(int8_t type, heapMemoryOffset_t size) {
     
-    heapMemoryOffset_t sizeWithHeader = size + ALLOC_DATA_OFFSET;
+    heapMemoryOffset_t sizeWithHeader = sizeof(allocHeader_t) + size;
     heapMemoryOffset_t startAddress = 0;
     allocPointer_t previousPointer = NULL_ALLOC_POINTER;
     allocPointer_t nextPointer = firstAlloc;
@@ -23,7 +19,7 @@ allocPointer_t createAlloc(int8_t type, heapMemoryOffset_t size) {
         if (endAddress - startAddress >= sizeWithHeader) {
             break;
         }
-        startAddress = endAddress + ALLOC_DATA_OFFSET + getAllocSize(nextPointer);
+        startAddress = endAddress + sizeof(allocHeader_t) + getAllocSize(nextPointer);
         previousPointer = nextPointer;
         nextPointer = getAllocNext(nextPointer);
     }
@@ -35,15 +31,15 @@ allocPointer_t createAlloc(int8_t type, heapMemoryOffset_t size) {
     
     // Set up output allocation.
     allocPointer_t output = convertAddressToPointer(startAddress);
-    setAllocType(output, type);
-    setAllocSize(output, size);
-    setAllocNext(output, nextPointer);
+    setAllocMember(output, type, type);
+    setAllocMember(output, size, size);
+    setAllocMember(output, next, nextPointer);
     
     // Update previous allocation or firstAlloc.
     if (previousPointer == NULL_ALLOC_POINTER) {
         firstAlloc = output;
     } else {
-        setAllocNext(previousPointer, output);
+        setAllocMember(previousPointer, next, output);
     }
     
     return output;
@@ -55,9 +51,9 @@ int8_t deleteAlloc(allocPointer_t pointer) {
     allocPointer_t nextPointer = firstAlloc;
     
     // Find previous and next allocations.
-    while (1) {
+    while (true) {
         if (nextPointer == NULL_ALLOC_POINTER) {
-            return 0;
+            return false;
         }
         allocPointer_t tempPointer = nextPointer;
         nextPointer = getAllocNext(nextPointer);
@@ -72,10 +68,10 @@ int8_t deleteAlloc(allocPointer_t pointer) {
     if (previousPointer == NULL_ALLOC_POINTER) {
         firstAlloc = nextPointer;
     } else {
-        setAllocNext(previousPointer, nextPointer);
+        setAllocMember(previousPointer, next, nextPointer);
     }
     
-    return 1;
+    return true;
 }
 
 

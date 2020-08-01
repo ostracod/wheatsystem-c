@@ -1,10 +1,8 @@
 
 #include "../../intermediate/headers.h"
 
-#define setDynamicAllocIsGuarded(pointer, isGuarded) \
-    writeAlloc(pointer, DYNAMIC_ALLOC_IS_GUARDED_OFFSET, int8_t, isGuarded);
-#define setDynamicAllocCreator(pointer, creator) \
-    writeAlloc(pointer, DYNAMIC_ALLOC_CREATOR_OFFSET, allocPointer_t, creator);
+#define setDynamicAllocMember(pointer, memberName, value) \
+    writeAlloc(pointer, getStructMemberOffset(dynamicAllocHeader_t, memberName), getStructMemberType(dynamicAllocHeader_t, memberName), value)
 
 allocPointer_t createDynamicAlloc(
     heapMemoryOffset_t size,
@@ -13,10 +11,10 @@ allocPointer_t createDynamicAlloc(
 ) {
     allocPointer_t output = createAlloc(
         DYNAMIC_ALLOC_TYPE,
-        DYNAMIC_ALLOC_DATA_OFFSET + size
+        sizeof(dynamicAllocHeader_t) + size
     );
-    setDynamicAllocIsGuarded(output, isGuarded);
-    setDynamicAllocCreator(output, creator);
+    setDynamicAllocMember(output, isGuarded, isGuarded);
+    setDynamicAllocMember(output, creator, creator);
     for (heapMemoryOffset_t index = 0; index < size; index++) {
         writeDynamicAlloc(output, index, int8_t, 0);
     }

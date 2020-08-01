@@ -13,17 +13,27 @@
 #define DYNAMIC_ALLOC_CREATOR_OFFSET (DYNAMIC_ALLOC_IS_GUARDED_OFFSET + 1)
 #define DYNAMIC_ALLOC_DATA_OFFSET (DYNAMIC_ALLOC_CREATOR_OFFSET + sizeof(allocPointer_t))
 
-#define getDynamicAllocSize(pointer) \
-    (getAllocSize(pointer) - DYNAMIC_ALLOC_DATA_OFFSET)
-#define getDynamicAllocIsGuarded(pointer) \
-    readAlloc(pointer, DYNAMIC_ALLOC_IS_GUARDED_OFFSET, int8_t)
-#define getDynamicAllocCreator(pointer) \
-    readAlloc(pointer, DYNAMIC_ALLOC_CREATOR_OFFSET, allocPointer_t)
+#pragma pack(push, 1)
+typedef struct dynamicAllocHeader {
+    int8_t isGuarded;
+    allocPointer_t creator;
+} dynamicAllocHeader_t;
+#pragma pack(pop)
 
+#define getDynamicAllocMember(pointer, memberName) \
+    readAlloc(pointer, getStructMemberOffset(dynamicAllocHeader_t, memberName), getStructMemberType(dynamicAllocHeader_t, memberName))
+
+#define getDynamicAllocDataAddress(pointer) \
+    (getAllocDataAddress(pointer) + sizeof(dynamicAllocHeader_t))
 #define readDynamicAlloc(pointer, index, type) \
-    readAlloc(pointer, DYNAMIC_ALLOC_DATA_OFFSET + index, type)
+    readHeapMemory(getDynamicAllocDataAddress(pointer) + index, type)
 #define writeDynamicAlloc(pointer, index, type, value) \
-    writeAlloc(pointer, DYNAMIC_ALLOC_DATA_OFFSET + index, type, value)
+    writeHeapMemory(getDynamicAllocDataAddress(pointer) + index, type, value)
+
+#define getDynamicAllocSize(pointer) \
+    (getAllocSize(pointer) - sizeof(dynamicAllocHeader_t))
+#define getDynamicAllocIsGuarded(pointer) getDynamicAllocMember(pointer, isGuarded)
+#define getDynamicAllocCreator(pointer) getDynamicAllocMember(pointer, creator)
 
 #define createAllocFromStringConstant(stringConstant) \
     createAllocFromStringConstantHelper(stringConstant, getStringConstantSize(stringConstant))

@@ -4,6 +4,14 @@
 #define ALLOC_NEXT_OFFSET (ALLOC_SIZE_OFFSET + sizeof(heapMemoryOffset_t))
 #define ALLOC_DATA_OFFSET (ALLOC_NEXT_OFFSET + sizeof(allocPointer_t))
 
+#pragma pack(push, 1)
+typedef struct allocHeader {
+    int8_t type;
+    heapMemoryOffset_t size;
+    allocPointer_t next;
+} allocHeader_t;
+#pragma pack(pop)
+
 allocPointer_t firstAlloc;
 
 // We need the zero pointer to be null, so we offset
@@ -13,19 +21,20 @@ allocPointer_t firstAlloc;
 
 #define getFirstAlloc() firstAlloc
 
-#define getAllocType(pointer) \
-    readHeapMemory(convertPointerToAddress(pointer) + ALLOC_TYPE_OFFSET, int8_t)
-#define getAllocSize(pointer) \
-    readHeapMemory(convertPointerToAddress(pointer) + ALLOC_SIZE_OFFSET, heapMemoryOffset_t)
-#define getAllocNext(pointer) \
-    readHeapMemory(convertPointerToAddress(pointer) + ALLOC_NEXT_OFFSET, allocPointer_t)
+#define getAllocMemberAddress(pointer, memberName) \
+    convertPointerToAddress(pointer) + getStructMemberOffset(allocHeader_t, memberName)
+#define getAllocMember(pointer, memberName) \
+    readHeapMemory(getAllocMemberAddress(pointer, memberName), getStructMemberType(allocHeader_t, memberName))
 
+#define getAllocDataAddress(pointer) \
+    (convertPointerToAddress(pointer) + sizeof(allocHeader_t))
 #define readAlloc(pointer, index, type) \
-    readHeapMemory(convertPointerToAddress(pointer) + ALLOC_DATA_OFFSET + index, type)
+    readHeapMemory(getAllocDataAddress(pointer) + index, type)
 #define writeAlloc(pointer, index, type, value) \
-    writeHeapMemory(convertPointerToAddress(pointer) + ALLOC_DATA_OFFSET + index, type, value)
+    writeHeapMemory(getAllocDataAddress(pointer) + index, type, value)
 
-// TODO: Use this sort of macro function in more places.
-#define getAllocDataAddress(pointer) (convertPointerToAddress(pointer) + ALLOC_DATA_OFFSET)
+#define getAllocType(pointer) getAllocMember(pointer, type)
+#define getAllocSize(pointer) getAllocMember(pointer, size)
+#define getAllocNext(pointer) getAllocMember(pointer, next)
 
 

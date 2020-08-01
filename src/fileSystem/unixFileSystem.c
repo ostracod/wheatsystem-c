@@ -1,20 +1,6 @@
 
 #include "../../intermediate/headers.h"
 
-#define getFileHandleName(pointer) \
-    readDynamicAlloc(pointer, FILE_HANDLE_NAME_OFFSET, int8_t *)
-#define getFileHandleContent(pointer) \
-    readDynamicAlloc(pointer, FILE_HANDLE_CONTENT_OFFSET, int8_t *)
-#define getFileHandleOpenDepth(pointer) \
-    readDynamicAlloc(pointer, FILE_HANDLE_OPEN_DEPTH_OFFSET, int8_t)
-
-#define setFileHandleName(pointer, name) \
-    writeDynamicAlloc(pointer, FILE_HANDLE_NAME_OFFSET, int8_t *, name)
-#define setFileHandleContent(pointer, content) \
-    writeDynamicAlloc(pointer, FILE_HANDLE_CONTENT_OFFSET, int8_t *, content)
-#define setFileHandleOpenDepth(pointer, openDepth) \
-    writeDynamicAlloc(pointer, FILE_HANDLE_OPEN_DEPTH_OFFSET, int8_t, openDepth)
-
 allocPointer_t openFile(heapMemoryOffset_t nameAddress, heapMemoryOffset_t nameSize) {
     // Copy name from heap memory to native memory.
     int8_t *nativeName = malloc(nameSize + 1);
@@ -30,23 +16,27 @@ allocPointer_t openFile(heapMemoryOffset_t nameAddress, heapMemoryOffset_t nameS
         if (!allocIsFileHandle(tempPointer)) {
             continue;
         }
-        int8_t *tempNativeName = getFileHandleName(tempPointer);
+        int8_t *tempNativeName = getFileHandleMember(tempPointer, name);
         if (strcmp((char *)tempNativeName, (char *)nativeName) != 0) {
             continue;
         }
         free(nativeName);
-        int8_t tempDepth = getFileHandleOpenDepth(tempPointer);
-        setFileHandleOpenDepth(tempPointer, tempDepth + 1);
+        int8_t tempDepth = getFileHandleMember(tempPointer, openDepth);
+        setFileHandleMember(tempPointer, openDepth, tempDepth + 1);
         return tempPointer;
     }
     // TODO: Verify that the file actually exists.
-    allocPointer_t output = createDynamicAlloc(FILE_HANDLE_SIZE, 1, NULL_ALLOC_POINTER);
-    setFileHandleName(output, nativeName);
+    allocPointer_t output = createDynamicAlloc(
+        sizeof(fileHandle_t),
+        true,
+        NULL_ALLOC_POINTER
+    );
+    setFileHandleMember(output, name, nativeName);
     // TODO: Read file content.
-    setFileHandleContent(output, NULL);
+    setFileHandleMember(output, content, NULL);
+    setFileHandleMember(output, openDepth, 1);
     setFileHandleApp(output, NULL_ALLOC_POINTER);
     setFileHandleInitErr(output, 0);
-    setFileHandleOpenDepth(output, 1);
     return output;
 }
 

@@ -1,13 +1,21 @@
 
 #include "../../intermediate/headers.h"
 
+#define UNIX_FILE_HEADER_SIZE 1
+
+int8_t *convertFileNameToUnixPath(int8_t *name) {
+    int8_t *output;
+    asprintf((char **)&output, "%s/%s", unixVolumePath, name);
+    return output;
+}
+
 allocPointer_t openFile(heapMemoryOffset_t nameAddress, heapMemoryOffset_t nameSize) {
     // Copy name from heap memory to native memory.
     int8_t *nativeName = malloc(nameSize + 1);
     for (heapMemoryOffset_t index = 0; index < nameSize; index++) {
         nativeName[index] = readHeapMemory(nameAddress + index, int8_t);
     }
-    nativeName[nameSize - 1] = 0;
+    nativeName[nameSize] = 0;
     // Return matching file handle if it already exists.
     allocPointer_t nextPointer = getFirstAlloc();
     while (nextPointer != NULL_ALLOC_POINTER) {
@@ -25,15 +33,36 @@ allocPointer_t openFile(heapMemoryOffset_t nameAddress, heapMemoryOffset_t nameS
         setFileHandleMember(tempPointer, openDepth, tempDepth + 1);
         return tempPointer;
     }
-    // TODO: Verify that the file actually exists.
+    int8_t *unixPath = convertFileNameToUnixPath(nativeName);
+    FILE *nativeFileHandle = fopen((char *)unixPath, "r");
+    if (nativeFileHandle == NULL) {
+        // File is missing.
+        free(nativeName);
+        free(unixPath);
+        return NULL_ALLOC_POINTER;
+    }
+    // Read file content.
+    int8_t fileMetadata;
+    fread(&fileMetadata, 1, 1, nativeFileHandle);
+    fseek(nativeFileHandle, 0, SEEK_END);
+    int32_t contentSize = (int32_t)(ftell(nativeFileHandle) - UNIX_FILE_HEADER_SIZE);
+    int8_t *content = malloc(contentSize);
+    fseek(nativeFileHandle, UNIX_FILE_HEADER_SIZE, SEEK_SET);
+    fread(content, 1, contentSize, nativeFileHandle);
+    fclose(nativeFileHandle);
+    // Create file handle.
     allocPointer_t output = createDynamicAlloc(
         sizeof(fileHandle_t),
         true,
         NULL_ALLOC_POINTER
     );
     setFileHandleMember(output, name, nativeName);
-    // TODO: Read file content.
-    setFileHandleMember(output, content, NULL);
+    setFileHandleMember(output, unixPath, unixPath);
+    setFileHandleMember(output, hasAdminPerm, (fileMetadata & 0x08) > 0);
+    setFileHandleMember(output, isGuarded, (fileMetadata & 0x04) > 0);
+    setFileHandleMember(output, type, fileMetadata & 0x03);
+    setFileHandleMember(output, contentSize, contentSize);
+    setFileHandleMember(output, content, content);
     setFileHandleMember(output, openDepth, 1);
     setFileHandleApp(output, NULL_ALLOC_POINTER);
     setFileHandleInitErr(output, 0);

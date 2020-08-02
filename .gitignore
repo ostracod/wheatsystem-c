@@ -3,5 +3,6 @@ intermediate
 build
 unixVolume
 boot
+.DS_Store
 
 

@@ -2,6 +2,11 @@
 #pragma pack(push, 1)
 typedef struct fileHandle {
     int8_t *name;
+    int8_t *unixPath;
+    int8_t hasAdminPerm;
+    int8_t isGuarded;
+    int8_t type;
+    int32_t contentSize;
     int8_t *content;
     allocPointer_t app;
     int8_t initErr;

@@ -7,6 +7,7 @@ typedef struct fileHandle {
     int8_t isGuarded;
     int8_t type;
     int32_t contentSize;
+    int8_t contentIsDirty;
     int8_t *content;
     allocPointer_t app;
     int8_t initErr;

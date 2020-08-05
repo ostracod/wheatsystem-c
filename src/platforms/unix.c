@@ -25,6 +25,7 @@ int main(int argc, const char *argv[]) {
     allocPointer_t tempFileHandle = openFileByStringAlloc(bootName);
     printf("File type: %d\n", getFileHandleMember(tempFileHandle, type));
     printf("File size: %d\n", getFileHandleMember(tempFileHandle, contentSize));
+    closeFile(tempFileHandle);
     return 0;
 }
 

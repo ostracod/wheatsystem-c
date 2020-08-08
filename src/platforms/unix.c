@@ -23,9 +23,7 @@ int main(int argc, const char *argv[]) {
     closedir(volumeDirectory);
     allocPointer_t bootName = createAllocFromStringConstant(BOOT_STRING_CONSTANT);
     allocPointer_t tempFileHandle = openFileByStringAlloc(bootName);
-    printf("File type: %d\n", getFileHandleMember(tempFileHandle, type));
-    printf("File size: %d\n", getFileHandleMember(tempFileHandle, contentSize));
-    closeFile(tempFileHandle);
+    launchApp(tempFileHandle);
     return 0;
 }
 

@@ -95,8 +95,8 @@ The following definitions are shared between all platform implementations:
     * `allocPointer_t getRunningAppGlobalFrame(allocPointer_t runningApp)`
     * `allocPointer_t getRunningAppLocalFrame(allocPointer_t runningApp)`
     * `int8_t getRunningAppIsWaiting(allocPointer_t runningApp)`
-    * `void setRunningAppLocalFrame(allocPointer_t runningApp, allocPointer_t localFrameValue)`
-    * `void setRunningAppIsWaiting(allocPointer_t runningApp, int8_t isWaitingValue)`
+    * `void setRunningAppLocalFrame(allocPointer_t runningApp, allocPointer_t localFrame)`
+    * `void setRunningAppIsWaiting(allocPointer_t runningApp, int8_t isWaiting)`
     * `void launchApp(allocPointer_t fileHandle)`
 
 ## Platform-Specific Source Definitions
@@ -134,9 +134,9 @@ The following definitions must be provided by each platform implementation:
     * `allocPointer_t createAlloc(int8_t type, heapMemoryOffset_t size)`
     * `int8_t deleteAlloc(allocPointer_t pointer)`
 * File system functions
-    * `allocPointer_t getFileHandleApp(allocPointer_t fileHandle)`
+    * `allocPointer_t getFileHandleRunningApp(allocPointer_t fileHandle)`
     * `int8_t getFileHandleInitErr(allocPointer_t fileHandle)`
-    * `void setFileHandleApp(allocPointer_t fileHandle, allocPointer_t app)`
+    * `void setFileHandleRunningApp(allocPointer_t fileHandle, allocPointer_t runningApp)`
     * `void setFileHandleInitErr(allocPointer_t fileHandle, int8_t initErr)`
     * `allocPointer_t openFile(heapMemoryOffset_t nameAddress, heapMemoryOffset_t nameSize)`
     * `void closeFile(allocPointer_t fileHandle)`

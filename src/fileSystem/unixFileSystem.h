@@ -9,7 +9,7 @@ typedef struct fileHandle {
     int32_t contentSize;
     int8_t contentIsDirty;
     int8_t *content;
-    allocPointer_t app;
+    allocPointer_t runningApp;
     int8_t initErr;
     int8_t openDepth;
 } fileHandle_t;
@@ -20,11 +20,11 @@ typedef struct fileHandle {
 #define setFileHandleMember(fileHandle, memberName, value) \
     writeDynamicAlloc(fileHandle, getStructMemberOffset(fileHandle_t, memberName), getStructMemberType(fileHandle_t, memberName), value)
 
-#define getFileHandleApp(fileHandle) getFileHandleMember(fileHandle, app)
+#define getFileHandleRunningApp(fileHandle) getFileHandleMember(fileHandle, runningApp)
 #define getFileHandleInitErr(fileHandle) getFileHandleMember(fileHandle, initErr)
 
-#define setFileHandleApp(fileHandle, appValue) \
-    setFileHandleMember(fileHandle, app, appValue)
+#define setFileHandleRunningApp(fileHandle, runningAppValue) \
+    setFileHandleMember(fileHandle, runningApp, runningAppValue)
 #define setFileHandleInitErr(fileHandle, initErrValue) \
     setFileHandleMember(fileHandle, initErr, initErrValue)
 

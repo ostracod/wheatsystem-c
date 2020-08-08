@@ -71,7 +71,7 @@ allocPointer_t openFile(heapMemoryOffset_t nameAddress, heapMemoryOffset_t nameS
     setFileHandleMember(output, contentIsDirty, false);
     setFileHandleMember(output, content, content);
     setFileHandleMember(output, openDepth, 1);
-    setFileHandleApp(output, NULL_ALLOC_POINTER);
+    setFileHandleRunningApp(output, NULL_ALLOC_POINTER);
     setFileHandleInitErr(output, 0);
     return output;
 }

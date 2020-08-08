@@ -1,17 +1,27 @@
 
 #pragma pack(push, 1)
-typedef struct app {
+typedef struct runningApp {
     allocPointer_t fileHandle;
     allocPointer_t globalFrame;
     allocPointer_t localFrame;
     int8_t isWaiting;
-} app_t;
+} runningApp_t;
 #pragma pack(pop)
 
-#define getAppMember(app, memberName) \
-    readAlloc(app, getStructMemberOffset(app_t, memberName), getStructMemberType(app_t, memberName))
-#define setAppMember(app, memberName, value) \
-    writeAlloc(fileHandle, getStructMemberOffset(app_t, memberName), getStructMemberType(app_t, memberName), value)
+#define getRunningAppMember(runningApp, memberName) \
+    readAlloc(runningApp, getStructMemberOffset(runningApp_t, memberName), getStructMemberType(runningApp_t, memberName))
+#define setRunningAppMember(runningApp, memberName, value) \
+    writeAlloc(runningApp, getStructMemberOffset(runningApp_t, memberName), getStructMemberType(runningApp_t, memberName), value)
+
+#define getRunningAppFileHandle(runningApp) getRunningAppMember(runningApp, fileHandle)
+#define getRunningAppGlobalFrame(runningApp) getRunningAppMember(runningApp, globalFrame)
+#define getRunningAppLocalFrame(runningApp) getRunningAppMember(runningApp, localFrame)
+#define getRunningAppIsWaiting(runningApp) getRunningAppMember(runningApp, isWaiting)
+
+#define setRunningAppLocalFrame(runningApp, localFrameValue) \
+    setRunningAppMember(runningApp, localFrame, localFrameValue)
+#define setRunningAppIsWaiting(runningApp, isWaitingValue) \
+    setRunningAppMember(runningApp, isWaiting, isWaitingValue)
 
 void launchApp(allocPointer_t fileHandle);
 

@@ -62,7 +62,7 @@ The following definitions are shared between all platform implementations:
 
 * Boolean values `true` and `false`
 * Heap allocation types
-    * `int8_t APP_ALLOC_TYPE`
+    * `int8_t RUNING_APP_ALLOC_TYPE`
     * `int8_t GLOBAL_FRAME_ALLOC_TYPE`
     * `int8_t LOCAL_FRAME_ALLOC_TYPE`
     * `int8_t ARG_FRAME_ALLOC_TYPE`
@@ -91,6 +91,12 @@ The following definitions are shared between all platform implementations:
     * `int8_t allocIsFileHandle(allocPointer_t pointer)`
     * `allocPointer_t openFileByStringAlloc(allocPointer_t stringAlloc)`
 * Application system functions
+    * `allocPointer_t getRunningAppFileHandle(allocPointer_t runningApp)`
+    * `allocPointer_t getRunningAppGlobalFrame(allocPointer_t runningApp)`
+    * `allocPointer_t getRunningAppLocalFrame(allocPointer_t runningApp)`
+    * `int8_t getRunningAppIsWaiting(allocPointer_t runningApp)`
+    * `void setRunningAppLocalFrame(allocPointer_t runningApp, allocPointer_t localFrameValue)`
+    * `void setRunningAppIsWaiting(allocPointer_t runningApp, int8_t isWaitingValue)`
     * `void launchApp(allocPointer_t fileHandle)`
 
 ## Platform-Specific Source Definitions
@@ -114,7 +120,7 @@ The following definitions must be provided by each platform implementation:
     * `int32_t getStringConstantSize(<name>)`
     * `int8_t readStringConstantCharacter(<name>, int32_t index)`
     * `<type> readHeapMemory(heapMemoryOffset_t address, <type>)`
-    * `void writeHeapMemory(heapMemoryOffset_t, address, <type>, <type> value)`
+    * `void writeHeapMemory(heapMemoryOffset_t address, <type>, <type> value)`
 * Heap allocation functions
     * `heapMemoryOffset_t convertPointerToAddress(allocPointer_t pointer)`
     * `allocPointer_t convertAddressToPointer(heapMemoryOffset_t address)`

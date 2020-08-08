@@ -37,8 +37,6 @@ typedef struct dynamicAllocHeader {
 #define createAllocFromStringConstant(stringConstant) \
     createAllocFromStringConstantHelper(stringConstant, getStringConstantSize(stringConstant))
 
-allocPointer_t createAlloc(int8_t type, heapMemoryOffset_t size);
-int8_t deleteAlloc(allocPointer_t pointer);
 allocPointer_t createDynamicAlloc(
     heapMemoryOffset_t size,
     int8_t isGuarded,

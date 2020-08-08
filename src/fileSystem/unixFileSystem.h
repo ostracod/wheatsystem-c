@@ -20,6 +20,7 @@ typedef struct fileHandle {
 #define setFileHandleMember(fileHandle, memberName, value) \
     writeDynamicAlloc(fileHandle, getStructMemberOffset(fileHandle_t, memberName), getStructMemberType(fileHandle_t, memberName), value)
 
+#define getFileHandleType(fileHandle) getFileHandleMember(fileHandle, type)
 #define getFileHandleRunningApp(fileHandle) getFileHandleMember(fileHandle, runningApp)
 #define getFileHandleInitErr(fileHandle) getFileHandleMember(fileHandle, initErr)
 
@@ -27,5 +28,11 @@ typedef struct fileHandle {
     setFileHandleMember(fileHandle, runningApp, runningAppValue)
 #define setFileHandleInitErr(fileHandle, initErrValue) \
     setFileHandleMember(fileHandle, initErr, initErrValue)
+
+#define readFile(fileHandle, pos, type) \
+    *(type *)(getFileHandleMember(fileHandle, content) + pos)
+
+allocPointer_t openFile(heapMemoryOffset_t nameAddress, heapMemoryOffset_t nameSize);
+void closeFile(allocPointer_t fileHandle);
 
 

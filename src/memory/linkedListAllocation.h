@@ -37,4 +37,7 @@ allocPointer_t firstAlloc;
 #define getAllocSize(pointer) getAllocMember(pointer, size)
 #define getAllocNext(pointer) getAllocMember(pointer, next)
 
+allocPointer_t createAlloc(int8_t type, heapMemoryOffset_t size);
+int8_t deleteAlloc(allocPointer_t pointer);
+
 

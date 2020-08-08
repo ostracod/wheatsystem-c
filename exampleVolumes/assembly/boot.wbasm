@@ -1,4 +1,6 @@
 
+VAR myGlobalVariable, s16
+
 FUNC init, init_ID
     VAR myValue, s8
     add myValue, 10, 20

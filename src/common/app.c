@@ -1,35 +1,46 @@
 
 #include "../../intermediate/headers.h"
 
-heapMemoryOffset_t getAppGlobalFrameSize(allocPointer_t fileHandle) {
-    int8_t tempType = getFileHandleType(fileHandle);
-    if (tempType == BYTECODE_APP_FILE_TYPE) {
-        return (heapMemoryOffset_t)readFile(fileHandle, 0, int32_t);
-    } else {
-        // TODO: Determine size of global frame for system application.
-        
-        return 0;
-    }
-}
-
 void launchApp(allocPointer_t fileHandle) {
+    
+    // Do not launch app again if it is already running.
     allocPointer_t runningApp = getFileHandleRunningApp(fileHandle);
     if (runningApp != NULL_ALLOC_POINTER) {
         return;
     }
-    int8_t tempType = getFileHandleType(fileHandle);
-    if (tempType != BYTECODE_APP_FILE_TYPE && tempType != SYSTEM_APP_FILE_TYPE) {
+    int8_t fileType = getFileHandleType(fileHandle);
+    
+    // Determine global frame size.
+    heapMemoryOffset_t globalFrameSize;
+    if (fileType == BYTECODE_APP_FILE_TYPE) {
+        globalFrameSize = sizeof(bytecodeAppCache_t) + (heapMemoryOffset_t)readFile(fileHandle, 0, int32_t);
+    } else if (fileType == SYSTEM_APP_FILE_TYPE) {
+        // TODO: Determine size of global frame for system application.
+        
+        globalFrameSize = 0;
+    } else {
         // TODO: Throw an error.
         return;
     }
-    runningApp = createAlloc(RUNNING_APP_ALLOC_TYPE, sizeof(runningApp_t));
-    heapMemoryOffset_t globalFrameSize = getAppGlobalFrameSize(fileHandle);
-    allocPointer_t globalFrame = createAlloc(GLOBAL_FRAME_ALLOC_TYPE, globalFrameSize);
+    
+    // Create allocation for the running app.
+    runningApp = createAlloc(
+        RUNNING_APP_ALLOC_TYPE,
+        sizeof(runningAppHeader_t) + globalFrameSize
+    );
     setRunningAppMember(runningApp, fileHandle, fileHandle);
-    setRunningAppMember(runningApp, globalFrame, globalFrame);
     setRunningAppLocalFrame(runningApp, NULL_ALLOC_POINTER);
     setRunningAppIsWaiting(runningApp, false);
     setFileHandleRunningApp(fileHandle, runningApp);
+    
+    // Initialize global frame.
+    for (heapMemoryOffset_t index = 0; index < globalFrameSize; index++) {
+        writeGlobalFrame(runningApp, index, int8_t, 0);
+    }
+    if (fileType == BYTECODE_APP_FILE_TYPE) {
+        initializeBytecodeAppGlobalFrame(runningApp);
+    }
+    
     // TODO: Invoke init function if available.
     
     printf("Running app pointer: %d\n", runningApp);

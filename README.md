@@ -63,7 +63,6 @@ The following definitions are shared between all platform implementations:
 * Boolean values `true` and `false`
 * Heap allocation types
     * `int8_t RUNING_APP_ALLOC_TYPE`
-    * `int8_t GLOBAL_FRAME_ALLOC_TYPE`
     * `int8_t LOCAL_FRAME_ALLOC_TYPE`
     * `int8_t ARG_FRAME_ALLOC_TYPE`
     * `int8_t DYNAMIC_ALLOC_TYPE`
@@ -79,6 +78,10 @@ The following definitions are shared between all platform implementations:
 * Struct manipulation macros
     * `heapMemoryOffset_t getStructMemberOffset(<structType>, <memberName>)`
     * `<type> getStructMemberType(<structType>, <memberName>)`
+    * `<memberType> readStructMember(allocPointer_t pointer, <readFunction>, <structType>, <memberName>)`
+        * <type> readFunction(allocPointer_t pointer, heapMemoryOffset_t index, <type>)`
+    * `void writeStructMember(allocPointer_t pointer, <writeFunction>, <structType>, <memberName>, <memberType> value)`
+        * void writeFunction(allocPointer_t pointer, heapMemoryOffset_t index, <type>, <type> value)`
 * Heap allocation functions
     * `<type> readDynamicAlloc(allocPointer_t pointer, heapMemoryOffset_t index, <type>)`
     * `void writeDynamicAlloc(allocPointer_t pointer, heapMemoryOffset_t index, <type>, <type> value)`
@@ -92,11 +95,15 @@ The following definitions are shared between all platform implementations:
     * `allocPointer_t openFileByStringAlloc(allocPointer_t stringAlloc)`
 * Application system functions
     * `allocPointer_t getRunningAppFileHandle(allocPointer_t runningApp)`
-    * `allocPointer_t getRunningAppGlobalFrame(allocPointer_t runningApp)`
     * `allocPointer_t getRunningAppLocalFrame(allocPointer_t runningApp)`
     * `int8_t getRunningAppIsWaiting(allocPointer_t runningApp)`
     * `void setRunningAppLocalFrame(allocPointer_t runningApp, allocPointer_t localFrame)`
     * `void setRunningAppIsWaiting(allocPointer_t runningApp, int8_t isWaiting)`
+    * `<type> readGlobalFrame(allocPointer_t runningApp, heapMemoryOffset_t, index, <type>)`
+    * `void writeGlobalFrame(allocPointer_t runningApp, heapMemoryOffset_t index, <type>, <type> value)`
+    * `int32_t getBytecodeFunctionTableLength(allocPointer_t runningApp)`
+    * `int32_t getBytecodeAppDataPos(allocPointer_t runningApp)`
+    * `void initializeBytecodeAppGlobalFrame(allocPointer_t runningApp)`
     * `void launchApp(allocPointer_t fileHandle)`
 
 ## Platform-Specific Source Definitions

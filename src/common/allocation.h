@@ -1,10 +1,9 @@
 
 #define RUNNING_APP_ALLOC_TYPE 0
-#define GLOBAL_FRAME_ALLOC_TYPE 1
-#define LOCAL_FRAME_ALLOC_TYPE 2
-#define ARG_FRAME_ALLOC_TYPE 3
-#define DYNAMIC_ALLOC_TYPE 4
-#define STRING_ALLOC_TYPE 5
+#define LOCAL_FRAME_ALLOC_TYPE 1
+#define ARG_FRAME_ALLOC_TYPE 2
+#define DYNAMIC_ALLOC_TYPE 3
+#define STRING_ALLOC_TYPE 4
 
 #define NULL_ALLOC_POINTER 0
 
@@ -20,7 +19,7 @@ typedef struct dynamicAllocHeader {
 #pragma pack(pop)
 
 #define getDynamicAllocMember(pointer, memberName) \
-    readAlloc(pointer, getStructMemberOffset(dynamicAllocHeader_t, memberName), getStructMemberType(dynamicAllocHeader_t, memberName))
+    readStructMember(pointer, readAlloc, dynamicAllocHeader_t, memberName)
 
 #define getDynamicAllocDataAddress(pointer) \
     (getAllocDataAddress(pointer) + sizeof(dynamicAllocHeader_t))

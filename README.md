@@ -76,12 +76,12 @@ The following definitions are shared between all platform implementations:
 ### Common Functions
 
 * Struct manipulation macros
-    * `heapMemoryOffset_t getStructMemberOffset(<structType>, <memberName>)`
+    * `int32_t getStructMemberOffset(<structType>, <memberName>)`
     * `<type> getStructMemberType(<structType>, <memberName>)`
     * `<memberType> readStructMember(allocPointer_t pointer, <readFunction>, <structType>, <memberName>)`
-        * <type> readFunction(allocPointer_t pointer, heapMemoryOffset_t index, <type>)`
+        * `<type> readFunction(allocPointer_t pointer, int32_t index, <type>)`
     * `void writeStructMember(allocPointer_t pointer, <writeFunction>, <structType>, <memberName>, <memberType> value)`
-        * void writeFunction(allocPointer_t pointer, heapMemoryOffset_t index, <type>, <type> value)`
+        * `void writeFunction(allocPointer_t pointer, int32_t index, <type>, <type> value)`
 * Heap allocation functions
     * `<type> readDynamicAlloc(allocPointer_t pointer, heapMemoryOffset_t index, <type>)`
     * `void writeDynamicAlloc(allocPointer_t pointer, heapMemoryOffset_t index, <type>, <type> value)`
@@ -101,7 +101,13 @@ The following definitions are shared between all platform implementations:
     * `void setRunningAppIsWaiting(allocPointer_t runningApp, int8_t isWaiting)`
     * `<type> readGlobalFrame(allocPointer_t runningApp, heapMemoryOffset_t, index, <type>)`
     * `void writeGlobalFrame(allocPointer_t runningApp, heapMemoryOffset_t index, <type>, <type> value)`
-    * `int32_t getBytecodeFunctionTableLength(allocPointer_t runningApp)`
+    * `<memberType> getBytecodeAppHeaderMember(allocPointer_t fileHandle, <memberName>)`
+        * `int32_t globalFrameSize`
+        * `int32_t functionTableLength`
+        * `int32_t appDataPos`
+    * `<memberType> getBytecodeAppCacheMember(allocPointer_t runningApp, <memberName>)`
+        * `int32_t functionTableLength`
+        * `int32_t appDataPos`
     * `int32_t getBytecodeAppDataPos(allocPointer_t runningApp)`
     * `void initializeBytecodeAppGlobalFrame(allocPointer_t runningApp)`
     * `void launchApp(allocPointer_t fileHandle)`

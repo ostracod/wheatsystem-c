@@ -13,7 +13,7 @@ void launchApp(allocPointer_t fileHandle) {
     // Determine global frame size.
     heapMemoryOffset_t globalFrameSize;
     if (fileType == BYTECODE_APP_FILE_TYPE) {
-        globalFrameSize = sizeof(bytecodeAppCache_t) + (heapMemoryOffset_t)readFile(fileHandle, 0, int32_t);
+        globalFrameSize = sizeof(bytecodeAppCache_t) + (heapMemoryOffset_t)getBytecodeAppHeaderMember(fileHandle, globalFrameSize);
     } else if (fileType == SYSTEM_APP_FILE_TYPE) {
         // TODO: Determine size of global frame for system application.
         

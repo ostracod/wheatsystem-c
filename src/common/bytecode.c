@@ -6,8 +6,8 @@
 
 void initializeBytecodeAppGlobalFrame(allocPointer_t runningApp) {
     allocPointer_t fileHandle = getRunningAppFileHandle(runningApp);
-    int32_t functionTableLength = readFile(fileHandle, 4, int32_t);
-    int32_t appDataPos = readFile(fileHandle, 8, int32_t);
+    int32_t functionTableLength = getBytecodeAppHeaderMember(fileHandle, functionTableLength);
+    int32_t appDataPos = getBytecodeAppHeaderMember(fileHandle, appDataPos);
     setBytecodeAppCacheMember(runningApp, functionTableLength, functionTableLength);
     setBytecodeAppCacheMember(runningApp, appDataPos, appDataPos);
     printf("Function table length: %d\n", functionTableLength);

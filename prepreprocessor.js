@@ -1,16 +1,19 @@
 
 const fs = require("fs");
 
-function convertTextToRegex(text) {
+function convertIdentifierToRegex(identifier) {
+    // Escape identifier text for use in a regex.
     // https://stackoverflow.com/questions/3561493/is-there-a-regexp-escape-function-in-javascript
-    return new RegExp(text.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&"), "g");
+    const regexText = identifier.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&")
+    // Match the identifier surrounded by non-identifier characters.
+    return new RegExp(`([^a-zA-Z0-9_]|^)(${regexText})([^a-zA-Z0-9_]|$)`, "g");
 }
 
 class PrepreprocessorDefinition {
     
     constructor(name, argNameList) {
         this.name = name;
-        this.argRegexList = argNameList.map(name => convertTextToRegex(name));
+        this.argRegexList = argNameList.map(convertIdentifierToRegex);
         this.lineList = [];
     }
     
@@ -21,7 +24,9 @@ class PrepreprocessorDefinition {
         for (let index = 0; index < argList.length; index++) {
             const tempArg = argList[index];
             const tempRegex = this.argRegexList[index];
-            line = line.replace(tempRegex, tempArg);
+            line = line.replace(tempRegex, (match, group1, group2, group3) => {
+                return group1 + tempArg + group3;
+            });
         }
         return line;
     }

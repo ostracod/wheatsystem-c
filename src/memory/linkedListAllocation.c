@@ -1,5 +1,5 @@
 
-#include "../../intermediate/headers.h"
+#include "./headers.h"
 
 #define setAllocMember(pointer, memberName, value) \
     writeHeapMemory(getAllocMemberAddress(pointer, memberName), getStructMemberType(allocHeader_t, memberName), value)

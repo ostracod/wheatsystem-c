@@ -2,6 +2,7 @@
 const fs = require("fs");
 const pathUtils = require("path");
 const childProcess = require("child_process");
+const Prepreprocessor = require("./prepreprocessor").Prepreprocessor;
 
 const sourcePath = pathUtils.join(__dirname, "src");
 const commonPath = pathUtils.join(sourcePath, "common");
@@ -60,6 +61,17 @@ function convertToBaseFileName(filePath) {
     }
 }
 
+function prepreprocessFiles(filePathList) {
+    const output = [];
+    for (const sourceFilePath of filePathList) {
+        const fileName = pathUtils.basename(sourceFilePath);
+        const destinationFilePath = pathUtils.join(intermediatePath, fileName);
+        prepreprocessor.prepreprocessFile(sourceFilePath, destinationFilePath);
+        output.push(destinationFilePath);
+    }
+    return output;
+}
+
 function invokeGcc(argumentList) {
     try {
         childProcess.execFileSync("gcc", argumentList);
@@ -112,8 +124,8 @@ for (const baseFileName of commonBaseFileNames) {
 console.log("Base file paths for compilation:");
 console.log(baseFilePathList.join("\n"));
 
-const headerFilePathList = getFilePathsWithExtension(".h");
-const implementationFilePathList = getFilePathsWithExtension(".c");
+let headerFilePathList = getFilePathsWithExtension(".h");
+let implementationFilePathList = getFilePathsWithExtension(".c");
 
 console.log("Header file paths:");
 console.log(headerFilePathList.join("\n"));
@@ -125,6 +137,13 @@ if (fs.existsSync(intermediatePath)) {
     fs.rmdirSync(intermediatePath, {recursive: true});
 }
 fs.mkdirSync(intermediatePath);
+
+console.log("Running prepreprocessor...");
+
+const prepreprocessorDefinitionsPath = pathUtils.join(sourcePath, "prepreprocessorDefinitions.pppd");
+const prepreprocessor = new Prepreprocessor(prepreprocessorDefinitionsPath);
+headerFilePathList = prepreprocessFiles(headerFilePathList);
+implementationFilePathList = prepreprocessFiles(implementationFilePathList);
 
 console.log("Creating headers.h...");
 

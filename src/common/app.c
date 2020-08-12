@@ -1,5 +1,5 @@
 
-#include "../../intermediate/headers.h"
+#include "./headers.h"
 
 void launchApp(allocPointer_t fileHandle) {
     

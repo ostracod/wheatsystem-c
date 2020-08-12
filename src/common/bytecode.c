@@ -1,8 +1,8 @@
 
-#include "../../intermediate/headers.h"
+#include "./headers.h"
 
 #define setBytecodeAppCacheMember(runningApp, memberName, value) \
-    writeStructMember(runningApp, writeGlobalFrame, bytecodeAppCache_t, memberName, value)
+    !!!writeStructMember runningApp writeGlobalFrame bytecodeAppCache_t memberName value
 
 void initializeBytecodeAppGlobalFrame(allocPointer_t runningApp) {
     allocPointer_t fileHandle = getRunningAppFileHandle(runningApp);

@@ -1,8 +1,8 @@
 
-#include "../../intermediate/headers.h"
+#include "./headers.h"
 
 #define setDynamicAllocMember(pointer, memberName, value) \
-    writeStructMember(pointer, writeAlloc, dynamicAllocHeader_t, memberName, value)
+    !!!writeStructMember pointer writeAlloc dynamicAllocHeader_t memberName value
 
 allocPointer_t createDynamicAlloc(
     heapMemoryOffset_t size,

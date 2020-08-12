@@ -46,10 +46,18 @@ When building a platform, `./fake.js` will incorporate the following files:
 * `.c` and `.h` files corresponding to each base path in `baseFilePaths`
 * All files provided in `./src/common`
 
+As part of the buld process, `./fake.js` uses `./prepreprocessor.js` to expand prepreprocessor invocations in `.c` and `.h` files. Prepreprocessor invocations have the following syntax:
+
+```
+!!!name arg1 arg2 arg3...
+```
+
+Prepreprocessor definitions are read from `./src/prepreprocessorDefinitions.pppd`.
+
 `./fake.js` creates a header file in `./intermediate/headers.h` which includes all headers for the target platform. This header should be included in each `.c` file with the statement below:
 
 ```
-#include "../../intermediate/headers.h"
+#include "./headers.h"
 ```
 
 After `./fake.js` finishes building, the WheatSystem executable will have the path `./build/(platform name)WheatSystem`.
@@ -78,10 +86,6 @@ The following definitions are shared between all platform implementations:
 * Struct manipulation macros
     * `int32_t getStructMemberOffset(<structType>, <memberName>)`
     * `<type> getStructMemberType(<structType>, <memberName>)`
-    * `<memberType> readStructMember(allocPointer_t pointer, <readFunction>, <structType>, <memberName>)`
-        * `<type> readFunction(allocPointer_t pointer, int32_t index, <type>)`
-    * `void writeStructMember(allocPointer_t pointer, <writeFunction>, <structType>, <memberName>, <memberType> value)`
-        * `void writeFunction(allocPointer_t pointer, int32_t index, <type>, <type> value)`
 * Heap allocation functions
     * `<type> readDynamicAlloc(allocPointer_t pointer, heapMemoryOffset_t index, <type>)`
     * `void writeDynamicAlloc(allocPointer_t pointer, heapMemoryOffset_t index, <type>, <type> value)`
@@ -155,5 +159,14 @@ The following definitions must be provided by each platform implementation:
     * `allocPointer_t openFile(heapMemoryOffset_t nameAddress, heapMemoryOffset_t nameSize)`
     * `void closeFile(allocPointer_t fileHandle)`
     * `<type> readFile(allocPointer_t fileHandle, int32_t pos, <type>)`
+
+## Prepreprocessor Definitions
+
+The following definitions are recognized by the prepreprocessor:
+
+* `!!!readStructMember pointer readFunction structType memberName`
+    * `<type> readFunction(allocPointer_t pointer, int32_t index, <type>)`
+* `!!!writeStructMember pointer writeFunction structType memberName value`
+    * `void writeFunction(allocPointer_t pointer, int32_t index, <type>, <type> value)`
 
 

@@ -8,9 +8,9 @@ typedef struct runningAppHeader {
 #pragma pack(pop)
 
 #define getRunningAppMember(runningApp, memberName) \
-    readStructMember(runningApp, readAlloc, runningAppHeader_t, memberName)
+    !!!readStructMember runningApp readAlloc runningAppHeader_t memberName
 #define setRunningAppMember(runningApp, memberName, value) \
-    writeStructMember(runningApp, writeAlloc, runningAppHeader_t, memberName, value)
+    !!!writeStructMember runningApp writeAlloc runningAppHeader_t memberName value
 
 #define getRunningAppFileHandle(runningApp) getRunningAppMember(runningApp, fileHandle)
 #define getRunningAppLocalFrame(runningApp) getRunningAppMember(runningApp, localFrame)

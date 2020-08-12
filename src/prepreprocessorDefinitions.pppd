@@ -1,0 +1,10 @@
+
+DEFINE readStructMember pointer readFunction structDefinition memberName
+readFunction(pointer, getStructMemberOffset(structDefinition, memberName), getStructMemberType(structDefinition, memberName))
+END
+
+DEFINE writeStructMember pointer writeFunction structDefinition memberName value
+writeFunction(pointer, getStructMemberOffset(structDefinition, memberName), getStructMemberType(structDefinition, memberName), value)
+END
+
+

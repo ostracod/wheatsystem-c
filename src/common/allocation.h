@@ -19,7 +19,7 @@ typedef struct dynamicAllocHeader {
 #pragma pack(pop)
 
 #define getDynamicAllocMember(pointer, memberName) \
-    readStructMember(pointer, readAlloc, dynamicAllocHeader_t, memberName)
+    !!!readStructMember pointer readAlloc dynamicAllocHeader_t memberName
 
 #define getDynamicAllocDataAddress(pointer) \
     (getAllocDataAddress(pointer) + sizeof(dynamicAllocHeader_t))

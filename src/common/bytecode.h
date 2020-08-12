@@ -15,9 +15,9 @@ typedef struct bytecodeAppCache {
 #pragma pack(pop)
 
 #define getBytecodeAppHeaderMember(fileHandle, memberName) \
-    readStructMember2(fileHandle, readFile, bytecodeAppHeader_t, memberName)
+    !!!readStructMember fileHandle readFile bytecodeAppHeader_t memberName
 #define getBytecodeAppCacheMember(runningApp, memberName) \
-    readStructMember2(runningApp, readGlobalFrame, bytecodeAppCache_t, memberName)
+    !!!readStructMember runningApp readGlobalFrame bytecodeAppCache_t memberName
 
 void initializeBytecodeAppGlobalFrame(allocPointer_t runningApp);
 

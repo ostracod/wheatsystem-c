@@ -1,5 +1,5 @@
 
-#include "../../intermediate/headers.h"
+#include "./headers.h"
 
 declareStringConstant(BOOT_STRING_CONSTANT, "boot");
 

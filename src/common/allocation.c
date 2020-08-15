@@ -21,13 +21,13 @@ allocPointer_t createDynamicAlloc(
     return output;
 }
 
-allocPointer_t createAllocFromStringConstantHelper(
-    stringConstant_t stringConstant,
+allocPointer_t createStringAllocFromArrayConstantHelper(
+    arrayConstant_t arrayConstant,
     heapMemoryOffset_t size
 ) {
     allocPointer_t output = createAlloc(STRING_ALLOC_TYPE, size);
     for (heapMemoryOffset_t index = 0; index < size; index++) {
-        int8_t tempCharacter = readStringConstantCharacter(stringConstant, index);
+        int8_t tempCharacter = readArrayConstantValue(arrayConstant, index);
         writeAlloc(output, index, int8_t, tempCharacter);
     }
     return output;

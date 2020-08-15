@@ -31,16 +31,16 @@ typedef struct dynamicAllocHeader {
 #define getDynamicAllocSize(pointer) \
     (getAllocSize(pointer) - sizeof(dynamicAllocHeader_t))
 
-#define createAllocFromStringConstant(stringConstant) \
-    createAllocFromStringConstantHelper(stringConstant, getStringConstantSize(stringConstant))
+#define createStringAllocFromArrayConstant(arrayConstant) \
+    createStringAllocFromArrayConstantHelper(arrayConstant, (heapMemoryOffset_t)(getArrayConstantSize(arrayConstant) - 1))
 
 allocPointer_t createDynamicAlloc(
     heapMemoryOffset_t size,
     int8_t isGuarded,
     allocPointer_t creator
 );
-allocPointer_t createAllocFromStringConstantHelper(
-    stringConstant_t stringConstant,
+allocPointer_t createStringAllocFromArrayConstantHelper(
+    arrayConstant_t arrayConstant,
     heapMemoryOffset_t size
 );
 

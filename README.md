@@ -149,7 +149,7 @@ The following definitions are shared between all platform implementations:
     * `void writeDynamicAlloc(allocPointer_t pointer, heapMemoryOffset_t index, <type>, <type> value)`
     * `heapMemoryOffset_t getDynamicAllocSize(allocPointer_t pointer)`
     * `<memberType> getDynamicAllocMember(allocPointer_t pointer, <memberName>)`
-    * `createAllocFromStringConstant(stringConstant_t stringConstant)`
+    * `createStringAllocFromArrayConstant(arrayConstant_t arrayConstant)`
     * `allocPointer_t createDynamicAlloc(heapMemoryOffset_t size, int8_t isGuarded, allocPointer_t creator)`
 * File system functions
     * `int8_t allocIsFileHandle(allocPointer_t pointer)`
@@ -179,7 +179,7 @@ The following definitions must be provided by each platform implementation:
 
 ### Platform-Specific Types
 
-* `stringConstant_t` may occupy non-volatile memory
+* `arrayConstant_t` may occupy non-volatile memory
 * `heapMemoryOffset_t` must accommodate values up to `HEAP_MEMORY_SIZE`
 * `allocPointer_t` must accommodate maximum pointer value
 
@@ -190,9 +190,9 @@ The following definitions must be provided by each platform implementation:
 ### Platform-Specific Functions
 
 * Memory functions
-    * `void declareStringConstant(<name>, stringConstant_t, value)`
-    * `int32_t getStringConstantSize(<name>)`
-    * `int8_t readStringConstantCharacter(<name>, int32_t index)`
+    * `void declareArrayConstant(<name>, arrayConstant_t value)`
+    * `int32_t getArrayConstantSize(<name>)`
+    * `int8_t readArrayConstantValue(<name>, int32_t index)`
     * `<type> readHeapMemory(heapMemoryOffset_t address, <type>)`
     * `void writeHeapMemory(heapMemoryOffset_t address, <type>, <type> value)`
 * Heap allocation functions

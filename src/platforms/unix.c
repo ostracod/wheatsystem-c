@@ -1,7 +1,7 @@
 
 #include "./headers.h"
 
-declareStringConstant(BOOT_STRING_CONSTANT, "boot");
+declareArrayConstant(BOOT_STRING_CONSTANT, "boot");
 
 int8_t *unixVolumePath;
 
@@ -21,7 +21,7 @@ int main(int argc, const char *argv[]) {
         return 1;
     }
     closedir(volumeDirectory);
-    allocPointer_t bootName = createAllocFromStringConstant(BOOT_STRING_CONSTANT);
+    allocPointer_t bootName = createStringAllocFromArrayConstant(BOOT_STRING_CONSTANT);
     allocPointer_t tempFileHandle = openFileByStringAlloc(bootName);
     launchApp(tempFileHandle);
     return 0;

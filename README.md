@@ -80,6 +80,20 @@ The following definitions are shared between all platform implementations:
     * `int8_t GENERIC_FILE_TYPE`
     * `int8_t BYTECODE_APP_FILE_TYPE`
     * `int8_t SYSTEM_APP_FILE_TYPE`
+# Function IDs
+    * `int32_t INIT_FUNC_ID`
+    * `int32_t KILL_FUNC_ID`
+    * `int32_t LISTEN_TERM_FUNC_ID`
+    * `int32_t TERM_SIZE_FUNC_ID`
+    * `int32_t WRT_TERM_FUNC_ID`
+    * `int32_t TERM_INPUT_FUNC_ID`
+    * `int32_t START_SERIAL_FUNC_ID`
+    * `int32_t STOP_SERIAL_FUNC_ID`
+    * `int32_t WRT_SERIAL_FUNC_ID`
+    * `int32_t SERIAL_INPUT_FUNC_ID`
+    * `int32_t SET_GPIO_MODE_FUNC_ID`
+    * `int32_t READ_GPIO_FUNC_ID`
+    * `int32_t WRT_GPIO_FUNC_ID`
 
 ### Common Functions
 
@@ -112,8 +126,15 @@ The following definitions are shared between all platform implementations:
     * `<memberType> getBytecodeAppCacheMember(allocPointer_t runningApp, <memberName>)`
         * `int32_t functionTableLength`
         * `int32_t appDataPos`
-    * `int32_t getBytecodeAppDataPos(allocPointer_t runningApp)`
+    * `<memberType> getBytecodeFunctionMember(allocPointer_t fileHandle, <memberName>)`
+        * `int32_t functionId`
+        * `int8_t isGuarded`
+        * `int32_t argumentFrameSize`
+        * `int32_t localFrameSize`
+        * `int32_t instructionBodyFilePosition`
+        * `int32_t instructionBodySize`
     * `void initializeBytecodeAppGlobalFrame(allocPointer_t runningApp)`
+    * `int32_t findBytecodeFunction(allocPointer_t fileHandle, int32_t functionId)`
     * `void launchApp(allocPointer_t fileHandle)`
 
 ## Platform-Specific Source Definitions
@@ -168,5 +189,7 @@ The following definitions are recognized by the prepreprocessor:
     * `<type> readFunction(allocPointer_t pointer, int32_t index, <type>)`
 * `!!!writeStructMember pointer writeFunction structType memberName value`
     * `void writeFunction(allocPointer_t pointer, int32_t index, <type>, <type> value)`
+* `!!!readStructMemberInTable pointer readFunction tableIndex structDefinition memberName`
+    * `<type> readFunction(allocPointer_t pointer, int32_t index, <type>)`
 
 

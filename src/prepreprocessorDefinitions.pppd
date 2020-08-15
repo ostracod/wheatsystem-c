@@ -7,4 +7,8 @@ DEFINE writeStructMember pointer writeFunction structDefinition memberName value
 writeFunction(pointer, getStructMemberOffset(structDefinition, memberName), getStructMemberType(structDefinition, memberName), value)
 END
 
+DEFINE readStructMemberInTable pointer readFunction tableIndex structDefinition memberName
+readFunction(pointer, tableIndex * sizeof(structDefinition) + getStructMemberOffset(structDefinition, memberName), getStructMemberType(structDefinition, memberName))
+END
+
 

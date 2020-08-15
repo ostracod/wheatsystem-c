@@ -1,4 +1,18 @@
 
+#define INIT_FUNC_ID 1
+#define KILL_FUNC_ID 2
+#define LISTEN_TERM_FUNC_ID 3
+#define TERM_SIZE_FUNC_ID 4
+#define WRT_TERM_FUNC_ID 5
+#define TERM_INPUT_FUNC_ID 6
+#define START_SERIAL_FUNC_ID 7
+#define STOP_SERIAL_FUNC_ID 8
+#define WRT_SERIAL_FUNC_ID 9
+#define SERIAL_INPUT_FUNC_ID 10
+#define SET_GPIO_MODE_FUNC_ID 11
+#define READ_GPIO_FUNC_ID 12
+#define WRT_GPIO_FUNC_ID 13
+
 #pragma pack(push, 1)
 typedef struct runningAppHeader {
     allocPointer_t fileHandle;

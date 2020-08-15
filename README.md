@@ -80,7 +80,7 @@ The following definitions are shared between all platform implementations:
     * `int8_t GENERIC_FILE_TYPE`
     * `int8_t BYTECODE_APP_FILE_TYPE`
     * `int8_t SYSTEM_APP_FILE_TYPE`
-# Function IDs
+* Function IDs
     * `int32_t INIT_FUNC_ID`
     * `int32_t KILL_FUNC_ID`
     * `int32_t LISTEN_TERM_FUNC_ID`
@@ -119,11 +119,17 @@ The following definitions are shared between all platform implementations:
     * `void setRunningAppIsWaiting(allocPointer_t runningApp, int8_t isWaiting)`
     * `<type> readGlobalFrame(allocPointer_t runningApp, heapMemoryOffset_t, index, <type>)`
     * `void writeGlobalFrame(allocPointer_t runningApp, heapMemoryOffset_t index, <type>, <type> value)`
-    * `<memberType> getBytecodeAppHeaderMember(allocPointer_t fileHandle, <memberName>)`
+    * `<memberType> getLocalFrameMember(allocPointer_t localFrame, <memberName>)`
+        * `allocPointer_t implementer`
+        * `allocPointer_t caller`
+        * `int32_t functionIndex`
+        * `allocPointer_t previousLocalFrame`
+        * `allocPointer_t nextArgFrame`
+        * `int8_t lastErrorCode`
+    * `<type> readLocalFrame(allocPointer_t localFrame, heapMemoryOffset_t, index, <type>)`
+    * `void writeLocalFrame(allocPointer_t localFrame, heapMemoryOffset_t index, <type>, <type> value)`
+    * `<memberType> getBytecodeAppMember(allocPointer_t fileHandle, <memberName>)`
         * `int32_t globalFrameSize`
-        * `int32_t functionTableLength`
-        * `int32_t appDataPos`
-    * `<memberType> getBytecodeAppCacheMember(allocPointer_t runningApp, <memberName>)`
         * `int32_t functionTableLength`
         * `int32_t appDataPos`
     * `<memberType> getBytecodeFunctionMember(allocPointer_t fileHandle, <memberName>)`
@@ -131,11 +137,19 @@ The following definitions are shared between all platform implementations:
         * `int8_t isGuarded`
         * `int32_t argumentFrameSize`
         * `int32_t localFrameSize`
-        * `int32_t instructionBodyFilePosition`
+        * `int32_t instructionBodyFilePos`
         * `int32_t instructionBodySize`
-    * `void initializeBytecodeAppGlobalFrame(allocPointer_t runningApp)`
+    * `<memberType> getBytecodeGlobalFrameMember(allocPointer_t runningApp, <memberName>)`
+        * `int32_t functionTableLength`
+        * `int32_t appDataPos`
+    * `<memberType> getBytecodeLocalFrameMember(allocPointer_t localFrame, <memberName>)`
+        * `int32_t instructionBodyFilePos`
+        * `int32_t instructionBodySize`
+        * `int32_t instructionOffset`
+        * `int32_t errorHandler`
     * `int32_t findBytecodeFunction(allocPointer_t fileHandle, int32_t functionId)`
     * `void launchApp(allocPointer_t fileHandle)`
+    * `void callFunction(allocPointer_t caller, allocPointer_t implementer, int32_t functionIndex)`
 
 ## Platform-Specific Source Definitions
 

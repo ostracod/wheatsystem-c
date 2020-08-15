@@ -21,6 +21,17 @@ typedef struct runningAppHeader {
 } runningAppHeader_t;
 #pragma pack(pop)
 
+#pragma pack(push, 1)
+typedef struct localFrameHeader {
+    allocPointer_t implementer;
+    allocPointer_t caller;
+    int32_t functionIndex;
+    allocPointer_t previousLocalFrame;
+    allocPointer_t nextArgFrame;
+    int8_t lastErrorCode;
+} localFrameHeader_t;
+#pragma pack(pop)
+
 #define getRunningAppMember(runningApp, memberName) \
     !!!readStructMember runningApp readAlloc runningAppHeader_t memberName
 #define setRunningAppMember(runningApp, memberName, value) \
@@ -35,13 +46,26 @@ typedef struct runningAppHeader {
 #define setRunningAppIsWaiting(runningApp, isWaitingValue) \
     setRunningAppMember(runningApp, isWaiting, isWaitingValue)
 
-#define getGlobalFrameAddress(runningApp) \
+#define getGlobalFrameDataAddress(runningApp) \
     (getAllocDataAddress(runningApp) + sizeof(runningAppHeader_t))
 #define readGlobalFrame(runningApp, index, type) \
-    readHeapMemory(getGlobalFrameAddress(runningApp) + index, type)
+    readHeapMemory(getGlobalFrameDataAddress(runningApp) + index, type)
 #define writeGlobalFrame(runningApp, index, type, value) \
-    writeHeapMemory(getGlobalFrameAddress(runningApp) + index, type, value)
+    writeHeapMemory(getGlobalFrameDataAddress(runningApp) + index, type, value)
+
+#define getLocalFrameMember(localFrame, memberName) \
+    !!!readStructMember localFrame readAlloc localFrameHeader_t memberName
+#define setLocalFrameMember(localFrame, memberName, value) \
+    !!!writeStructMember localFrame writeAlloc localFrameHeader_t memberName value
+
+#define getLocalFrameDataAddress(localFrame) \
+    (getAllocDataAddress(localFrame) + sizeof(localFrameHeader_t))
+#define readLocalFrame(localFrame, index, type) \
+    readHeapMemory(getLocalFrameDataAddress(localFrame) + index, type)
+#define writeLocalFrame(localFrame, index, type, value) \
+    writeHeapMemory(getLocalFrameDataAddress(localFrame) + index, type, value)
 
 void launchApp(allocPointer_t fileHandle);
+void callFunction(allocPointer_t caller, allocPointer_t implementer, int32_t functionIndex);
 
 

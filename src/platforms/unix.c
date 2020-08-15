@@ -24,8 +24,6 @@ int main(int argc, const char *argv[]) {
     allocPointer_t bootName = createAllocFromStringConstant(BOOT_STRING_CONSTANT);
     allocPointer_t tempFileHandle = openFileByStringAlloc(bootName);
     launchApp(tempFileHandle);
-    int32_t tempFunctionIndex = findBytecodeFunction(tempFileHandle, INIT_FUNC_ID);
-    printf("Init function index: %d\n", tempFunctionIndex);
     return 0;
 }
 

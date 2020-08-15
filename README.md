@@ -95,6 +95,50 @@ The following definitions are shared between all platform implementations:
     * `int32_t READ_GPIO_FUNC_ID`
     * `int32_t WRT_GPIO_FUNC_ID`
 
+### Common Data Structures
+
+* Dynamic allocation (stored in heap allocation)
+    * `int8_t isGuarded`
+    * `allocPointer_t creator`
+    * Dynamic allocation data
+* Running app (stored in heap allocation)
+    * `allocPointer_t fileHandle`
+    * `allocPointer_t localFrame`
+    * `int8_t isWaiting`
+    * Global frame data
+* Local frame (stored in heap allocation)
+    * `allocPointer_t implementer`
+    * `allocPointer_t caller`
+    * `int32_t functionIndex`
+    * `allocPointer_t previousLocalFrame`
+    * `allocPointer_t nextArgFrame`
+    * `int8_t lastErrorCode`
+    * Local frame data
+* Bytecode app (stored in file)
+    * `int32_t globalFrameSize`
+    * `int32_t functionTableLength`
+    * `int32_t appDataPos`
+    * Function table
+    * Instruction array
+    * Application data
+* Bytecode function (stored in bytecode function table)
+    * `int32_t functionId`
+    * `int8_t isGuarded`
+    * `int32_t argumentFrameSize`
+    * `int32_t localFrameSize`
+    * `int32_t instructionBodyFilePos`
+    * `int32_t instructionBodySize`
+* Bytecode global frame (stored in global frame of running app)
+    * `int32_t functionTableLength`
+    * `int32_t appDataPos`
+    * Bytecode global frame data
+* Bytecode local frame (stored in local frame)
+    * `int32_t instructionBodyFilePos`
+    * `int32_t instructionBodySize`
+    * `int32_t instructionOffset`
+    * `int32_t errorHandler`
+    * Bytecode local frame data
+
 ### Common Functions
 
 * Struct manipulation macros
@@ -104,49 +148,27 @@ The following definitions are shared between all platform implementations:
     * `<type> readDynamicAlloc(allocPointer_t pointer, heapMemoryOffset_t index, <type>)`
     * `void writeDynamicAlloc(allocPointer_t pointer, heapMemoryOffset_t index, <type>, <type> value)`
     * `heapMemoryOffset_t getDynamicAllocSize(allocPointer_t pointer)`
-    * `int8_t getDynamicAllocIsGuarded(allocPointer_t pointer)`
-    * `allocPointer_t getDynamicAllocCreator(allocPointer_t pointer)`
+    * `<memberType> getDynamicAllocMember(allocPointer_t pointer, <memberName>)`
     * `createAllocFromStringConstant(stringConstant_t stringConstant)`
     * `allocPointer_t createDynamicAlloc(heapMemoryOffset_t size, int8_t isGuarded, allocPointer_t creator)`
 * File system functions
     * `int8_t allocIsFileHandle(allocPointer_t pointer)`
     * `allocPointer_t openFileByStringAlloc(allocPointer_t stringAlloc)`
 * Application system functions
-    * `allocPointer_t getRunningAppFileHandle(allocPointer_t runningApp)`
-    * `allocPointer_t getRunningAppLocalFrame(allocPointer_t runningApp)`
-    * `int8_t getRunningAppIsWaiting(allocPointer_t runningApp)`
-    * `void setRunningAppLocalFrame(allocPointer_t runningApp, allocPointer_t localFrame)`
-    * `void setRunningAppIsWaiting(allocPointer_t runningApp, int8_t isWaiting)`
+    * `<memberType> getRunningAppMember(allocPointer_t runningApp, <memberName>)`
+    * `void setRunningAppMember(allocPointer_t runningApp, <memberName>, <memberType> value)`
     * `<type> readGlobalFrame(allocPointer_t runningApp, heapMemoryOffset_t, index, <type>)`
     * `void writeGlobalFrame(allocPointer_t runningApp, heapMemoryOffset_t index, <type>, <type> value)`
     * `<memberType> getLocalFrameMember(allocPointer_t localFrame, <memberName>)`
-        * `allocPointer_t implementer`
-        * `allocPointer_t caller`
-        * `int32_t functionIndex`
-        * `allocPointer_t previousLocalFrame`
-        * `allocPointer_t nextArgFrame`
-        * `int8_t lastErrorCode`
+    * `void setLocalFrameMember(allocPointer_t localFrame, <memberName>, <memberType> value)`
     * `<type> readLocalFrame(allocPointer_t localFrame, heapMemoryOffset_t, index, <type>)`
     * `void writeLocalFrame(allocPointer_t localFrame, heapMemoryOffset_t index, <type>, <type> value)`
     * `<memberType> getBytecodeAppMember(allocPointer_t fileHandle, <memberName>)`
-        * `int32_t globalFrameSize`
-        * `int32_t functionTableLength`
-        * `int32_t appDataPos`
     * `<memberType> getBytecodeFunctionMember(allocPointer_t fileHandle, <memberName>)`
-        * `int32_t functionId`
-        * `int8_t isGuarded`
-        * `int32_t argumentFrameSize`
-        * `int32_t localFrameSize`
-        * `int32_t instructionBodyFilePos`
-        * `int32_t instructionBodySize`
     * `<memberType> getBytecodeGlobalFrameMember(allocPointer_t runningApp, <memberName>)`
-        * `int32_t functionTableLength`
-        * `int32_t appDataPos`
+    * `void setBytecodeGlobalFrameMember(allocPointer_t runningApp, <memberName>, <memberType> value)`
     * `<memberType> getBytecodeLocalFrameMember(allocPointer_t localFrame, <memberName>)`
-        * `int32_t instructionBodyFilePos`
-        * `int32_t instructionBodySize`
-        * `int32_t instructionOffset`
-        * `int32_t errorHandler`
+    * `void setBytecodeLocalFrameMember(allocPointer_t localFrame, <memberName>, <memberType> value)`
     * `int32_t findBytecodeFunction(allocPointer_t fileHandle, int32_t functionId)`
     * `void launchApp(allocPointer_t fileHandle)`
     * `void callFunction(allocPointer_t caller, allocPointer_t implementer, int32_t functionIndex)`

@@ -29,8 +29,8 @@ void launchApp(allocPointer_t fileHandle) {
         sizeof(runningAppHeader_t) + globalFrameSize
     );
     setRunningAppMember(runningApp, fileHandle, fileHandle);
-    setRunningAppLocalFrame(runningApp, NULL_ALLOC_POINTER);
-    setRunningAppIsWaiting(runningApp, false);
+    setRunningAppMember(runningApp, localFrame, NULL_ALLOC_POINTER);
+    setRunningAppMember(runningApp, isWaiting, false);
     setFileHandleRunningApp(fileHandle, runningApp);
     
     // Initialize global frame.
@@ -53,9 +53,9 @@ void launchApp(allocPointer_t fileHandle) {
 
 void callFunction(allocPointer_t caller, allocPointer_t implementer, int32_t functionIndex) {
     
-    allocPointer_t fileHandle = getRunningAppFileHandle(implementer);
+    allocPointer_t fileHandle = getRunningAppMember(implementer, fileHandle);
     int8_t fileType = getFileHandleType(fileHandle);
-    allocPointer_t previousLocalFrame = getRunningAppLocalFrame(caller);
+    allocPointer_t previousLocalFrame = getRunningAppMember(caller, localFrame);
     
     // Determine local frame size.
     heapMemoryOffset_t localFrameSize;
@@ -104,7 +104,7 @@ void callFunction(allocPointer_t caller, allocPointer_t implementer, int32_t fun
     }
     
     // Update caller local frame.
-    setRunningAppLocalFrame(caller, localFrame);
+    setRunningAppMember(caller, localFrame, localFrame);
     
     printf("Local frame pointer: %d\n", localFrame);
 }

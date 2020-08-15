@@ -30,8 +30,6 @@ typedef struct dynamicAllocHeader {
 
 #define getDynamicAllocSize(pointer) \
     (getAllocSize(pointer) - sizeof(dynamicAllocHeader_t))
-#define getDynamicAllocIsGuarded(pointer) getDynamicAllocMember(pointer, isGuarded)
-#define getDynamicAllocCreator(pointer) getDynamicAllocMember(pointer, creator)
 
 #define createAllocFromStringConstant(stringConstant) \
     createAllocFromStringConstantHelper(stringConstant, getStringConstantSize(stringConstant))

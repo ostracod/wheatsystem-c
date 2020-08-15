@@ -37,15 +37,6 @@ typedef struct localFrameHeader {
 #define setRunningAppMember(runningApp, memberName, value) \
     !!!writeStructMember runningApp writeAlloc runningAppHeader_t memberName value
 
-#define getRunningAppFileHandle(runningApp) getRunningAppMember(runningApp, fileHandle)
-#define getRunningAppLocalFrame(runningApp) getRunningAppMember(runningApp, localFrame)
-#define getRunningAppIsWaiting(runningApp) getRunningAppMember(runningApp, isWaiting)
-
-#define setRunningAppLocalFrame(runningApp, localFrameValue) \
-    setRunningAppMember(runningApp, localFrame, localFrameValue)
-#define setRunningAppIsWaiting(runningApp, isWaitingValue) \
-    setRunningAppMember(runningApp, isWaiting, isWaitingValue)
-
 #define getGlobalFrameDataAddress(runningApp) \
     (getAllocDataAddress(runningApp) + sizeof(runningAppHeader_t))
 #define readGlobalFrame(runningApp, index, type) \

@@ -9,6 +9,7 @@ const commonPath = pathUtils.join(sourcePath, "common");
 const platformsPath = pathUtils.join(sourcePath, "platforms");
 const intermediatePath = pathUtils.join(__dirname, "intermediate");
 const buildPath = pathUtils.join(__dirname, "build");
+const bytecodeInstructionsPath = pathUtils.join(__dirname, "..", "wheatsystem-spec", "bytecodeInstructions.json");
 
 const platformDefinitionsPath = pathUtils.join(__dirname, "platformDefinitions.json");
 const platformDefinitionList = JSON.parse(fs.readFileSync(platformDefinitionsPath), "utf8");
@@ -144,6 +145,32 @@ const prepreprocessorDefinitionsPath = pathUtils.join(sourcePath, "prepreprocess
 const prepreprocessor = new Prepreprocessor(prepreprocessorDefinitionsPath);
 headerFilePathList = prepreprocessFiles(headerFilePathList);
 implementationFilePathList = prepreprocessFiles(implementationFilePathList);
+
+console.log("Creating argument amount array...");
+
+const instructionCategoryList = JSON.parse(fs.readFileSync(bytecodeInstructionsPath, "utf8"));
+const argumentAmountOffsetArray = [];
+const argumentAmountArray = [];
+for (const instructionCategory of instructionCategoryList) {
+    argumentAmountOffsetArray.push(argumentAmountArray.length);
+    for (const instruction of instructionCategory.instructionList) {
+        argumentAmountArray.push(instruction.argumentList.length);
+    }
+}
+argumentAmountsHeaderPath = pathUtils.join(intermediatePath, "argumentAmount.h");
+argumentAmountsImplementationPath = pathUtils.join(intermediatePath, "argumentAmount.c");
+fs.writeFileSync(argumentAmountsHeaderPath, `
+declareArrayConstantWithSize(argumentAmountOffsetArray, ${argumentAmountOffsetArray.length});
+declareArrayConstantWithSize(argumentAmountArray, ${argumentAmountArray.length});
+`);
+fs.writeFileSync(argumentAmountsImplementationPath, `
+#include "./headers.h"
+
+declareArrayConstantWithValue(argumentAmountOffsetArray, {${argumentAmountOffsetArray.join(",")}});
+declareArrayConstantWithValue(argumentAmountArray, {${argumentAmountArray.join(",")}});
+`);
+headerFilePathList.push(argumentAmountsHeaderPath);
+implementationFilePathList.push(argumentAmountsImplementationPath);
 
 console.log("Creating headers.h...");
 

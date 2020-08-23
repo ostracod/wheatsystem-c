@@ -1,7 +1,7 @@
 
 #include "./headers.h"
 
-declareArrayConstant(BOOT_STRING_CONSTANT, "boot");
+declareArrayConstantWithValue(BOOT_STRING_CONSTANT, "boot");
 
 int8_t *unixVolumePath;
 

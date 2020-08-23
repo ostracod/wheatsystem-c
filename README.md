@@ -94,6 +94,9 @@ The following definitions are shared between all platform implementations:
     * `int32_t SET_GPIO_MODE_FUNC_ID`
     * `int32_t READ_GPIO_FUNC_ID`
     * `int32_t WRT_GPIO_FUNC_ID`
+* Bytecode instruction definitions
+    * `arrayConstant_t argumentAmountOffsetArray`
+    * `arrayConstant_t argumentAmountArray`
 
 ### Common Data Structures
 
@@ -190,7 +193,8 @@ The following definitions must be provided by each platform implementation:
 ### Platform-Specific Functions
 
 * Memory functions
-    * `void declareArrayConstant(<name>, arrayConstant_t value)`
+    * `void declareArrayConstantWithValue(<name>, arrayConstant_t value)`
+    * `void declareArrayConstantWithSize(<name>, int32_t size)`
     * `int32_t getArrayConstantSize(<name>)`
     * `int8_t readArrayConstantValue(<name>, int32_t index)`
     * `<type> readHeapMemory(heapMemoryOffset_t address, <type>)`

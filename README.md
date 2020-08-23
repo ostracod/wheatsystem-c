@@ -136,9 +136,9 @@ The following definitions are shared between all platform implementations:
     * `int32_t appDataPos`
     * Bytecode global frame data
 * Bytecode local frame (stored in local frame)
-    * `int32_t instructionBodyFilePos`
-    * `int32_t instructionBodySize`
-    * `int32_t instructionOffset`
+    * `int32_t instructionBodyStartFilePos`
+    * `int32_t instructionBodyEndFilePos`
+    * `int32_t instructionFilePos`
     * `int32_t errorHandler`
     * Bytecode local frame data
 
@@ -157,6 +157,7 @@ The following definitions are shared between all platform implementations:
 * File system functions
     * `int8_t allocIsFileHandle(allocPointer_t pointer)`
     * `allocPointer_t openFileByStringAlloc(allocPointer_t stringAlloc)`
+    * `<type> readFileAndAdvance(allocPointer_t fileHandle, int32_t pos, <type>)`
 * Application system functions
     * `<memberType> getRunningAppMember(allocPointer_t runningApp, <memberName>)`
     * `void setRunningAppMember(allocPointer_t runningApp, <memberName>, <memberType> value)`
@@ -175,6 +176,7 @@ The following definitions are shared between all platform implementations:
     * `int32_t findBytecodeFunction(allocPointer_t fileHandle, int32_t functionId)`
     * `void launchApp(allocPointer_t fileHandle)`
     * `void callFunction(allocPointer_t caller, allocPointer_t implementer, int32_t functionIndex)`
+    * `void scheduleApp(allocPointer_t runningApp)`
 
 ## Platform-Specific Source Definitions
 

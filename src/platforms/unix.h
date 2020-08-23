@@ -5,6 +5,7 @@
 #include <string.h>
 #include <inttypes.h>
 #include <dirent.h>
+#include <time.h>
 
 #define HEAP_MEMORY_SIZE (30 * 1000)
 

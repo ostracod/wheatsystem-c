@@ -27,9 +27,9 @@ typedef struct bytecodeGlobalFrameHeader {
 
 #pragma pack(push, 1)
 typedef struct bytecodeLocalFrameHeader {
-    int32_t instructionBodyFilePos;
-    int32_t instructionBodySize;
-    int32_t instructionOffset;
+    int32_t instructionBodyStartFilePos;
+    int32_t instructionBodyEndFilePos;
+    int32_t instructionFilePos;
     int32_t errorHandler;
 } bytecodeLocalFrameHeader_t;
 #pragma pack(pop)

@@ -47,7 +47,7 @@ void launchApp(allocPointer_t fileHandle) {
     // Call init function if available.
     int32_t initFunctionIndex = findBytecodeFunction(fileHandle, INIT_FUNC_ID);
     if (initFunctionIndex >= 0) {
-        callFunction(NULL_ALLOC_POINTER, runningApp, initFunctionIndex);
+        callFunction(runningApp, runningApp, initFunctionIndex);
     }
 }
 
@@ -89,24 +89,58 @@ void callFunction(allocPointer_t caller, allocPointer_t implementer, int32_t fun
         );
         setBytecodeLocalFrameMember(
             localFrame,
-            instructionBodyFilePos,
+            instructionBodyStartFilePos,
             instructionBodyFilePos
         );
         setBytecodeLocalFrameMember(
             localFrame,
-            instructionBodySize,
-            instructionBodySize
+            instructionBodyEndFilePos,
+            instructionBodyFilePos + instructionBodySize
         );
-        setBytecodeLocalFrameMember(localFrame, instructionOffset, 0);
+        setBytecodeLocalFrameMember(localFrame, instructionFilePos, instructionBodyFilePos);
         setBytecodeLocalFrameMember(localFrame, errorHandler, -1);
-        printf("Instruction body position: %d\n", instructionBodyFilePos);
-        printf("Instruction body size: %d\n", instructionBodySize);
     }
     
     // Update caller local frame.
     setRunningAppMember(caller, localFrame, localFrame);
+}
+
+void scheduleApp(allocPointer_t runningApp) {
     
-    printf("Local frame pointer: %d\n", localFrame);
+    allocPointer_t localFrame = getRunningAppMember(runningApp, localFrame);
+    if (localFrame == NULL_ALLOC_POINTER) {
+        return;
+    }
+    
+    allocPointer_t implementer = getLocalFrameMember(localFrame, implementer);
+    allocPointer_t fileHandle = getRunningAppMember(implementer, fileHandle);
+    int8_t fileType = getFileHandleType(fileHandle);
+    
+    if (fileType == BYTECODE_APP_FILE_TYPE) {
+        int32_t instructionBodyEndFilePos = getBytecodeLocalFrameMember(
+            localFrame,
+            instructionBodyEndFilePos
+        );
+        int32_t instructionFilePos = getBytecodeLocalFrameMember(
+            localFrame,
+            instructionFilePos
+        );
+        if (instructionFilePos >= instructionBodyEndFilePos) {
+            // TODO: Return to caller.
+            
+            return;
+        }
+        int8_t opcode = readFileAndAdvance(fileHandle, instructionFilePos, int8_t);
+        printf("Opcode: %d\n", opcode);
+        // TODO: Read instruction arguments.
+        
+        setBytecodeLocalFrameMember(localFrame, instructionFilePos, instructionFilePos);
+        // TODO: Perform instruction.
+        
+    } else {
+        // TODO: Perform work in system app.
+        
+    }
 }
 
 

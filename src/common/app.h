@@ -58,5 +58,6 @@ typedef struct localFrameHeader {
 
 void launchApp(allocPointer_t fileHandle);
 void callFunction(allocPointer_t caller, allocPointer_t implementer, int32_t functionIndex);
+void scheduleApp(allocPointer_t runningApp);
 
 

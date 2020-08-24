@@ -1,4 +1,16 @@
 
+#define CONSTANT_REF_TYPE 0x0
+#define GLOBAL_FRAME_REF_TYPE 0x1
+#define LOCAL_FRAME_REF_TYPE 0x2
+#define PREV_ARG_FRAME_REF_TYPE 0x3
+#define NEXT_ARG_FRAME_REF_TYPE 0x4
+#define APP_DATA_REF_TYPE 0x5
+#define DYNAMIC_ALLOC_REF_TYPE 0x6
+#define HEAP_MEM_REF_TYPE 0x7
+
+#define SIGNED_INT_8_TYPE 0x0
+#define SIGNED_INT_32_TYPE 0x1
+
 #pragma pack(push, 1)
 typedef struct bytecodeAppHeader {
     int32_t globalFrameSize;
@@ -34,6 +46,21 @@ typedef struct bytecodeLocalFrameHeader {
 } bytecodeLocalFrameHeader_t;
 #pragma pack(pop)
 
+#pragma pack(push, 1)
+typedef struct instructionArg {
+    uint8_t prefix;
+    union {
+        struct {
+            int32_t index;
+            int32_t maximumIndex;
+        };
+        int32_t constantValue;
+    };
+} instructionArg_t;
+#pragma pack(pop)
+
+instructionArg_t instructionArgArray[MAXIMUM_ARG_AMOUNT];
+
 #define getBytecodeAppMember(fileHandle, memberName) \
     !!!readStructMember fileHandle readFile bytecodeAppHeader_t memberName
 
@@ -54,5 +81,6 @@ typedef struct bytecodeLocalFrameHeader {
     !!!writeStructMember localFrame writeLocalFrame bytecodeLocalFrameHeader_t memberName value
 
 int32_t findBytecodeFunction(allocPointer_t fileHandle, int32_t functionId);
+instructionArg_t readInstructionArg(int32_t *instructionFilePos, allocPointer_t localFrame);
 
 

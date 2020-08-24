@@ -130,10 +130,17 @@ void scheduleApp(allocPointer_t runningApp) {
             
             return;
         }
-        int8_t opcode = readFileAndAdvance(fileHandle, instructionFilePos, int8_t);
+        uint8_t opcode = readFileAndAdvance(fileHandle, instructionFilePos, uint8_t);
         printf("Opcode: %d\n", opcode);
-        // TODO: Read instruction arguments.
-        
+        int8_t tempOffset = readArrayConstantValue(argumentAmountOffsetArray, opcode >> 4);
+        int8_t argumentAmount = readArrayConstantValue(
+            argumentAmountArray,
+            tempOffset + (opcode & 0x0F)
+        );
+        for (int8_t index = 0; index < argumentAmount; index++) {
+            printf("Reading argument with index %d\n", index);
+            instructionArgArray[index] = readInstructionArg(&instructionFilePos, localFrame);
+        }
         setBytecodeLocalFrameMember(localFrame, instructionFilePos, instructionFilePos);
         // TODO: Perform instruction.
         

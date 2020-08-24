@@ -62,6 +62,17 @@ function convertToBaseFileName(filePath) {
     }
 }
 
+function findFirstCommonFile(pathList) {
+    for (let index = 0; index < pathList.length; index++) {
+        const tempPath = pathList[index];
+        const directoryName = pathUtils.basename(pathUtils.dirname(tempPath));
+        if (directoryName === "common") {
+            return index;
+        }
+    }
+    return -1;
+}
+
 function prepreprocessFiles(filePathList) {
     const output = [];
     for (const sourceFilePath of filePathList) {
@@ -134,6 +145,9 @@ console.log(headerFilePathList.join("\n"));
 console.log("Implementation file paths:");
 console.log(implementationFilePathList.join("\n"));
 
+const firstCommonHeaderIndex = findFirstCommonFile(headerFilePathList);
+const firstCommonImplementationIndex = findFirstCommonFile(implementationFilePathList);
+
 if (fs.existsSync(intermediatePath)) {
     fs.rmdirSync(intermediatePath, {recursive: true});
 }
@@ -151,15 +165,22 @@ console.log("Creating argument amount array...");
 const instructionCategoryList = JSON.parse(fs.readFileSync(bytecodeInstructionsPath, "utf8"));
 const argumentAmountOffsetArray = [];
 const argumentAmountArray = [];
+let maximumArgAmount = 0;
 for (const instructionCategory of instructionCategoryList) {
     argumentAmountOffsetArray.push(argumentAmountArray.length);
     for (const instruction of instructionCategory.instructionList) {
-        argumentAmountArray.push(instruction.argumentList.length);
+        const tempArgAmount = instruction.argumentList.length;
+        argumentAmountArray.push(tempArgAmount);
+        if (tempArgAmount > maximumArgAmount) {
+            maximumArgAmount = tempArgAmount;
+        }
     }
 }
 argumentAmountsHeaderPath = pathUtils.join(intermediatePath, "argumentAmount.h");
 argumentAmountsImplementationPath = pathUtils.join(intermediatePath, "argumentAmount.c");
 fs.writeFileSync(argumentAmountsHeaderPath, `
+#define MAXIMUM_ARG_AMOUNT ${maximumArgAmount}
+
 declareArrayConstantWithSize(argumentAmountOffsetArray, ${argumentAmountOffsetArray.length});
 declareArrayConstantWithSize(argumentAmountArray, ${argumentAmountArray.length});
 `);
@@ -169,8 +190,8 @@ fs.writeFileSync(argumentAmountsImplementationPath, `
 declareArrayConstantWithValue(argumentAmountOffsetArray, {${argumentAmountOffsetArray.join(",")}});
 declareArrayConstantWithValue(argumentAmountArray, {${argumentAmountArray.join(",")}});
 `);
-headerFilePathList.push(argumentAmountsHeaderPath);
-implementationFilePathList.push(argumentAmountsImplementationPath);
+headerFilePathList.splice(firstCommonHeaderIndex, 0, argumentAmountsHeaderPath);
+implementationFilePathList.splice(firstCommonImplementationIndex, 0, argumentAmountsImplementationPath);
 
 console.log("Creating headers.h...");
 

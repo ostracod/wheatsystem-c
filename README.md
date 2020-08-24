@@ -97,6 +97,18 @@ The following definitions are shared between all platform implementations:
 * Bytecode instruction definitions
     * `arrayConstant_t argumentAmountOffsetArray`
     * `arrayConstant_t argumentAmountArray`
+* Instruction argument reference types
+    * `uint8_t CONSTANT_REF_TYPE`
+    * `uint8_t GLOBAL_FRAME_REF_TYPE`
+    * `uint8_t LOCAL_FRAME_REF_TYPE`
+    * `uint8_t PREV_ARG_FRAME_REF_TYPE`
+    * `uint8_t NEXT_ARG_FRAME_REF_TYPE`
+    * `uint8_t APP_DATA_REF_TYPE`
+    * `uint8_t DYNAMIC_ALLOC_REF_TYPE`
+    * `uint8_t HEAP_MEM_REF_TYPE`
+* Instruction argument data types
+    * `uint8_t SIGNED_INT_8_TYPE`
+    * `uint8_t SIGNED_INT_32_TYPE`
 
 ### Common Data Structures
 
@@ -141,6 +153,11 @@ The following definitions are shared between all platform implementations:
     * `int32_t instructionFilePos`
     * `int32_t errorHandler`
     * Bytecode local frame data
+* Instruction argument `instructionArg_t`
+    * `uint8_t prefix`
+    * `int32_t index`
+    * `int32_t maximumIndex`
+    * `int32_t constantValue`
 
 ### Common Functions
 
@@ -167,6 +184,10 @@ The following definitions are shared between all platform implementations:
     * `void setLocalFrameMember(allocPointer_t localFrame, <memberName>, <memberType> value)`
     * `<type> readLocalFrame(allocPointer_t localFrame, heapMemoryOffset_t, index, <type>)`
     * `void writeLocalFrame(allocPointer_t localFrame, heapMemoryOffset_t index, <type>, <type> value)`
+    * `void launchApp(allocPointer_t fileHandle)`
+    * `void callFunction(allocPointer_t caller, allocPointer_t implementer, int32_t functionIndex)`
+    * `void scheduleApp(allocPointer_t runningApp)`
+* Bytecode application functions
     * `<memberType> getBytecodeAppMember(allocPointer_t fileHandle, <memberName>)`
     * `<memberType> getBytecodeFunctionMember(allocPointer_t fileHandle, <memberName>)`
     * `<memberType> getBytecodeGlobalFrameMember(allocPointer_t runningApp, <memberName>)`
@@ -174,9 +195,7 @@ The following definitions are shared between all platform implementations:
     * `<memberType> getBytecodeLocalFrameMember(allocPointer_t localFrame, <memberName>)`
     * `void setBytecodeLocalFrameMember(allocPointer_t localFrame, <memberName>, <memberType> value)`
     * `int32_t findBytecodeFunction(allocPointer_t fileHandle, int32_t functionId)`
-    * `void launchApp(allocPointer_t fileHandle)`
-    * `void callFunction(allocPointer_t caller, allocPointer_t implementer, int32_t functionIndex)`
-    * `void scheduleApp(allocPointer_t runningApp)`
+    * `instructionArg_t readInstructionArg(int32_t *instructionFilePos, allocPointer_t localFrame)`
 
 ## Platform-Specific Source Definitions
 

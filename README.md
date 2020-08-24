@@ -155,9 +155,15 @@ The following definitions are shared between all platform implementations:
     * Bytecode local frame data
 * Instruction argument `instructionArg_t`
     * `uint8_t prefix`
-    * `int32_t index`
-    * `int32_t maximumIndex`
+    * `heapMemoryOffset_t address`
+    * `heapMemoryOffset_t maximumAddress`
     * `int32_t constantValue`
+    * `int32_t appDataIndex`
+* Instruction argument parsing context `argParseContext_t`
+    * `allocPointer_t localFrame`
+    * `allocPointer_t implementer`
+    * `allocPointer_t fileHandle`
+    * `int32_t instructionFilePos`
 
 ### Common Functions
 
@@ -192,10 +198,12 @@ The following definitions are shared between all platform implementations:
     * `<memberType> getBytecodeFunctionMember(allocPointer_t fileHandle, <memberName>)`
     * `<memberType> getBytecodeGlobalFrameMember(allocPointer_t runningApp, <memberName>)`
     * `void setBytecodeGlobalFrameMember(allocPointer_t runningApp, <memberName>, <memberType> value)`
+    * `heapMemoryOffset_t getBytecodeGlobalFrameDataAddress(allocPointer_t runningApp)`
     * `<memberType> getBytecodeLocalFrameMember(allocPointer_t localFrame, <memberName>)`
     * `void setBytecodeLocalFrameMember(allocPointer_t localFrame, <memberName>, <memberType> value)`
+    * `heapMemoryOffset_t getBytecodeLocalFrameDataAddress(allocPointer_t runningApp)`
     * `int32_t findBytecodeFunction(allocPointer_t fileHandle, int32_t functionId)`
-    * `instructionArg_t readInstructionArg(int32_t *instructionFilePos, allocPointer_t localFrame)`
+    * `instructionArg_t readInstructionArg(argParseContext_t *context)`
 
 ## Platform-Specific Source Definitions
 

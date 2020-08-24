@@ -50,13 +50,26 @@ typedef struct bytecodeLocalFrameHeader {
 typedef struct instructionArg {
     uint8_t prefix;
     union {
+        // For HEAP_MEM_REF_TYPE, the union contains address and maximumAddress.
+        // For CONSTANT_REF_TYPE, the union contains constantValue.
+        // For APP_DATA_REF_TYPE, the union contains appDataIndex.
         struct {
-            int32_t index;
-            int32_t maximumIndex;
+            heapMemoryOffset_t address;
+            heapMemoryOffset_t maximumAddress;
         };
         int32_t constantValue;
+        int32_t appDataIndex;
     };
 } instructionArg_t;
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+typedef struct argParseContext {
+    allocPointer_t localFrame;
+    allocPointer_t implementer;
+    allocPointer_t fileHandle;
+    int32_t instructionFilePos;
+} argParseContext_t;
 #pragma pack(pop)
 
 instructionArg_t instructionArgArray[MAXIMUM_ARG_AMOUNT];
@@ -74,13 +87,17 @@ instructionArg_t instructionArgArray[MAXIMUM_ARG_AMOUNT];
     !!!readStructMember runningApp readGlobalFrame bytecodeGlobalFrameHeader_t memberName
 #define setBytecodeGlobalFrameMember(runningApp, memberName, value) \
     !!!writeStructMember runningApp writeGlobalFrame bytecodeGlobalFrameHeader_t memberName value
+#define getBytecodeGlobalFrameDataAddress(runningApp) \
+    (getGlobalFrameDataAddress(runningApp) + sizeof(bytecodeGlobalFrameHeader_t))
 
 #define getBytecodeLocalFrameMember(localFrame, memberName) \
     !!!readStructMember localFrame readLocalFrame bytecodeLocalFrameHeader_t memberName
 #define setBytecodeLocalFrameMember(localFrame, memberName, value) \
     !!!writeStructMember localFrame writeLocalFrame bytecodeLocalFrameHeader_t memberName value
+#define getBytecodeLocalFrameDataAddress(localFrame) \
+    (getLocalFrameDataAddress(localFrame) + sizeof(bytecodeLocalFrameHeader_t))
 
 int32_t findBytecodeFunction(allocPointer_t fileHandle, int32_t functionId);
-instructionArg_t readInstructionArg(int32_t *instructionFilePos, allocPointer_t localFrame);
+instructionArg_t readInstructionArg(argParseContext_t *context);
 
 

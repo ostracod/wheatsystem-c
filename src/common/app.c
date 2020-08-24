@@ -107,30 +107,35 @@ void callFunction(allocPointer_t caller, allocPointer_t implementer, int32_t fun
 
 void scheduleApp(allocPointer_t runningApp) {
     
-    allocPointer_t localFrame = getRunningAppMember(runningApp, localFrame);
-    if (localFrame == NULL_ALLOC_POINTER) {
+    argParseContext_t context;
+    context.localFrame = getRunningAppMember(runningApp, localFrame);
+    if (context.localFrame == NULL_ALLOC_POINTER) {
         return;
     }
     
-    allocPointer_t implementer = getLocalFrameMember(localFrame, implementer);
-    allocPointer_t fileHandle = getRunningAppMember(implementer, fileHandle);
-    int8_t fileType = getFileHandleType(fileHandle);
+    context.implementer = getLocalFrameMember(context.localFrame, implementer);
+    context.fileHandle = getRunningAppMember(context.implementer, fileHandle);
+    int8_t fileType = getFileHandleType(context.fileHandle);
     
     if (fileType == BYTECODE_APP_FILE_TYPE) {
         int32_t instructionBodyEndFilePos = getBytecodeLocalFrameMember(
-            localFrame,
+            context.localFrame,
             instructionBodyEndFilePos
         );
-        int32_t instructionFilePos = getBytecodeLocalFrameMember(
-            localFrame,
+        context.instructionFilePos = getBytecodeLocalFrameMember(
+            context.localFrame,
             instructionFilePos
         );
-        if (instructionFilePos >= instructionBodyEndFilePos) {
+        if (context.instructionFilePos >= instructionBodyEndFilePos) {
             // TODO: Return to caller.
             
             return;
         }
-        uint8_t opcode = readFileAndAdvance(fileHandle, instructionFilePos, uint8_t);
+        uint8_t opcode = readFileAndAdvance(
+            context.fileHandle,
+            context.instructionFilePos,
+            uint8_t
+        );
         printf("Opcode: %d\n", opcode);
         int8_t tempOffset = readArrayConstantValue(argumentAmountOffsetArray, opcode >> 4);
         int8_t argumentAmount = readArrayConstantValue(
@@ -139,9 +144,13 @@ void scheduleApp(allocPointer_t runningApp) {
         );
         for (int8_t index = 0; index < argumentAmount; index++) {
             printf("Reading argument with index %d\n", index);
-            instructionArgArray[index] = readInstructionArg(&instructionFilePos, localFrame);
+            instructionArgArray[index] = readInstructionArg(&context);
         }
-        setBytecodeLocalFrameMember(localFrame, instructionFilePos, instructionFilePos);
+        setBytecodeLocalFrameMember(
+            context.localFrame,
+            instructionFilePos,
+            context.instructionFilePos
+        );
         // TODO: Perform instruction.
         
     } else {

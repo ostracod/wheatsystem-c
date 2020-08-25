@@ -88,33 +88,39 @@ instructionArg_t readInstructionArg() {
                 int32_t
             );
         }
-    } else if (referenceType == DYNAMIC_ALLOC_REF_TYPE) {
-        // TODO: Implement.
-        
     } else {
-        instructionArg_t tempArg = readInstructionArg();
-        int32_t tempOffset = getArgValueHelper(&tempArg);
+        instructionArg_t tempArg1 = readInstructionArg();
+        int32_t argValue1 = getArgValueHelper(&tempArg1);
         if (referenceType == APP_DATA_REF_TYPE) {
             output.prefix = argPrefix;
-            output.appDataIndex = tempOffset;
+            output.appDataIndex = argValue1;
         } else {
             heapMemoryOffset_t baseAddress;
-            if (referenceType == GLOBAL_FRAME_REF_TYPE) {
-                baseAddress = getBytecodeGlobalFrameDataAddress(currentImplementer);
-            } else if (referenceType == LOCAL_FRAME_REF_TYPE) {
-                baseAddress = getBytecodeLocalFrameDataAddress(currentLocalFrame);
+            heapMemoryOffset_t tempOffset;
+            if (referenceType == DYNAMIC_ALLOC_REF_TYPE) {
+                allocPointer_t tempPointer = (allocPointer_t)argValue1;
+                baseAddress = convertPointerToAddress(tempPointer);
+                instructionArg_t tempArg2 = readInstructionArg();
+                tempOffset = (heapMemoryOffset_t)getArgValueHelper(&tempArg2);
             } else {
-                allocPointer_t tempLocalFrame;
-                if (referenceType == PREV_ARG_FRAME_REF_TYPE) {
-                    tempLocalFrame = getLocalFrameMember(
-                        currentLocalFrame,
-                        previousLocalFrame
-                    );
+                tempOffset = (heapMemoryOffset_t)argValue1;
+                if (referenceType == GLOBAL_FRAME_REF_TYPE) {
+                    baseAddress = getBytecodeGlobalFrameDataAddress(currentImplementer);
+                } else if (referenceType == LOCAL_FRAME_REF_TYPE) {
+                    baseAddress = getBytecodeLocalFrameDataAddress(currentLocalFrame);
                 } else {
-                    tempLocalFrame = currentLocalFrame;
+                    allocPointer_t tempLocalFrame;
+                    if (referenceType == PREV_ARG_FRAME_REF_TYPE) {
+                        tempLocalFrame = getLocalFrameMember(
+                            currentLocalFrame,
+                            previousLocalFrame
+                        );
+                    } else {
+                        tempLocalFrame = currentLocalFrame;
+                    }
+                    allocPointer_t argFrame = getLocalFrameMember(tempLocalFrame, nextArgFrame);
+                    baseAddress = getAllocDataAddress(argFrame);
                 }
-                allocPointer_t argFrame = getLocalFrameMember(tempLocalFrame, nextArgFrame);
-                baseAddress = getAllocDataAddress(argFrame);
             }
             output.prefix = (HEAP_MEM_REF_TYPE << 4) | dataType;
             output.address = baseAddress + (heapMemoryOffset_t)tempOffset;

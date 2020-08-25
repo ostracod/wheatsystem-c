@@ -58,13 +58,12 @@ void callFunction(allocPointer_t caller, allocPointer_t implementer, int32_t fun
     allocPointer_t previousLocalFrame = getRunningAppMember(caller, localFrame);
     
     // Determine local frame size.
-    heapMemoryOffset_t localFrameSize;
+    heapMemoryOffset_t localFrameSize = sizeof(localFrameHeader_t);
     if (fileType == BYTECODE_APP_FILE_TYPE) {
-        localFrameSize = sizeof(bytecodeLocalFrameHeader_t) + (heapMemoryOffset_t)getBytecodeFunctionMember(fileHandle, functionIndex, localFrameSize);
+        localFrameSize += sizeof(bytecodeLocalFrameHeader_t) + (heapMemoryOffset_t)getBytecodeFunctionMember(fileHandle, functionIndex, localFrameSize);
     } else {
         // TODO: Determine size of local frame for system application.
         
-        localFrameSize = 0;
     }
     
     // Create allocation for the local frame.
@@ -159,6 +158,16 @@ void scheduleApp(allocPointer_t runningApp) {
                 // wrt.
                 int32_t tempValue = getArgValue(1);
                 setArgValue(0, tempValue);
+            } else if (opcodeOffset == 0x3) {
+                // newAlloc.
+                int8_t isGuarded = (int8_t)getArgValue(1);
+                heapMemoryOffset_t tempSize = (heapMemoryOffset_t)getArgValue(2);
+                allocPointer_t tempAlloc = createDynamicAlloc(
+                    tempSize,
+                    isGuarded,
+                    currentImplementerFileHandle
+                );
+                setArgValue(0, tempAlloc);
             }
         } else if (opcodeCategory == 0x6) {
             // Arithmetic instructions.

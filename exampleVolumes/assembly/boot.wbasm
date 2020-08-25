@@ -1,11 +1,10 @@
 
 FUNC init, init_ID
     VAR x, s32
-    wrt x, appData[4]:s32
-END
-
-APP_DATA
-    DATA 123, 456
+    VAR y, s32
+    newAlloc x, 0, 30
+    wrt x[10]:s8, 99
+    wrt y, x[10]:s8
 END
 
 

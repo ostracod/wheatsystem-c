@@ -1,9 +1,11 @@
 
 FUNC init, init_ID
-    VAR x, s8
-    VAR y, s8
-    add x, 10, 20
-    add y, x, 40
+    VAR x, s32
+    wrt x, appData[4]:s32
+END
+
+APP_DATA
+    DATA 123, 456
 END
 
 

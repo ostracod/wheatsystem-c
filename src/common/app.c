@@ -39,9 +39,9 @@ void launchApp(allocPointer_t fileHandle) {
     }
     if (fileType == BYTECODE_APP_FILE_TYPE) {
         int32_t functionTableLength = getBytecodeAppMember(fileHandle, functionTableLength);
-        int32_t appDataPos = getBytecodeAppMember(fileHandle, appDataPos);
+        int32_t appDataFilePos = getBytecodeAppMember(fileHandle, appDataFilePos);
         setBytecodeGlobalFrameMember(runningApp, functionTableLength, functionTableLength);
-        setBytecodeGlobalFrameMember(runningApp, appDataPos, appDataPos);
+        setBytecodeGlobalFrameMember(runningApp, appDataFilePos, appDataFilePos);
     }
     
     // Call init function if available.
@@ -107,33 +107,35 @@ void callFunction(allocPointer_t caller, allocPointer_t implementer, int32_t fun
 
 void scheduleApp(allocPointer_t runningApp) {
     
-    argParseContext_t context;
-    context.localFrame = getRunningAppMember(runningApp, localFrame);
-    if (context.localFrame == NULL_ALLOC_POINTER) {
+    currentLocalFrame = getRunningAppMember(runningApp, localFrame);
+    if (currentLocalFrame == NULL_ALLOC_POINTER) {
         return;
     }
     
-    context.implementer = getLocalFrameMember(context.localFrame, implementer);
-    context.fileHandle = getRunningAppMember(context.implementer, fileHandle);
-    int8_t fileType = getFileHandleType(context.fileHandle);
+    currentImplementer = getLocalFrameMember(
+        currentLocalFrame,
+        implementer
+    );
+    currentImplementerFileHandle = getRunningAppMember(currentImplementer, fileHandle);
+    int8_t fileType = getFileHandleType(currentImplementerFileHandle);
     
     if (fileType == BYTECODE_APP_FILE_TYPE) {
         int32_t instructionBodyEndFilePos = getBytecodeLocalFrameMember(
-            context.localFrame,
+            currentLocalFrame,
             instructionBodyEndFilePos
         );
-        context.instructionFilePos = getBytecodeLocalFrameMember(
-            context.localFrame,
+        currentInstructionFilePos = getBytecodeLocalFrameMember(
+            currentLocalFrame,
             instructionFilePos
         );
-        if (context.instructionFilePos >= instructionBodyEndFilePos) {
+        if (currentInstructionFilePos >= instructionBodyEndFilePos) {
             // TODO: Return to caller.
             
             return;
         }
         uint8_t opcode = readFileAndAdvance(
-            context.fileHandle,
-            context.instructionFilePos,
+            currentImplementerFileHandle,
+            currentInstructionFilePos,
             uint8_t
         );
         uint8_t opcodeCategory = opcode >> 4;
@@ -144,14 +146,21 @@ void scheduleApp(allocPointer_t runningApp) {
             tempOffset + opcodeOffset
         );
         for (int8_t index = 0; index < argumentAmount; index++) {
-            instructionArgArray[index] = readInstructionArg(&context);
+            instructionArgArray[index] = readInstructionArg();
         }
         setBytecodeLocalFrameMember(
-            context.localFrame,
+            currentLocalFrame,
             instructionFilePos,
-            context.instructionFilePos
+            currentInstructionFilePos
         );
-        if (opcodeCategory == 0x6) {
+        if (opcodeCategory == 0x0) {
+            // Memory instructions.
+            if (opcodeOffset == 0x0) {
+                // wrt.
+                int32_t tempValue = getArgValue(1);
+                setArgValue(0, tempValue);
+            }
+        } else if (opcodeCategory == 0x6) {
             // Arithmetic instructions.
             if (opcodeOffset == 0x0) {
                 // add.

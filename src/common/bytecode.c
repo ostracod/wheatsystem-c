@@ -5,6 +5,10 @@
 #define getArgPrefixDataType(argPrefix) (argPrefix & 0x0F)
 
 instructionArg_t instructionArgArray[MAXIMUM_ARG_AMOUNT];
+allocPointer_t currentLocalFrame;
+allocPointer_t currentImplementer;
+allocPointer_t currentImplementerFileHandle;
+int32_t currentInstructionFilePos;
 
 int32_t findBytecodeFunction(allocPointer_t fileHandle, int32_t functionId) {
     int32_t functionTableLength = getBytecodeAppMember(fileHandle, functionTableLength);
@@ -24,15 +28,21 @@ int32_t getArgValueHelper(instructionArg_t *arg) {
     if (referenceType == CONSTANT_REF_TYPE) {
         return arg->constantValue;
     } else if (referenceType == APP_DATA_REF_TYPE) {
-        // TODO: Read app data.
-        
+        int32_t tempFilePos = getBytecodeGlobalFrameMember(
+            currentImplementer,
+            appDataFilePos
+        ) + arg->appDataIndex;
+        if (dataType == SIGNED_INT_8_TYPE) {
+            return readFile(currentImplementerFileHandle, tempFilePos, int8_t);
+        } else {
+            return readFile(currentImplementerFileHandle, tempFilePos, int32_t);
+        }
     } else {
         if (dataType == SIGNED_INT_8_TYPE) {
             return readHeapMemory(arg->address, int8_t);
         } else {
             return readHeapMemory(arg->address, int32_t);
         }
-        
     }
 }
 
@@ -44,20 +54,20 @@ void setArgValue(int8_t index, int32_t value) {
     if (referenceType == HEAP_MEM_REF_TYPE) {
         if (dataType == SIGNED_INT_8_TYPE) {
             writeHeapMemory(arg->address, int8_t, (int8_t)value);
-            printf("WROTE VALUE %d AT ADDRESS %d\n", readHeapMemory(arg->address, int8_t), arg->address);
         } else {
             writeHeapMemory(arg->address, int32_t, value);
         }
+        printf("WROTE VALUE %d AT ADDRESS %d\n", value, arg->address);
     } else {
         // TODO: Throw an error.
         
     }
 }
 
-instructionArg_t readInstructionArg(argParseContext_t *context) {
+instructionArg_t readInstructionArg() {
     uint8_t argPrefix = readFileAndAdvance(
-        context->fileHandle,
-        context->instructionFilePos,
+        currentImplementerFileHandle,
+        currentInstructionFilePos,
         uint8_t
     );
     uint8_t referenceType = getArgPrefixReferenceType(argPrefix);
@@ -67,14 +77,14 @@ instructionArg_t readInstructionArg(argParseContext_t *context) {
         output.prefix = argPrefix;
         if (dataType == SIGNED_INT_8_TYPE) {
             output.constantValue = readFileAndAdvance(
-                context->fileHandle,
-                context->instructionFilePos,
+                currentImplementerFileHandle,
+                currentInstructionFilePos,
                 int8_t
             );
         } else {
             output.constantValue = readFileAndAdvance(
-                context->fileHandle,
-                context->instructionFilePos,
+                currentImplementerFileHandle,
+                currentInstructionFilePos,
                 int32_t
             );
         }
@@ -82,7 +92,7 @@ instructionArg_t readInstructionArg(argParseContext_t *context) {
         // TODO: Implement.
         
     } else {
-        instructionArg_t tempArg = readInstructionArg(context);
+        instructionArg_t tempArg = readInstructionArg();
         int32_t tempOffset = getArgValueHelper(&tempArg);
         if (referenceType == APP_DATA_REF_TYPE) {
             output.prefix = argPrefix;
@@ -90,18 +100,18 @@ instructionArg_t readInstructionArg(argParseContext_t *context) {
         } else {
             heapMemoryOffset_t baseAddress;
             if (referenceType == GLOBAL_FRAME_REF_TYPE) {
-                baseAddress = getBytecodeGlobalFrameDataAddress(context->implementer);
+                baseAddress = getBytecodeGlobalFrameDataAddress(currentImplementer);
             } else if (referenceType == LOCAL_FRAME_REF_TYPE) {
-                baseAddress = getBytecodeLocalFrameDataAddress(context->localFrame);
+                baseAddress = getBytecodeLocalFrameDataAddress(currentLocalFrame);
             } else {
                 allocPointer_t tempLocalFrame;
                 if (referenceType == PREV_ARG_FRAME_REF_TYPE) {
                     tempLocalFrame = getLocalFrameMember(
-                        context->localFrame,
+                        currentLocalFrame,
                         previousLocalFrame
                     );
                 } else {
-                    tempLocalFrame = context->localFrame;
+                    tempLocalFrame = currentLocalFrame;
                 }
                 allocPointer_t argFrame = getLocalFrameMember(tempLocalFrame, nextArgFrame);
                 baseAddress = getAllocDataAddress(argFrame);

@@ -15,7 +15,7 @@
 typedef struct bytecodeAppHeader {
     int32_t globalFrameSize;
     int32_t functionTableLength;
-    int32_t appDataPos;
+    int32_t appDataFilePos;
 } bytecodeAppHeader_t;
 #pragma pack(pop)
 
@@ -33,7 +33,7 @@ typedef struct bytecodeFunction {
 #pragma pack(push, 1)
 typedef struct bytecodeGlobalFrameHeader {
     int32_t functionTableLength;
-    int32_t appDataPos;
+    int32_t appDataFilePos;
 } bytecodeGlobalFrameHeader_t;
 #pragma pack(pop)
 
@@ -63,16 +63,11 @@ typedef struct instructionArg {
 } instructionArg_t;
 #pragma pack(pop)
 
-#pragma pack(push, 1)
-typedef struct argParseContext {
-    allocPointer_t localFrame;
-    allocPointer_t implementer;
-    allocPointer_t fileHandle;
-    int32_t instructionFilePos;
-} argParseContext_t;
-#pragma pack(pop)
-
 instructionArg_t instructionArgArray[MAXIMUM_ARG_AMOUNT];
+allocPointer_t currentLocalFrame;
+allocPointer_t currentImplementer;
+allocPointer_t currentImplementerFileHandle;
+int32_t currentInstructionFilePos;
 
 #define getBytecodeAppMember(fileHandle, memberName) \
     !!!readStructMember fileHandle readFile bytecodeAppHeader_t memberName
@@ -100,7 +95,7 @@ instructionArg_t instructionArgArray[MAXIMUM_ARG_AMOUNT];
 #define getArgValue(index) getArgValueHelper(instructionArgArray + index);
 
 int32_t findBytecodeFunction(allocPointer_t fileHandle, int32_t functionId);
-instructionArg_t readInstructionArg(argParseContext_t *context);
+instructionArg_t readInstructionArg();
 int32_t getArgValueHelper(instructionArg_t *arg);
 void setArgValue(int8_t index, int32_t value);
 

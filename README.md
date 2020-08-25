@@ -133,7 +133,7 @@ The following definitions are shared between all platform implementations:
 * Bytecode app (stored in file)
     * `int32_t globalFrameSize`
     * `int32_t functionTableLength`
-    * `int32_t appDataPos`
+    * `int32_t appDataFilePos`
     * Function table
     * Instruction array
     * Application data
@@ -146,7 +146,7 @@ The following definitions are shared between all platform implementations:
     * `int32_t instructionBodySize`
 * Bytecode global frame (stored in global frame of running app)
     * `int32_t functionTableLength`
-    * `int32_t appDataPos`
+    * `int32_t appDataFilePos`
     * Bytecode global frame data
 * Bytecode local frame (stored in local frame)
     * `int32_t instructionBodyStartFilePos`
@@ -160,11 +160,15 @@ The following definitions are shared between all platform implementations:
     * `heapMemoryOffset_t maximumAddress`
     * `int32_t constantValue`
     * `int32_t appDataIndex`
-* Instruction argument parsing context `argParseContext_t`
-    * `allocPointer_t localFrame`
-    * `allocPointer_t implementer`
-    * `allocPointer_t fileHandle`
-    * `int32_t instructionFilePos`
+
+### Common Global Variables
+
+* Bytecode interpreter variables
+    * `instructionArg_t instructionArgArray[MAXIMUM_ARG_AMOUNT]`
+    * `allocPointer_t currentLocalFrame`
+    * `allocPointer_t currentImplementer`
+    * `allocPointer_t currentImplementerFileHandle`
+    * `int32_t currentInstructionFilePos`
 
 ### Common Functions
 
@@ -204,7 +208,7 @@ The following definitions are shared between all platform implementations:
     * `void setBytecodeLocalFrameMember(allocPointer_t localFrame, <memberName>, <memberType> value)`
     * `heapMemoryOffset_t getBytecodeLocalFrameDataAddress(allocPointer_t runningApp)`
     * `int32_t findBytecodeFunction(allocPointer_t fileHandle, int32_t functionId)`
-    * `instructionArg_t readInstructionArg(argParseContext_t *context)`
+    * `instructionArg_t readInstructionArg()`
     * `int32_t getArgValue(int8_t index)`
     * `void setArgValue(int8_t index, int32_t value)`
 

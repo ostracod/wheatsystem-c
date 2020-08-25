@@ -97,6 +97,7 @@ The following definitions are shared between all platform implementations:
 * Bytecode instruction definitions
     * `arrayConstant_t argumentAmountOffsetArray`
     * `arrayConstant_t argumentAmountArray`
+    * `int8_t MAXIMUM_ARG_AMOUNT`
 * Instruction argument reference types
     * `uint8_t CONSTANT_REF_TYPE`
     * `uint8_t GLOBAL_FRAME_REF_TYPE`
@@ -204,6 +205,8 @@ The following definitions are shared between all platform implementations:
     * `heapMemoryOffset_t getBytecodeLocalFrameDataAddress(allocPointer_t runningApp)`
     * `int32_t findBytecodeFunction(allocPointer_t fileHandle, int32_t functionId)`
     * `instructionArg_t readInstructionArg(argParseContext_t *context)`
+    * `int32_t getArgValue(int8_t index)`
+    * `void setArgValue(int8_t index, int32_t value)`
 
 ## Platform-Specific Source Definitions
 

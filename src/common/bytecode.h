@@ -97,7 +97,11 @@ instructionArg_t instructionArgArray[MAXIMUM_ARG_AMOUNT];
 #define getBytecodeLocalFrameDataAddress(localFrame) \
     (getLocalFrameDataAddress(localFrame) + sizeof(bytecodeLocalFrameHeader_t))
 
+#define getArgValue(index) getArgValueHelper(instructionArgArray + index);
+
 int32_t findBytecodeFunction(allocPointer_t fileHandle, int32_t functionId);
 instructionArg_t readInstructionArg(argParseContext_t *context);
+int32_t getArgValueHelper(instructionArg_t *arg);
+void setArgValue(int8_t index, int32_t value);
 
 

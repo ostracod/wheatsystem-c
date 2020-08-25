@@ -136,14 +136,14 @@ void scheduleApp(allocPointer_t runningApp) {
             context.instructionFilePos,
             uint8_t
         );
-        printf("Opcode: %d\n", opcode);
-        int8_t tempOffset = readArrayConstantValue(argumentAmountOffsetArray, opcode >> 4);
+        uint8_t opcodeCategory = opcode >> 4;
+        uint8_t opcodeOffset = opcode & 0x0F;
+        int8_t tempOffset = readArrayConstantValue(argumentAmountOffsetArray, opcodeCategory);
         int8_t argumentAmount = readArrayConstantValue(
             argumentAmountArray,
-            tempOffset + (opcode & 0x0F)
+            tempOffset + opcodeOffset
         );
         for (int8_t index = 0; index < argumentAmount; index++) {
-            printf("Reading argument with index %d\n", index);
             instructionArgArray[index] = readInstructionArg(&context);
         }
         setBytecodeLocalFrameMember(
@@ -151,8 +151,15 @@ void scheduleApp(allocPointer_t runningApp) {
             instructionFilePos,
             context.instructionFilePos
         );
-        // TODO: Perform instruction.
-        
+        if (opcodeCategory == 0x6) {
+            // Arithmetic instructions.
+            if (opcodeOffset == 0x0) {
+                // add.
+                int32_t operand1 = getArgValue(1);
+                int32_t operand2 = getArgValue(2);
+                setArgValue(0, operand1 + operand2);
+            }
+        }
     } else {
         // TODO: Perform work in system app.
         

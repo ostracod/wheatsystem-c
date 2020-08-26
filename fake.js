@@ -84,9 +84,25 @@ function prepreprocessFiles(filePathList) {
     return output;
 }
 
-function invokeGcc(argumentList) {
+function substituteConstantInvocations(text) {
+    for (const name in targetPlatformConstants) {
+        const tempPattern = `$(${name})`;
+        const tempValue = targetPlatformDefinition.constants[name];
+        while (true) {
+            const index = text.indexOf(tempPattern);
+            if (index < 0) {
+                break;
+            }
+            text = text.substring(0, index) + tempValue
+                + text.substring(index + tempPattern.length, text.length);
+        }
+    }
+    return text;
+}
+
+function invokeCompiler(argumentList) {
     try {
-        childProcess.execFileSync("gcc", argumentList);
+        childProcess.execFileSync(targetPlatformDefinition.compiler.name, argumentList);
     } catch(error) {
         console.log("Compilation failed. Exiting.");
         process.exit(1);
@@ -119,10 +135,14 @@ if (targetPlatformDefinition === null) {
     process.exit(1);
 }
 
-const executablePath = pathUtils.join(buildPath, targetPlatformName + "WheatSystem");
+const executablePath = pathUtils.join(buildPath, targetPlatformDefinition.executableName);
 if (fs.existsSync(executablePath)) {
     fs.unlinkSync(executablePath);
 }
+
+const targetPlatformConstants = targetPlatformDefinition.constants;
+targetPlatformConstants["BUILD_DIR"] = buildPath;
+targetPlatformConstants["EXECUTABLE_PATH"] = executablePath;
 
 const baseFilePathList = [pathUtils.join(platformsPath, targetPlatformDefinition.name)];
 for (const baseFilePath of targetPlatformDefinition.baseFilePaths) {
@@ -205,13 +225,13 @@ let objectFilePathList = [];
 for (const implementationfilePath of implementationFilePathList) {
     const tempBaseFileName = convertToBaseFileName(implementationfilePath);
     const objectFilePath = pathUtils.join(intermediatePath, tempBaseFileName + ".o");
-    invokeGcc([
-        "-Wall",
-        "-c",
-        implementationfilePath,
-        "-o",
-        objectFilePath
-    ]);
+    const compilationArgumentList = ["-Wall"];
+    for (let flag of targetPlatformDefinition.compiler.flags) {
+        flag = substituteConstantInvocations(flag);
+        compilationArgumentList.push(flag);
+    }
+    compilationArgumentList.push("-c", implementationfilePath, "-o", objectFilePath);
+    invokeCompiler(compilationArgumentList);
     objectFilePathList.push(objectFilePath);
 }
 
@@ -225,9 +245,14 @@ if (!fs.existsSync(buildPath)) {
 }
 const linkArgumentList = objectFilePathList.slice();
 linkArgumentList.push("-o", executablePath);
-invokeGcc(linkArgumentList);
+invokeCompiler(linkArgumentList);
 
 console.log("Finished. Executable path:");
 console.log(executablePath);
+
+for (let command of targetPlatformDefinition.commandsAfterBuild) {
+    command = substituteConstantInvocations(command);
+    childProcess.execSync(command, {"stdio": "inherit"});
+}
 
 

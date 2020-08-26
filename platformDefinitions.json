@@ -2,10 +2,39 @@
     {
         "name": "unix",
         "description": "Executable for Unix-like systems",
+        "constants": {},
         "baseFilePaths": [
             "memory/nativeHeapMemory",
             "memory/linkedListAllocation",
             "fileSystem/unixFileSystem"
+        ],
+        "compiler": {
+            "name": "gcc",
+            "flags": []
+        },
+        "executableName": "unixWheatSystem",
+        "commandsAfterBuild": []
+    },
+    {
+        "name": "avr",
+        "description": "Firmware for AVR microcontrollers",
+        "constants": {
+            "DEVICE": "atmega328p"
+        },
+        "baseFilePaths": [
+            "memory/nativeHeapMemory",
+            "memory/linkedListAllocation",
+            "fileSystem/externalEepromFileSystem"
+        ],
+        "compiler": {
+            "name": "avr-gcc",
+            "flags": ["-Wno-char-subscripts", "-Os", "-DF_CPU=8000000", "-mmcu=$(DEVICE)", "-fstack-usage"]
+        },
+        "executableName": "avrWheatSystem.elf",
+        "commandsAfterBuild": [
+            "rm -f ./build/avrWheatSystem.hex",
+            "avr-objcopy -j .text -j .data -O ihex $(EXECUTABLE_PATH) $(BUILD_DIR)/avrWheatSystem.hex",
+            "avr-size --format=avr --mcu=$(DEVICE) $(EXECUTABLE_PATH)"
         ]
     }
 ]

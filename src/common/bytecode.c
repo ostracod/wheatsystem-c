@@ -57,7 +57,6 @@ void setArgValue(int8_t index, int32_t value) {
         } else {
             writeHeapMemory(arg->address, int32_t, value);
         }
-        printf("WROTE VALUE %d AT ADDRESS %d\n", value, arg->address);
     } else {
         // TODO: Throw an error.
         

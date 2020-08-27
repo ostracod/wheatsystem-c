@@ -7,10 +7,6 @@
 
 #define NULL_ALLOC_POINTER 0
 
-#define DYNAMIC_ALLOC_IS_GUARDED_OFFSET 0
-#define DYNAMIC_ALLOC_CREATOR_OFFSET (DYNAMIC_ALLOC_IS_GUARDED_OFFSET + 1)
-#define DYNAMIC_ALLOC_DATA_OFFSET (DYNAMIC_ALLOC_CREATOR_OFFSET + sizeof(allocPointer_t))
-
 #pragma pack(push, 1)
 typedef struct dynamicAllocHeader {
     int8_t isGuarded;

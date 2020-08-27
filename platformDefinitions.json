@@ -26,7 +26,7 @@
             "memory/linkedListAllocation",
             "communication/avrSpi",
             "fileSystem/externalEepromStorageSpace",
-            "fileSystem/storageSpaceFileSystem"
+            "fileSystem/linkedListFileSystem"
         ],
         "compiler": {
             "name": "avr-gcc",

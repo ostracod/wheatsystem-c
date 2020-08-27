@@ -4,12 +4,13 @@ const pathUtils = require("path");
 const childProcess = require("child_process");
 
 const assemblerDirectoryPath = pathUtils.join(__dirname, "../../../wheatbytecode-asm");
-const volumePath = pathUtils.join(__dirname, "../unixVolume");
+const unixVolumePath = pathUtils.join(__dirname, "../unixVolume");
+const bytecodeAppNameList = ["boot"];
 
 const fileTypeSet = {
     generic: 0,
-    bytecodeApplication: 1,
-    systemApplication: 2
+    bytecodeApp: 1,
+    systemApp: 2
 };
 
 function assembleBytecodeFile(sourcePath) {
@@ -19,12 +20,14 @@ function assembleBytecodeFile(sourcePath) {
     ]);
 }
 
-// The file header consists of a single byte:
-// Header = 0x20 | (hasAdminPerm << 3) | (isGuarded << 2) | fileType
-function addFileHeader(sourcePath, destinationPath, fileType) {
+function createFileAttributes(fileType, hasAdminPerm, isGuarded) {
+    return (hasAdminPerm << 3) | (isGuarded << 2) | fileType;
+}
+
+function addUnixFileHeader(sourcePath, destinationPath, fileAttributes) {
     let tempContent = fs.readFileSync(sourcePath);
     tempContent = Buffer.concat([
-        Buffer.from([0x20 | fileType]),
+        Buffer.from([fileAttributes]),
         tempContent
     ]);
     fs.writeFileSync(destinationPath, tempContent);
@@ -32,17 +35,23 @@ function addFileHeader(sourcePath, destinationPath, fileType) {
 
 console.log("Assembling files for example volumes...");
 
-assembleBytecodeFile(pathUtils.join(__dirname, "boot.wbasm"));
-
-if (!fs.existsSync(volumePath)) {
-    fs.mkdirSync(volumePath);
+for (const name of bytecodeAppNameList) {
+    assembleBytecodeFile(pathUtils.join(__dirname, name + ".wbasm"));
 }
 
-addFileHeader(
-    pathUtils.join(__dirname, "boot"),
-    pathUtils.join(volumePath, "boot"),
-    fileTypeSet.bytecodeApplication
-);
+if (!fs.existsSync(unixVolumePath)) {
+    fs.mkdirSync(unixVolumePath);
+}
+
+const bytecodeAppAttributes = createFileAttributes(fileTypeSet.bytecodeApp, false, false);
+for (const name of bytecodeAppNameList) {
+    const bytecodeAppPath = pathUtils.join(__dirname, name);
+    addUnixFileHeader(
+        bytecodeAppPath,
+        pathUtils.join(unixVolumePath, name),
+        bytecodeAppAttributes
+    );
+}
 
 console.log("Finished.");
 

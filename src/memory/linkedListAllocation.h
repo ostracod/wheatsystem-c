@@ -1,9 +1,4 @@
 
-#define ALLOC_TYPE_OFFSET 0
-#define ALLOC_SIZE_OFFSET (ALLOC_TYPE_OFFSET + 1)
-#define ALLOC_NEXT_OFFSET (ALLOC_SIZE_OFFSET + sizeof(heapMemoryOffset_t))
-#define ALLOC_DATA_OFFSET (ALLOC_NEXT_OFFSET + sizeof(allocPointer_t))
-
 #pragma pack(push, 1)
 typedef struct allocHeader {
     int8_t type;

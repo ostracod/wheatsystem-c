@@ -47,8 +47,8 @@ allocPointer_t openFile(heapMemoryOffset_t nameAddress, heapMemoryOffset_t nameS
     }
     
     // Read file content.
-    int8_t fileMetadata;
-    fread(&fileMetadata, 1, 1, nativeFileHandle);
+    int8_t fileAttributes;
+    fread(&fileAttributes, 1, 1, nativeFileHandle);
     fseek(nativeFileHandle, 0, SEEK_END);
     int32_t contentSize = (int32_t)(ftell(nativeFileHandle) - UNIX_FILE_HEADER_SIZE);
     int8_t *content = malloc(contentSize);
@@ -64,9 +64,9 @@ allocPointer_t openFile(heapMemoryOffset_t nameAddress, heapMemoryOffset_t nameS
     );
     setFileHandleMember(output, name, nativeName);
     setFileHandleMember(output, unixPath, unixPath);
-    setFileHandleMember(output, hasAdminPerm, (fileMetadata & 0x08) > 0);
-    setFileHandleMember(output, isGuarded, (fileMetadata & 0x04) > 0);
-    setFileHandleMember(output, type, fileMetadata & 0x03);
+    setFileHandleMember(output, hasAdminPerm, (fileAttributes & 0x08) > 0);
+    setFileHandleMember(output, isGuarded, (fileAttributes & 0x04) > 0);
+    setFileHandleMember(output, type, fileAttributes & 0x03);
     setFileHandleMember(output, contentSize, contentSize);
     setFileHandleMember(output, contentIsDirty, false);
     setFileHandleMember(output, content, content);
@@ -87,15 +87,15 @@ void closeFile(allocPointer_t fileHandle) {
     int8_t *content = getFileHandleMember(fileHandle, content);
     if (getFileHandleMember(fileHandle, contentIsDirty)) {
         FILE *nativeFileHandle = fopen((char *)unixPath, "w");
-        int8_t fileMetadata = 0x20 | getFileHandleMember(fileHandle, type);
+        int8_t fileAttributes = getFileHandleMember(fileHandle, type);
         if (getFileHandleMember(fileHandle, hasAdminPerm)) {
-            fileMetadata |= 0x08;
+            fileAttributes |= 0x08;
         }
         if (getFileHandleMember(fileHandle, isGuarded)) {
-            fileMetadata |= 0x04;
+            fileAttributes |= 0x04;
         }
         int32_t contentSize = getFileHandleMember(fileHandle, contentSize);
-        fwrite(&fileMetadata, 1, 1, nativeFileHandle);
+        fwrite(&fileAttributes, 1, 1, nativeFileHandle);
         fwrite(content, 1, contentSize, nativeFileHandle);
         fclose(nativeFileHandle);
     }

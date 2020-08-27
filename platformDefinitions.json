@@ -24,7 +24,9 @@
         "baseFilePaths": [
             "memory/nativeHeapMemory",
             "memory/linkedListAllocation",
-            "fileSystem/externalEepromFileSystem"
+            "communication/avrSpi",
+            "fileSystem/externalEepromStorageSpace",
+            "fileSystem/storageSpaceFileSystem"
         ],
         "compiler": {
             "name": "avr-gcc",

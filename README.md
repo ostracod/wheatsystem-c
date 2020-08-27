@@ -5,6 +5,12 @@ This code base is still a work-in-progress.
 
 ## Usage
 
+Required system-wide dependencies:
+
+* Node.js 12 or later
+* gcc (to compile for Unix-like systems)
+* avr-gcc (to compile for AVR microcontrollers)
+
 Clone https://github.com/ostracod/wheatbytecode-asm in the parent directory of `wheatsystem-c`, then follow the directions to set up the bytecode assembler.
 
 To assemble the example volume in this repository:
@@ -12,8 +18,6 @@ To assemble the example volume in this repository:
 ```
 node ./exampleVolumes/assembly/fake.js
 ```
-
-Building the WheatSystem executable for Unix-like systems requires gcc and Node.js 12 or later.
 
 To build and run the WheatSystem executable for Unix-like systems:
 

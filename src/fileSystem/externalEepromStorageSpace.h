@@ -1,8 +1,8 @@
 
 #define readStorageSpace(address, type) \
-    !!!readValueByRange address readStorageSpaceRange type
+    !!!readValueByAddress address readStorageSpaceRange type
 #define writeStorageSpace(address, type, value) \
-    !!!writeValueByRange address writeStorageSpaceRange type value
+    !!!writeValueByAddress address writeStorageSpaceRange type value
 
 #define flushStorageSpace()
 

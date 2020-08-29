@@ -1,30 +1,38 @@
 
-DEFINE readValueByRange address readFunction type
-({type result; readFunction(&result, address, sizeof(type)); result;})
+DEFINE readValueByAddress address readRange type
+({type result; readRange(&result, address, sizeof(type)); result;})
 END
 
-DEFINE writeValueByRange address writeFunction type value
-({type tempValue = value; writeFunction(address, &tempValue, sizeof(type));})
+DEFINE writeValueByAddress address writeRange type value
+({type tempValue = value; writeRange(address, &tempValue, sizeof(type));})
 END
 
-DEFINE readStructByAddress address readFunction structDefinition memberName
-readFunction(address + getStructMemberOffset(structDefinition, memberName), getStructMemberType(structDefinition, memberName))
+DEFINE readStructByAddress address readValue structDefinition memberName
+readValue(address + getStructMemberOffset(structDefinition, memberName), getStructMemberType(structDefinition, memberName))
 END
 
-DEFINE writeStructByAddress address writeFunction structDefinition memberName value
-writeFunction(address + getStructMemberOffset(structDefinition, memberName), getStructMemberType(structDefinition, memberName), value)
+DEFINE writeStructByAddress address writeValue structDefinition memberName value
+writeValue(address + getStructMemberOffset(structDefinition, memberName), getStructMemberType(structDefinition, memberName), value)
 END
 
-DEFINE readStructByPointer pointer readFunction structDefinition memberName
-readFunction(pointer, getStructMemberOffset(structDefinition, memberName), getStructMemberType(structDefinition, memberName))
+DEFINE readValueByPointer pointer readRange index type
+({type result; readRange(&result, pointer, index, sizeof(type)); result;})
 END
 
-DEFINE writeStructByPointer pointer writeFunction structDefinition memberName value
-writeFunction(pointer, getStructMemberOffset(structDefinition, memberName), getStructMemberType(structDefinition, memberName), value)
+DEFINE writeValueByPointer pointer writeRange index type value
+({type tempValue = value; writeRange(pointer, index, &tempValue, sizeof(type));})
 END
 
-DEFINE readTableStructByPointer pointer readFunction tableIndex structDefinition memberName
-readFunction(pointer, tableIndex * sizeof(structDefinition) + getStructMemberOffset(structDefinition, memberName), getStructMemberType(structDefinition, memberName))
+DEFINE readStructByPointer pointer readValue structDefinition memberName
+readValue(pointer, getStructMemberOffset(structDefinition, memberName), getStructMemberType(structDefinition, memberName))
+END
+
+DEFINE writeStructByPointer pointer writeValue structDefinition memberName value
+writeValue(pointer, getStructMemberOffset(structDefinition, memberName), getStructMemberType(structDefinition, memberName), value)
+END
+
+DEFINE readTableStructByPointer pointer readValue tableIndex structDefinition memberName
+readValue(pointer, tableIndex * sizeof(structDefinition) + getStructMemberOffset(structDefinition, memberName), getStructMemberType(structDefinition, memberName))
 END
 
 

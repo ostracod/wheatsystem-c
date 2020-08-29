@@ -275,19 +275,23 @@ The following definitions must be provided by each platform implementation:
 
 The following definitions are recognized by the prepreprocessor:
 
-* `!!!readValueByRange address readFunction type`
-    * `<type> readFunction(int8_t *destination, int32_t address, int32_t amount)`
-* `!!!writeValueByRange address writeFunction type value`
-    * `void writeFunction(int32_t address, int8_t *source, int32_t amount)`
-* `!!!readStructByAddress address readFunction structType memberName`
-    * `<type> readFunction(int32_t address, <type>)`
-* `!!!writeStructByAddress address writeFunction structType memberName value`
-    * `void writeFunction(int32_t address, <type>, <type> value)`
-* `!!!readStructByPointer pointer readFunction structType memberName`
-    * `<type> readFunction(allocPointer_t pointer, int32_t index, <type>)`
-* `!!!writeStructByPointer pointer writeFunction structType memberName value`
-    * `void writeFunction(allocPointer_t pointer, int32_t index, <type>, <type> value)`
-* `!!!readTableStructByPointer pointer readFunction tableIndex structDefinition memberName`
-    * `<type> readFunction(allocPointer_t pointer, int32_t index, <type>)`
+* `!!!readValueByAddress address readRange type`
+    * `<type> readRange(int8_t *destination, int32_t address, int32_t amount)`
+* `!!!writeValueByAddress address writeRange type value`
+    * `void writeRange(int32_t address, int8_t *source, int32_t amount)`
+* `!!!readStructByAddress address readValue structType memberName`
+    * `<type> readValue(int32_t address, <type>)`
+* `!!!writeStructByAddress address writeValue structType memberName value`
+    * `void writeValue(int32_t address, <type>, <type> value)`
+* `!!!readValueByPointer pointer readRange index type`
+    * `<type> readRange(int8_t *destination, allocPointer_t pointer, int32_t index, int32_t amount)`
+* `!!!writeValueByPointer pointer writeRange index type value`
+    * `void writeRange(allocPointer_t pointer, int32_t index, int8_t *source, int32_t amount)`
+* `!!!readStructByPointer pointer readValue structType memberName`
+    * `<type> readValue(allocPointer_t pointer, int32_t index, <type>)`
+* `!!!writeStructByPointer pointer writeValue structType memberName value`
+    * `void writeValue(allocPointer_t pointer, int32_t index, <type>, <type> value)`
+* `!!!readTableStructByPointer pointer readValue tableIndex structDefinition memberName`
+    * `<type> readValue(allocPointer_t pointer, int32_t index, <type>)`
 
 

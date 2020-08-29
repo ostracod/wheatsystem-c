@@ -1,6 +1,4 @@
 
-// TODO: Fix all of this stuff.
-
 #pragma pack(push, 1)
 typedef struct fileHeader {
     uint8_t attributes;
@@ -13,6 +11,7 @@ typedef struct fileHeader {
 #pragma pack(push, 1)
 typedef struct fileHandle {
     int32_t address;
+    uint8_t attributes;
     allocPointer_t runningApp;
     int8_t initErr;
     int8_t openDepth;
@@ -31,16 +30,26 @@ typedef struct fileHandle {
 
 #define initializeFileSystem() initializeStorageSpace()
 
-#define getFileHandleType(fileHandle) 0
-#define getFileHandleRunningApp(fileHandle) 0
-#define getFileHandleInitErr(fileHandle) 0
+#define getFileHandleType(fileHandle) \
+    (getFileHandleMember(fileHandle, attributes) & 0x03)
+#define getFileHandleRunningApp(fileHandle) getFileHandleMember(fileHandle, runningApp)
+#define getFileHandleInitErr(fileHandle) getFileHandleMember(fileHandle, initErr)
 
-#define setFileHandleRunningApp(fileHandle, runningAppValue)
-#define setFileHandleInitErr(fileHandle, initErrValue)
+#define setFileHandleRunningApp(fileHandle, runningAppValue) \
+    setFileHandleMember(fileHandle, runningApp, runningAppValue)
+#define setFileHandleInitErr(fileHandle, initErrValue) \
+    setFileHandleMember(fileHandle, initErr, initErrValue)
 
-#define readFile(fileHandle, pos, type) 0
+#define readFile(fileHandle, pos, type) \
+    !!!readValueByPointer fileHandle readFileRange pos type
 
 allocPointer_t openFile(heapMemoryOffset_t nameAddress, heapMemoryOffset_t nameSize);
 void closeFile(allocPointer_t fileHandle);
+void readFileRange(
+    void *destination,
+    allocPointer_t fileHandle,
+    int32_t pos,
+    int32_t amount
+);
 
 

@@ -10,9 +10,10 @@
 int32_t eepromAddress = -100;
 int8_t lastEepromData;
 
-void initializeStorageSpace() {
+int8_t initializeStorageSpace() {
     eepromCsPinHigh();
     eepromCsPinOutput();
+    return true;
 }
 
 void sendAddressToEeprom(int32_t address) {

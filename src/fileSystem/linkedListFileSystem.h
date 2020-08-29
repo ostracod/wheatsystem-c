@@ -1,6 +1,8 @@
 
 // TODO: Fix all of this stuff.
 
+#define initializeFileSystem() initializeStorageSpace()
+
 #define getFileHandleType(fileHandle) 0
 #define getFileHandleRunningApp(fileHandle) 0
 #define getFileHandleInitErr(fileHandle) 0

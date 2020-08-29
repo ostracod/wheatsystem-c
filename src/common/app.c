@@ -137,6 +137,7 @@ void scheduleApp(allocPointer_t runningApp) {
             currentInstructionFilePos,
             uint8_t
         );
+        printf("OPCODE: %d\n", opcode);
         uint8_t opcodeCategory = opcode >> 4;
         uint8_t opcodeOffset = opcode & 0x0F;
         int8_t tempOffset = readArrayConstantValue(argumentAmountOffsetArray, opcodeCategory);

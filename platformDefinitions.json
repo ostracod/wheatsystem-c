@@ -6,6 +6,7 @@
         "baseFilePaths": [
             "memory/nativeHeapMemory",
             "memory/linkedListAllocation",
+            "communication/unixNativeFile",
             "fileSystem/unixFileSystem"
         ],
         "compiler": {

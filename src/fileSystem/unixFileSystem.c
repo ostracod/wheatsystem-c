@@ -9,6 +9,16 @@ int8_t *convertFileNameToUnixPath(int8_t *name) {
     return output;
 }
 
+int8_t initializeFileSystem() {
+    DIR *volumeDirectory = opendir((char *)unixVolumePath);
+    if (!volumeDirectory) {
+        printf("Could not find volume directory.\n");
+        return false;
+    }
+    closedir(volumeDirectory);
+    return true;
+}
+
 allocPointer_t openFile(heapMemoryOffset_t nameAddress, heapMemoryOffset_t nameSize) {
     
     // Copy name from heap memory to native memory.
@@ -47,12 +57,10 @@ allocPointer_t openFile(heapMemoryOffset_t nameAddress, heapMemoryOffset_t nameS
     }
     
     // Read file content.
+    int32_t contentSize = getNativeFileSize(nativeFileHandle) - UNIX_FILE_HEADER_SIZE;
     int8_t fileAttributes;
     fread(&fileAttributes, 1, 1, nativeFileHandle);
-    fseek(nativeFileHandle, 0, SEEK_END);
-    int32_t contentSize = (int32_t)(ftell(nativeFileHandle) - UNIX_FILE_HEADER_SIZE);
     int8_t *content = malloc(contentSize);
-    fseek(nativeFileHandle, UNIX_FILE_HEADER_SIZE, SEEK_SET);
     fread(content, 1, contentSize, nativeFileHandle);
     fclose(nativeFileHandle);
     

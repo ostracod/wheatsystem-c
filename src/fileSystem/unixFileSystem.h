@@ -32,6 +32,7 @@ typedef struct fileHandle {
 #define readFile(fileHandle, pos, type) \
     *(type *)(getFileHandleMember(fileHandle, content) + pos)
 
+int8_t initializeFileSystem();
 allocPointer_t openFile(heapMemoryOffset_t nameAddress, heapMemoryOffset_t nameSize);
 void closeFile(allocPointer_t fileHandle);
 

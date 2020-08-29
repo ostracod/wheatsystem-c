@@ -261,6 +261,7 @@ The following definitions must be provided by each platform implementation:
     * `allocPointer_t createAlloc(int8_t type, heapMemoryOffset_t size)`
     * `int8_t deleteAlloc(allocPointer_t pointer)`
 * File system functions
+    * `int8_t initializeFileSystem()`
     * `int8_t getFileHandleType(allocPointer_t fileHandle)`
     * `allocPointer_t getFileHandleRunningApp(allocPointer_t fileHandle)`
     * `int8_t getFileHandleInitErr(allocPointer_t fileHandle)`

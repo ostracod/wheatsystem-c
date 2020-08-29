@@ -14,6 +14,10 @@
             "name": "gcc",
             "flags": []
         },
+        "linker": {
+            "name": "gcc",
+            "flags": []
+        },
         "executableName": "unixWheatSystem",
         "commandsAfterBuild": []
     },
@@ -33,6 +37,10 @@
         "compiler": {
             "name": "avr-gcc",
             "flags": ["-Wno-char-subscripts", "-Os", "-DF_CPU=8000000", "-mmcu=$(DEVICE)", "-fstack-usage"]
+        },
+        "linker": {
+            "name": "avr-gcc",
+            "flags": ["-mmcu=$(DEVICE)"]
         },
         "executableName": "avrWheatSystem.elf",
         "commandsAfterBuild": [

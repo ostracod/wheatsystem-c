@@ -46,6 +46,10 @@ Each platform definition has the following format:
         "name": (compiler name),
         "flags": (list of compiler flags)
     },
+    "linker": {
+        "name": (linker name),
+        "flags": (list of linker flags)
+    },
     "executableName": (file name for compiled code),
     "commandsAfterBuild": (list of shell commands)
 }
@@ -71,7 +75,13 @@ Prepreprocessor definitions are read from `./src/prepreprocessorDefinitions.pppd
 #include "./headers.h"
 ```
 
-The `./fake.js` script will use the `constants` map to substitute constant invocations in `compiler.flags` and `commandsAfterBuild`. To invoke a constant, write a dollar sign followed by the constant name in parentheses. For example: `$(MY_CONSTANT)`
+The `./fake.js` script will use the `constants` map to substitute constant invocations in the following contexts:
+
+* `compiler.flags`
+* `linker.flags`
+* `commandsAfterBuild`
+
+To invoke a constant, write a dollar sign followed by the constant name in parentheses. For example: `$(MY_CONSTANT)`
 
 After `./fake.js` finishes building, the WheatSystem executable will have the path `./build/(executable name)`. The build directory and exectable path are available as the constants `BUILD_DIR` and `EXECUTABLE_PATH` respectively.
 

@@ -104,7 +104,16 @@ function invokeCompiler(argumentList) {
     try {
         childProcess.execFileSync(targetPlatformDefinition.compiler.name, argumentList);
     } catch(error) {
-        console.log("Compilation failed. Exiting.");
+        console.log("Compiler failed. Exiting.");
+        process.exit(1);
+    }
+}
+
+function invokeLinker(argumentList) {
+    try {
+        childProcess.execFileSync(targetPlatformDefinition.linker.name, argumentList);
+    } catch(error) {
+        console.log("Linker failed. Exiting.");
         process.exit(1);
     }
 }
@@ -225,13 +234,13 @@ let objectFilePathList = [];
 for (const implementationfilePath of implementationFilePathList) {
     const tempBaseFileName = convertToBaseFileName(implementationfilePath);
     const objectFilePath = pathUtils.join(intermediatePath, tempBaseFileName + ".o");
-    const compilationArgumentList = ["-Wall"];
+    const compilerArgumentList = ["-Wall"];
     for (let flag of targetPlatformDefinition.compiler.flags) {
         flag = substituteConstantInvocations(flag);
-        compilationArgumentList.push(flag);
+        compilerArgumentList.push(flag);
     }
-    compilationArgumentList.push("-c", implementationfilePath, "-o", objectFilePath);
-    invokeCompiler(compilationArgumentList);
+    compilerArgumentList.push("-c", implementationfilePath, "-o", objectFilePath);
+    invokeCompiler(compilerArgumentList);
     objectFilePathList.push(objectFilePath);
 }
 
@@ -243,9 +252,16 @@ console.log("Linking object files...");
 if (!fs.existsSync(buildPath)) {
     fs.mkdirSync(buildPath);
 }
-const linkArgumentList = objectFilePathList.slice();
-linkArgumentList.push("-o", executablePath);
-invokeCompiler(linkArgumentList);
+const linkerArgumentList = [];
+for (let flag of targetPlatformDefinition.linker.flags) {
+    flag = substituteConstantInvocations(flag);
+    linkerArgumentList.push(flag);
+}
+for (const objectFilePath of objectFilePathList) {
+    linkerArgumentList.push(objectFilePath);
+}
+linkerArgumentList.push("-o", executablePath);
+invokeLinker(linkerArgumentList);
 
 console.log("Finished. Executable path:");
 console.log(executablePath);

@@ -70,25 +70,25 @@ allocPointer_t currentImplementerFileHandle;
 int32_t currentInstructionFilePos;
 
 #define getBytecodeAppMember(fileHandle, memberName) \
-    !!!readStructMember fileHandle readFile bytecodeAppHeader_t memberName
+    !!!readStructByPointer fileHandle readFile bytecodeAppHeader_t memberName
 
 #define readBytecodeFunctionTable(fileHandle, index, type) \
     readFile(fileHandle, sizeof(bytecodeAppHeader_t) + index, type)
 
 #define getBytecodeFunctionMember(fileHandle, functionIndex, memberName) \
-    !!!readStructMemberInTable fileHandle readBytecodeFunctionTable functionIndex bytecodeFunction_t memberName
+    !!!readTableStructByPointer fileHandle readBytecodeFunctionTable functionIndex bytecodeFunction_t memberName
 
 #define getBytecodeGlobalFrameMember(runningApp, memberName) \
-    !!!readStructMember runningApp readGlobalFrame bytecodeGlobalFrameHeader_t memberName
+    !!!readStructByPointer runningApp readGlobalFrame bytecodeGlobalFrameHeader_t memberName
 #define setBytecodeGlobalFrameMember(runningApp, memberName, value) \
-    !!!writeStructMember runningApp writeGlobalFrame bytecodeGlobalFrameHeader_t memberName value
+    !!!writeStructByPointer runningApp writeGlobalFrame bytecodeGlobalFrameHeader_t memberName value
 #define getBytecodeGlobalFrameDataAddress(runningApp) \
     (getGlobalFrameDataAddress(runningApp) + sizeof(bytecodeGlobalFrameHeader_t))
 
 #define getBytecodeLocalFrameMember(localFrame, memberName) \
-    !!!readStructMember localFrame readLocalFrame bytecodeLocalFrameHeader_t memberName
+    !!!readStructByPointer localFrame readLocalFrame bytecodeLocalFrameHeader_t memberName
 #define setBytecodeLocalFrameMember(localFrame, memberName, value) \
-    !!!writeStructMember localFrame writeLocalFrame bytecodeLocalFrameHeader_t memberName value
+    !!!writeStructByPointer localFrame writeLocalFrame bytecodeLocalFrameHeader_t memberName value
 #define getBytecodeLocalFrameDataAddress(localFrame) \
     (getLocalFrameDataAddress(localFrame) + sizeof(bytecodeLocalFrameHeader_t))
 

@@ -1,13 +1,29 @@
 
-DEFINE readStructMember pointer readFunction structDefinition memberName
+DEFINE readValueByRange address readFunction type
+({type result; readFunction(&result, address, sizeof(type)); result;})
+END
+
+DEFINE writeValueByRange address writeFunction type value
+({type tempValue = value; writeFunction(address, &tempValue, sizeof(type));})
+END
+
+DEFINE readStructByAddress address readFunction structDefinition memberName
+readFunction(address + getStructMemberOffset(structDefinition, memberName), getStructMemberType(structDefinition, memberName))
+END
+
+DEFINE writeStructByAddress address writeFunction structDefinition memberName value
+writeFunction(address + getStructMemberOffset(structDefinition, memberName), getStructMemberType(structDefinition, memberName), value)
+END
+
+DEFINE readStructByPointer pointer readFunction structDefinition memberName
 readFunction(pointer, getStructMemberOffset(structDefinition, memberName), getStructMemberType(structDefinition, memberName))
 END
 
-DEFINE writeStructMember pointer writeFunction structDefinition memberName value
+DEFINE writeStructByPointer pointer writeFunction structDefinition memberName value
 writeFunction(pointer, getStructMemberOffset(structDefinition, memberName), getStructMemberType(structDefinition, memberName), value)
 END
 
-DEFINE readStructMemberInTable pointer readFunction tableIndex structDefinition memberName
+DEFINE readTableStructByPointer pointer readFunction tableIndex structDefinition memberName
 readFunction(pointer, tableIndex * sizeof(structDefinition) + getStructMemberOffset(structDefinition, memberName), getStructMemberType(structDefinition, memberName))
 END
 

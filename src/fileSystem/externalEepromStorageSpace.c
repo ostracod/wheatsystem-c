@@ -22,7 +22,7 @@ void sendAddressToEeprom(int32_t address) {
     sendSpiInt8(address & 0x000000FF);
 }
 
-void readStorageSpace(void *destination, int32_t address, int32_t amount) {
+void readStorageSpaceRange(void *destination, int32_t address, int32_t amount) {
     if (amount <= 0) {
         return;
     }
@@ -47,7 +47,7 @@ void readStorageSpace(void *destination, int32_t address, int32_t amount) {
     }
 }
 
-void writeStorageSpace(int32_t address, void *source, int32_t amount) {
+void writeStorageSpaceRange(int32_t address, void *source, int32_t amount) {
     if (amount <= 0) {
         return;
     }

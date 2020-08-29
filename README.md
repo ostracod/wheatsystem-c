@@ -57,7 +57,7 @@ When building a platform, `./fake.js` will incorporate the following files:
 * `.c` and `.h` files corresponding to each base path in `baseFilePaths`
 * All files provided in `./src/common`
 
-As part of the buld process, `./fake.js` uses `./prepreprocessor.js` to expand prepreprocessor invocations in `.c` and `.h` files. Prepreprocessor invocations have the following syntax:
+As part of the build process, `./fake.js` uses `./prepreprocessor.js` to expand prepreprocessor invocations in `.c` and `.h` files. Prepreprocessor invocations have the following syntax:
 
 ```
 !!!name arg1 arg2 arg3...
@@ -275,11 +275,19 @@ The following definitions must be provided by each platform implementation:
 
 The following definitions are recognized by the prepreprocessor:
 
-* `!!!readStructMember pointer readFunction structType memberName`
+* `!!!readValueByRange address readFunction type`
+    * `<type> readFunction(int8_t *destination, int32_t address, int32_t amount)`
+* `!!!writeValueByRange address writeFunction type value`
+    * `void writeFunction(int32_t address, int8_t *source, int32_t amount)`
+* `!!!readStructByAddress address readFunction structType memberName`
+    * `<type> readFunction(int32_t address, <type>)`
+* `!!!writeStructByAddress address writeFunction structType memberName value`
+    * `void writeFunction(int32_t address, <type>, <type> value)`
+* `!!!readStructByPointer pointer readFunction structType memberName`
     * `<type> readFunction(allocPointer_t pointer, int32_t index, <type>)`
-* `!!!writeStructMember pointer writeFunction structType memberName value`
+* `!!!writeStructByPointer pointer writeFunction structType memberName value`
     * `void writeFunction(allocPointer_t pointer, int32_t index, <type>, <type> value)`
-* `!!!readStructMemberInTable pointer readFunction tableIndex structDefinition memberName`
+* `!!!readTableStructByPointer pointer readFunction tableIndex structDefinition memberName`
     * `<type> readFunction(allocPointer_t pointer, int32_t index, <type>)`
 
 

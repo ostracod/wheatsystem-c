@@ -12,6 +12,8 @@ typedef struct fileHeader {
 typedef struct fileHandle {
     int32_t address;
     uint8_t attributes;
+    uint8_t nameSize;
+    int32_t contentSize;
     allocPointer_t runningApp;
     int8_t initErr;
     int8_t openDepth;
@@ -31,7 +33,7 @@ typedef struct fileHandle {
 #define initializeFileSystem() initializeStorageSpace()
 
 #define getFileHandleType(fileHandle) \
-    (getFileHandleMember(fileHandle, attributes) & 0x03)
+    getTypeFromFileAttributes(getFileHandleMember(fileHandle, attributes))
 #define getFileHandleRunningApp(fileHandle) getFileHandleMember(fileHandle, runningApp)
 #define getFileHandleInitErr(fileHandle) getFileHandleMember(fileHandle, initErr)
 

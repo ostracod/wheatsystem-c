@@ -15,6 +15,7 @@
 #define int64_t long long
 #define NULL ((void *)0)
 
+#define printDebugMessage(format, ...)
 #define declareArrayConstantWithValue(name, ...) const int8_t name[] PROGMEM = __VA_ARGS__
 #define declareArrayConstantWithSize(name, size) const int8_t name[size]
 #define getArrayConstantSize(name) (int32_t)sizeof(name)

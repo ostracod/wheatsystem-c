@@ -9,6 +9,7 @@
 
 #define HEAP_MEMORY_SIZE (30 * 1000)
 
+#define printDebugMessage(format, ...) printf(format, ##__VA_ARGS__)
 #define declareArrayConstantWithValue(name, ...) int8_t name[] = __VA_ARGS__
 #define declareArrayConstantWithSize(name, size) int8_t name[size]
 #define getArrayConstantSize(name) (int32_t)sizeof(name)

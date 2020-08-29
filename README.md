@@ -196,6 +196,9 @@ The following definitions are shared between all platform implementations:
     * `createStringAllocFromArrayConstant(arrayConstant_t arrayConstant)`
     * `allocPointer_t createDynamicAlloc(heapMemoryOffset_t size, int8_t isGuarded, allocPointer_t creator)`
 * File system functions
+    * `int8_t getHasAdminPermFromFileAttributes(uint8_t fileAttributes)`
+    * `int8_t getIsGuardedFromFileAttributes(uint8_t fileAttributes)`
+    * `int8_t getTypeFromFileAttributes(uint8_t fileAttributes)`
     * `int8_t allocIsFileHandle(allocPointer_t pointer)`
     * `allocPointer_t openFileByStringAlloc(allocPointer_t stringAlloc)`
     * `<type> readFileAndAdvance(allocPointer_t fileHandle, int32_t pos, <type>)`
@@ -241,6 +244,8 @@ The following definitions must be provided by each platform implementation:
 
 ### Platform-Specific Functions
 
+* Debug functions
+    * `void printDebugMessage(int8_t *format, ...)`
 * Memory functions
     * `void declareArrayConstantWithValue(<name>, arrayConstant_t value)`
     * `void declareArrayConstantWithSize(<name>, int32_t size)`
@@ -267,7 +272,7 @@ The following definitions must be provided by each platform implementation:
     * `int8_t getFileHandleInitErr(allocPointer_t fileHandle)`
     * `void setFileHandleRunningApp(allocPointer_t fileHandle, allocPointer_t runningApp)`
     * `void setFileHandleInitErr(allocPointer_t fileHandle, int8_t initErr)`
-    * `allocPointer_t openFile(heapMemoryOffset_t nameAddress, heapMemoryOffset_t nameSize)`
+    * `allocPointer_t openFile(heapMemoryOffset_t nameAddress, uint8_t nameSize)`
     * `void closeFile(allocPointer_t fileHandle)`
     * `<type> readFile(allocPointer_t fileHandle, int32_t pos, <type>)`
 

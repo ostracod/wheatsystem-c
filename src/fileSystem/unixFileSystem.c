@@ -72,25 +72,31 @@ allocPointer_t openFile(heapMemoryOffset_t nameAddress, heapMemoryOffset_t nameS
     );
     setFileHandleMember(output, name, nativeName);
     setFileHandleMember(output, unixPath, unixPath);
-    setFileHandleMember(output, hasAdminPerm, (fileAttributes & 0x08) > 0);
-    setFileHandleMember(output, isGuarded, (fileAttributes & 0x04) > 0);
-    setFileHandleMember(output, type, fileAttributes & 0x03);
+    setFileHandleMember(
+        output,
+        hasAdminPerm,
+        getHasAdminPermFromFileAttributes(fileAttributes)
+    );
+    setFileHandleMember(
+        output,
+        isGuarded,
+        getIsGuardedFromFileAttributes(fileAttributes)
+    );
+    setFileHandleMember(
+        output,
+        type,
+        getTypeFromFileAttributes(fileAttributes)
+    );
     setFileHandleMember(output, contentSize, contentSize);
     setFileHandleMember(output, contentIsDirty, false);
     setFileHandleMember(output, content, content);
-    setFileHandleMember(output, openDepth, 1);
     setFileHandleRunningApp(output, NULL_ALLOC_POINTER);
     setFileHandleInitErr(output, 0);
+    setFileHandleMember(output, openDepth, 1);
     return output;
 }
 
 void closeFile(allocPointer_t fileHandle) {
-    int8_t openDepth = getFileHandleMember(fileHandle, openDepth);
-    if (openDepth > 1) {
-        setFileHandleMember(fileHandle, openDepth, openDepth - 1);
-        return;
-    }
-    int8_t *nativeName = getFileHandleMember(fileHandle, name);
     int8_t *unixPath = getFileHandleMember(fileHandle, unixPath);
     int8_t *content = getFileHandleMember(fileHandle, content);
     if (getFileHandleMember(fileHandle, contentIsDirty)) {
@@ -107,6 +113,12 @@ void closeFile(allocPointer_t fileHandle) {
         fwrite(content, 1, contentSize, nativeFileHandle);
         fclose(nativeFileHandle);
     }
+    int8_t openDepth = getFileHandleMember(fileHandle, openDepth);
+    if (openDepth > 1) {
+        setFileHandleMember(fileHandle, openDepth, openDepth - 1);
+        return;
+    }
+    int8_t *nativeName = getFileHandleMember(fileHandle, name);
     free(nativeName);
     free(unixPath);
     free(content);

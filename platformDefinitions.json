@@ -31,6 +31,7 @@
             "memory/nativeHeapMemory",
             "memory/linkedListAllocation",
             "communication/avrSpi",
+            "communication/avrSerial",
             "fileSystem/externalEepromStorageSpace",
             "fileSystem/linkedListFileSystem"
         ],

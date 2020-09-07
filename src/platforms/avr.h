@@ -2,6 +2,7 @@
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 #include <util/delay.h>
+#include <stdlib.h>
 
 #define HEAP_MEMORY_SIZE 1000
 
@@ -15,7 +16,9 @@
 #define int64_t long long
 #define NULL ((void *)0)
 
-#define printDebugMessage(format, ...)
+#define printDebugStringConstant(stringConstant) sendSerialStringConstant(stringConstant)
+#define printDebugNumber(number) sendSerialNumber(number)
+#define printDebugNewline() sendSerialCharacter('\n')
 #define declareArrayConstantWithValue(name, ...) const int8_t name[] PROGMEM = __VA_ARGS__
 #define declareArrayConstantWithSize(name, size) const int8_t name[size]
 #define getArrayConstantSize(name) (int32_t)sizeof(name)

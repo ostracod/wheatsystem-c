@@ -1,6 +1,8 @@
 
 #include "./headers.h"
 
+declareArrayConstantWithValue(OPCODE_DEBUG_TEXT, "Opcode: ");
+
 void launchApp(allocPointer_t fileHandle) {
     
     // Do not launch app again if it is already running.
@@ -137,7 +139,9 @@ void scheduleApp(allocPointer_t runningApp) {
             currentInstructionFilePos,
             uint8_t
         );
-        printDebugMessage("OPCODE: %d\n", opcode);
+        printDebugStringConstant(OPCODE_DEBUG_TEXT);
+        printDebugNumber(opcode);
+        printDebugNewline();
         uint8_t opcodeCategory = opcode >> 4;
         uint8_t opcodeOffset = opcode & 0x0F;
         int8_t tempOffset = readArrayConstantValue(argumentAmountOffsetArray, opcodeCategory);

@@ -198,6 +198,11 @@ The following definitions are shared between all platform implementations:
 * Struct manipulation macros
     * `int32_t getStructMemberOffset(<structType>, <memberName>)`
     * `<type> getStructMemberType(<structType>, <memberName>)`
+* Debug functions
+    * `void printDebugString(int8_t *text)`
+    * `void printDebugStringConstant(arrayConstant_t stringConstant)`
+    * `void printDebugNumber(int32_t number)`
+    * `void printDebugNewline()`
 * Heap allocation functions
     * `<type> readDynamicAlloc(allocPointer_t pointer, heapMemoryOffset_t index, <type>)`
     * `void writeDynamicAlloc(allocPointer_t pointer, heapMemoryOffset_t index, <type>, <type> value)`
@@ -255,9 +260,7 @@ The following definitions must be provided by each platform implementation:
 ### Platform-Specific Functions
 
 * Debug functions
-    * `void printDebugStringConstant(arrayConstant_t stringConstant)`
-    * `void printDebugNumber(int32_t number)`
-    * `void printDebugNewline()`
+    * `void printDebugCharacter(int8_t character)`
 * Memory functions
     * `void declareArrayConstantWithValue(<name>, arrayConstant_t value)`
     * `void declareArrayConstantWithSize(<name>, int32_t size)`
@@ -265,6 +268,7 @@ The following definitions must be provided by each platform implementation:
     * `int8_t readArrayConstantValue(<name>, int32_t index)`
     * `<type> readHeapMemory(heapMemoryOffset_t address, <type>)`
     * `void writeHeapMemory(heapMemoryOffset_t address, <type>, <type> value)`
+    * `void convertNumberToText(int8_t *destination, int32_t number)`
 * Heap allocation functions
     * `heapMemoryOffset_t convertPointerToAddress(allocPointer_t pointer)`
     * `allocPointer_t convertAddressToPointer(heapMemoryOffset_t address)`

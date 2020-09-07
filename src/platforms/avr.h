@@ -16,13 +16,12 @@
 #define int64_t long long
 #define NULL ((void *)0)
 
-#define printDebugStringConstant(stringConstant) sendSerialStringConstant(stringConstant)
-#define printDebugNumber(number) sendSerialNumber(number)
-#define printDebugNewline() sendSerialCharacter('\n')
+#define printDebugCharacter(character) sendSerialCharacter(character)
 #define declareArrayConstantWithValue(name, ...) const int8_t name[] PROGMEM = __VA_ARGS__
 #define declareArrayConstantWithSize(name, size) const int8_t name[size]
 #define getArrayConstantSize(name) (int32_t)sizeof(name)
 #define readArrayConstantValue(name, index) pgm_read_byte(name + index)
+#define convertNumberToText(destination, number) ltoa(number, (char *)destination, 10)
 
 typedef const int8_t * arrayConstant_t;
 typedef int16_t heapMemoryOffset_t;

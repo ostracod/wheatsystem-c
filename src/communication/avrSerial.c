@@ -23,33 +23,4 @@ void sendSerialCharacter(int8_t character) {
     UDR0 = character;
 }
 
-void sendSerialString(int8_t *text) {
-    while (true) {
-        int8_t tempCharacter = *text;
-        if (tempCharacter == 0) {
-            break;
-        }
-        sendSerialCharacter(tempCharacter);
-        text += 1;
-    }
-}
-
-void sendSerialStringConstant(arrayConstant_t stringConstant) {
-    int32_t index = 0;
-    while (true) {
-        int8_t tempCharacter = readArrayConstantValue(stringConstant, index);
-        if (tempCharacter == 0) {
-            break;
-        }
-        sendSerialCharacter(tempCharacter);
-        index += 1;
-    }
-}
-
-void sendSerialNumber(int32_t number) {
-    int8_t tempText[15];
-    ltoa(number, (char *)tempText, 10);
-    sendSerialString(tempText);
-}
-
 

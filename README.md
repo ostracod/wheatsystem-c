@@ -255,7 +255,9 @@ The following definitions must be provided by each platform implementation:
 ### Platform-Specific Functions
 
 * Debug functions
-    * `void printDebugMessage(int8_t *format, ...)`
+    * `void printDebugStringConstant(arrayConstant_t stringConstant)`
+    * `void printDebugNumber(int32_t number)`
+    * `void printDebugNewline()`
 * Memory functions
     * `void declareArrayConstantWithValue(<name>, arrayConstant_t value)`
     * `void declareArrayConstantWithSize(<name>, int32_t size)`

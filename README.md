@@ -23,7 +23,7 @@ To build and run the WheatSystem executable for Unix-like systems:
 
 ```
 node ./fake.js unix
-./build/unixWheatSystem ./exampleVolumes/unixVolume
+./build/unixWheatSystem ./exampleVolumes/linkedListVolume
 ```
 
 ## Build System

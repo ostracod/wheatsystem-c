@@ -95,8 +95,9 @@ int32_t currentInstructionFilePos;
 #define getArgValue(index) getArgValueHelper(instructionArgArray + index);
 
 int32_t findBytecodeFunction(allocPointer_t fileHandle, int32_t functionId);
-instructionArg_t readInstructionArg();
 int32_t getArgValueHelper(instructionArg_t *arg);
 void setArgValue(int8_t index, int32_t value);
+instructionArg_t readInstructionArg();
+void jumpToBytecodeInstruction(allocPointer_t localFrame, int32_t instructionOffset);
 
 

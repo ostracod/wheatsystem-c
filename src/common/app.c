@@ -174,13 +174,37 @@ void scheduleApp(allocPointer_t runningApp) {
                 );
                 setArgValue(0, tempAlloc);
             }
+        } else if (opcodeCategory == 0x1) {
+            // Control flow instructions.
+            if (opcodeOffset == 0x0) {
+                // jmp.
+                int32_t instructionOffset = getArgValue(0);
+                jumpToBytecodeInstruction(currentLocalFrame, instructionOffset);
+            } else if (opcodeOffset == 0x1) {
+                // jmpZ.
+                int32_t condition = getArgValue(1);
+                if (condition == 0) {
+                    int32_t instructionOffset = getArgValue(0);
+                    jumpToBytecodeInstruction(currentLocalFrame, instructionOffset);
+                }
+            } else if (opcodeOffset == 0x2) {
+                // jmpNZ.
+                int32_t condition = getArgValue(1);
+                if (condition != 0) {
+                    int32_t instructionOffset = getArgValue(0);
+                    jumpToBytecodeInstruction(currentLocalFrame, instructionOffset);
+                }
+            }
         } else if (opcodeCategory == 0x6) {
             // Arithmetic instructions.
+            int32_t operand1 = getArgValue(1);
+            int32_t operand2 = getArgValue(2);
             if (opcodeOffset == 0x0) {
                 // add.
-                int32_t operand1 = getArgValue(1);
-                int32_t operand2 = getArgValue(2);
                 setArgValue(0, operand1 + operand2);
+            } else if (opcodeOffset == 0x1) {
+                // sub.
+                setArgValue(0, operand1 - operand2);
             }
         }
     } else {

@@ -1,10 +1,10 @@
 
 FUNC init, init_ID
-    VAR x, s32
-    VAR y, s32
-    newAlloc x, 0, 30
-    wrt x[10]:s8, 99
-    wrt y, x[10]:s8
+    VAR x, s8
+    wrt x, 5
+    LBL loop
+    sub x, x, 1
+    jmpNZ loop, x
 END
 
 

@@ -14,11 +14,35 @@ const fileTypeSet = {
     systemApp: 2
 };
 
-function assembleBytecodeFile(sourcePath) {
-    childProcess.execFileSync("node", [
+function getAssemblyAppPath(name) {
+    return pathUtils.join(__dirname, name + ".wbasm");
+}
+
+function getBytecodeAppPath(name) {
+    return pathUtils.join(__dirname, name);
+}
+
+class AssemblerError extends Error {
+    
+    constructor(assemblerMessages) {
+        super();
+        this.assemblerMessages = assemblerMessages;
+    }
+}
+
+function assembleBytecodeFile(name) {
+    const sourcePath = getAssemblyAppPath(name);
+    const destinationPath = getBytecodeAppPath(name);
+    if (fs.existsSync(destinationPath)) {
+        fs.unlinkSync(destinationPath);
+    }
+    const assemblerMessages = childProcess.execFileSync("node", [
         pathUtils.join(assemblerDirectoryPath, "/dist/assemble.js"),
         sourcePath
-    ]);
+    ]).toString();
+    if (!fs.existsSync(destinationPath)) {
+        throw new AssemblerError(assemblerMessages);
+    }
 }
 
 function createFileAttributes(fileType, hasAdminPerm, isGuarded) {
@@ -53,7 +77,18 @@ function createLinkedListBuffer(fileAttributes, name, content) {
 console.log("Assembling files for example volumes...");
 
 for (const name of bytecodeAppNameList) {
-    assembleBytecodeFile(pathUtils.join(__dirname, name + ".wbasm"));
+    try {
+        assembleBytecodeFile(name);
+    } catch(error) {
+        if (error instanceof AssemblerError) {
+            console.log("Assembler failed with the following output:");
+            console.log("===============================================");
+            console.log(error.assemblerMessages);
+            process.exit(1);
+        } else {
+            throw error;
+        }
+    }
 }
 
 if (!fs.existsSync(unixVolumePath)) {
@@ -67,7 +102,7 @@ let linkedListAddress = tempBuffer.length;
 
 const bytecodeAppAttributes = createFileAttributes(fileTypeSet.bytecodeApp, false, false);
 for (const name of bytecodeAppNameList) {
-    const bytecodeAppPath = pathUtils.join(__dirname, name);
+    const bytecodeAppPath = getBytecodeAppPath(name);
     const fileContent = fs.readFileSync(bytecodeAppPath);
     createUnixFile(bytecodeAppAttributes, name, fileContent);
     createLinkedListBuffer(bytecodeAppAttributes, name, fileContent);

@@ -129,4 +129,18 @@ instructionArg_t readInstructionArg() {
     return output;
 }
 
+void jumpToBytecodeInstruction(allocPointer_t localFrame, int32_t instructionOffset) {
+    int32_t instructionBodyFilePos = getBytecodeLocalFrameMember(
+        localFrame,
+        instructionBodyStartFilePos
+    );
+    // TODO: Verify that instructionOffset is within bounds
+    // of instruction body.
+    setBytecodeLocalFrameMember(
+        localFrame,
+        instructionFilePos,
+        instructionBodyFilePos + instructionOffset
+    );
+}
+
 

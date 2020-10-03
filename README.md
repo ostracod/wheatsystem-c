@@ -239,9 +239,10 @@ The following definitions are shared between all platform implementations:
     * `void setBytecodeLocalFrameMember(allocPointer_t localFrame, <memberName>, <memberType> value)`
     * `heapMemoryOffset_t getBytecodeLocalFrameDataAddress(allocPointer_t runningApp)`
     * `int32_t findBytecodeFunction(allocPointer_t fileHandle, int32_t functionId)`
-    * `instructionArg_t readInstructionArg()`
     * `int32_t getArgValue(int8_t index)`
     * `void setArgValue(int8_t index, int32_t value)`
+    * `instructionArg_t readInstructionArg()`
+    * `void jumpToBytecodeInstruction(allocPointer_t localFrame, int32_t instructionOffset)`
 
 ## Platform-Specific Source Definitions
 

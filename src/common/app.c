@@ -195,17 +195,77 @@ void scheduleApp(allocPointer_t runningApp) {
                     jumpToBytecodeInstruction(currentLocalFrame, instructionOffset);
                 }
             }
+        } else if (opcodeCategory == 0x4) {
+            // Bitwise instructions.
+            uint32_t result = 0;
+            if (opcodeOffset == 0x0) {
+                // bNot.
+                uint32_t operand = getArgValue(1);
+                result = ~operand;
+            } else {
+                uint32_t operand1 = getArgValue(1);
+                uint32_t operand2 = getArgValue(2);
+                if (opcodeOffset == 0x1) {
+                    // bOr.
+                    result = (operand1 | operand2);
+                } else if (opcodeOffset == 0x2) {
+                    // bAnd.
+                    result = (operand1 & operand2);
+                } else if (opcodeOffset == 0x3) {
+                    // bXor.
+                    result = (operand1 ^ operand2);
+                } else if (opcodeOffset == 0x4) {
+                    // bLeft.
+                    result = (operand1 << operand2);
+                } else if (opcodeOffset == 0x5) {
+                    // bRight.
+                    result = (operand1 >> operand2);
+                }
+            }
+            setArgValue(0, result);
+        } else if (opcodeCategory == 0x5) {
+            // Comparison instructions.
+            int32_t operand1 = getArgValue(1);
+            int32_t operand2 = getArgValue(2);
+            int32_t result = 0;
+            if (opcodeOffset == 0x0) {
+                // equ.
+                result = (operand1 == operand2);
+            } else if (opcodeOffset == 0x1) {
+                // nEqu.
+                result = (operand1 != operand2);
+            } else if (opcodeOffset == 0x2) {
+                // gre.
+                result = (operand1 > operand2);
+            } else if (opcodeOffset == 0x3) {
+                // nGre.
+                result = (operand1 <= operand2);
+            }
+            setArgValue(0, result);
         } else if (opcodeCategory == 0x6) {
             // Arithmetic instructions.
             int32_t operand1 = getArgValue(1);
             int32_t operand2 = getArgValue(2);
+            int32_t result = 0;
             if (opcodeOffset == 0x0) {
                 // add.
-                setArgValue(0, operand1 + operand2);
+                result = operand1 + operand2;
             } else if (opcodeOffset == 0x1) {
                 // sub.
-                setArgValue(0, operand1 - operand2);
+                result = operand1 - operand2;
+            } else if (opcodeOffset == 0x2) {
+                // mul.
+                result = operand1 * operand2;
+            } else if (opcodeOffset == 0x3) {
+                // div.
+                // TODO: Throw error when dividing by zero.
+                result = operand1 / operand2;
+            } else if (opcodeOffset == 0x4) {
+                // mod.
+                // TODO: Throw error when dividing by zero.
+                result = operand1 % operand2;
             }
+            setArgValue(0, result);
         }
     } else {
         // TODO: Perform work in system app.

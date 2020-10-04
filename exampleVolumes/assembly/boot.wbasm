@@ -1,10 +1,32 @@
 
 FUNC init, init_ID
-    VAR x, s8
-    wrt x, 5
+    
+    VAR number, s32
+    VAR isPrime, s8
+    VAR factor, s32
+    VAR condition, s32
+    
+    wrt number, 2
     LBL loop
-    sub x, x, 1
-    jmpNZ loop, x
+    wrt isPrime, 1
+    wrt factor, 2
+    
+    LBL checkFactorLoop
+    gre condition, number, factor
+    jmpZ checkFactorSkip, condition
+    mod condition, number, factor
+    jmpNZ registerCompositeSkip, condition
+    wrt isPrime, 0
+    jmp checkFactorSkip
+    LBL registerCompositeSkip
+    add factor, factor, 1
+    jmp checkFactorLoop
+    LBL checkFactorSkip
+    
+    # TODO: Print the number if prime.
+    
+    add number, number, 1
+    jmp loop
 END
 
 

@@ -21,41 +21,51 @@ int32_t findBytecodeFunction(allocPointer_t fileHandle, int32_t functionId) {
     return -1;
 }
 
-int32_t getArgValueHelper(instructionArg_t *arg) {
+int32_t readArgIntHelper(instructionArg_t *arg, int32_t offset, int8_t dataType) {
     uint8_t tempPrefix = arg->prefix;
     uint8_t referenceType = getArgPrefixReferenceType(tempPrefix);
-    uint8_t dataType = getArgPrefixDataType(tempPrefix);
+    if (dataType < 0) {
+        dataType = getArgPrefixDataType(tempPrefix);
+    }
     if (referenceType == CONSTANT_REF_TYPE) {
         return arg->constantValue;
     } else if (referenceType == APP_DATA_REF_TYPE) {
         int32_t tempFilePos = getBytecodeGlobalFrameMember(
             currentImplementer,
             appDataFilePos
-        ) + arg->appDataIndex;
+        ) + arg->appDataIndex + offset;
         if (dataType == SIGNED_INT_8_TYPE) {
             return readFile(currentImplementerFileHandle, tempFilePos, int8_t);
         } else {
             return readFile(currentImplementerFileHandle, tempFilePos, int32_t);
         }
     } else {
+        heapMemoryOffset_t tempAddress = arg->address + offset;
         if (dataType == SIGNED_INT_8_TYPE) {
-            return readHeapMemory(arg->address, int8_t);
+            return readHeapMemory(tempAddress, int8_t);
         } else {
-            return readHeapMemory(arg->address, int32_t);
+            return readHeapMemory(tempAddress, int32_t);
         }
     }
 }
 
-void setArgValue(int8_t index, int32_t value) {
-    instructionArg_t *arg = instructionArgArray + index;
+void writeArgIntHelper(
+    instructionArg_t *arg,
+    int32_t offset,
+    int8_t dataType,
+    int32_t value
+) {
     uint8_t tempPrefix = arg->prefix;
     uint8_t referenceType = getArgPrefixReferenceType(tempPrefix);
-    uint8_t dataType = getArgPrefixDataType(tempPrefix);
+    if (dataType < 0) {
+        dataType = getArgPrefixDataType(tempPrefix);
+    }
     if (referenceType == HEAP_MEM_REF_TYPE) {
+        heapMemoryOffset_t tempAddress = arg->address + offset;
         if (dataType == SIGNED_INT_8_TYPE) {
-            writeHeapMemory(arg->address, int8_t, (int8_t)value);
+            writeHeapMemory(tempAddress, int8_t, (int8_t)value);
         } else {
-            writeHeapMemory(arg->address, int32_t, value);
+            writeHeapMemory(tempAddress, int32_t, value);
         }
     } else {
         // TODO: Throw an error.
@@ -63,7 +73,7 @@ void setArgValue(int8_t index, int32_t value) {
     }
 }
 
-instructionArg_t readInstructionArg() {
+instructionArg_t parseInstructionArg() {
     uint8_t argPrefix = readFileAndAdvance(
         currentImplementerFileHandle,
         currentInstructionFilePos,
@@ -88,8 +98,8 @@ instructionArg_t readInstructionArg() {
             );
         }
     } else {
-        instructionArg_t tempArg1 = readInstructionArg();
-        int32_t argValue1 = getArgValueHelper(&tempArg1);
+        instructionArg_t tempArg1 = parseInstructionArg();
+        int32_t argValue1 = readArgIntHelper(&tempArg1, 0, -1);
         if (referenceType == APP_DATA_REF_TYPE) {
             output.prefix = argPrefix;
             output.appDataIndex = argValue1;
@@ -99,8 +109,8 @@ instructionArg_t readInstructionArg() {
             if (referenceType == DYNAMIC_ALLOC_REF_TYPE) {
                 allocPointer_t tempPointer = (allocPointer_t)argValue1;
                 baseAddress = convertPointerToAddress(tempPointer);
-                instructionArg_t tempArg2 = readInstructionArg();
-                tempOffset = (heapMemoryOffset_t)getArgValueHelper(&tempArg2);
+                instructionArg_t tempArg2 = parseInstructionArg();
+                tempOffset = (heapMemoryOffset_t)readArgIntHelper(&tempArg2, 0, -1);
             } else {
                 tempOffset = (heapMemoryOffset_t)argValue1;
                 if (referenceType == GLOBAL_FRAME_REF_TYPE) {

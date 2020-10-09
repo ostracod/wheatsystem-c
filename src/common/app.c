@@ -150,7 +150,7 @@ void scheduleApp(allocPointer_t runningApp) {
             tempOffset + opcodeOffset
         );
         for (int8_t index = 0; index < argumentAmount; index++) {
-            instructionArgArray[index] = readInstructionArg();
+            instructionArgArray[index] = parseInstructionArg();
         }
         setBytecodeLocalFrameMember(
             currentLocalFrame,
@@ -161,37 +161,46 @@ void scheduleApp(allocPointer_t runningApp) {
             // Memory instructions.
             if (opcodeOffset == 0x0) {
                 // wrt.
-                int32_t tempValue = getArgValue(1);
-                setArgValue(0, tempValue);
+                int32_t tempValue = readArgInt(1);
+                writeArgInt(0, tempValue);
+            } else if (opcodeOffset == 0x1) {
+                // wrtBuff.
+                instructionArg_t *destination = instructionArgArray;
+                instructionArg_t *source = instructionArgArray + 1;
+                int32_t size = readArgInt(2);
+                for (int32_t offset = 0; offset < size; offset++) {
+                    int8_t tempValue = readArgIntHelper(source, offset, SIGNED_INT_8_TYPE);
+                    writeArgIntHelper(destination, offset, SIGNED_INT_8_TYPE, tempValue);
+                }
             } else if (opcodeOffset == 0x3) {
                 // newAlloc.
-                int8_t isGuarded = (int8_t)getArgValue(1);
-                heapMemoryOffset_t tempSize = (heapMemoryOffset_t)getArgValue(2);
+                int8_t isGuarded = (int8_t)readArgInt(1);
+                heapMemoryOffset_t tempSize = (heapMemoryOffset_t)readArgInt(2);
                 allocPointer_t tempAlloc = createDynamicAlloc(
                     tempSize,
                     isGuarded,
                     currentImplementerFileHandle
                 );
-                setArgValue(0, tempAlloc);
+                writeArgInt(0, tempAlloc);
             }
         } else if (opcodeCategory == 0x1) {
             // Control flow instructions.
             if (opcodeOffset == 0x0) {
                 // jmp.
-                int32_t instructionOffset = getArgValue(0);
+                int32_t instructionOffset = readArgInt(0);
                 jumpToBytecodeInstruction(currentLocalFrame, instructionOffset);
             } else if (opcodeOffset == 0x1) {
                 // jmpZ.
-                int32_t condition = getArgValue(1);
+                int32_t condition = readArgInt(1);
                 if (condition == 0) {
-                    int32_t instructionOffset = getArgValue(0);
+                    int32_t instructionOffset = readArgInt(0);
                     jumpToBytecodeInstruction(currentLocalFrame, instructionOffset);
                 }
             } else if (opcodeOffset == 0x2) {
                 // jmpNZ.
-                int32_t condition = getArgValue(1);
+                int32_t condition = readArgInt(1);
                 if (condition != 0) {
-                    int32_t instructionOffset = getArgValue(0);
+                    int32_t instructionOffset = readArgInt(0);
                     jumpToBytecodeInstruction(currentLocalFrame, instructionOffset);
                 }
             }
@@ -200,11 +209,11 @@ void scheduleApp(allocPointer_t runningApp) {
             uint32_t result = 0;
             if (opcodeOffset == 0x0) {
                 // bNot.
-                uint32_t operand = getArgValue(1);
+                uint32_t operand = readArgInt(1);
                 result = ~operand;
             } else {
-                uint32_t operand1 = getArgValue(1);
-                uint32_t operand2 = getArgValue(2);
+                uint32_t operand1 = readArgInt(1);
+                uint32_t operand2 = readArgInt(2);
                 if (opcodeOffset == 0x1) {
                     // bOr.
                     result = (operand1 | operand2);
@@ -222,11 +231,11 @@ void scheduleApp(allocPointer_t runningApp) {
                     result = (operand1 >> operand2);
                 }
             }
-            setArgValue(0, result);
+            writeArgInt(0, result);
         } else if (opcodeCategory == 0x5) {
             // Comparison instructions.
-            int32_t operand1 = getArgValue(1);
-            int32_t operand2 = getArgValue(2);
+            int32_t operand1 = readArgInt(1);
+            int32_t operand2 = readArgInt(2);
             int32_t result = 0;
             if (opcodeOffset == 0x0) {
                 // equ.
@@ -241,11 +250,11 @@ void scheduleApp(allocPointer_t runningApp) {
                 // nGre.
                 result = (operand1 <= operand2);
             }
-            setArgValue(0, result);
+            writeArgInt(0, result);
         } else if (opcodeCategory == 0x6) {
             // Arithmetic instructions.
-            int32_t operand1 = getArgValue(1);
-            int32_t operand2 = getArgValue(2);
+            int32_t operand1 = readArgInt(1);
+            int32_t operand2 = readArgInt(2);
             int32_t result = 0;
             if (opcodeOffset == 0x0) {
                 // add.
@@ -265,7 +274,7 @@ void scheduleApp(allocPointer_t runningApp) {
                 // TODO: Throw error when dividing by zero.
                 result = operand1 % operand2;
             }
-            setArgValue(0, result);
+            writeArgInt(0, result);
         }
     } else {
         // TODO: Perform work in system app.

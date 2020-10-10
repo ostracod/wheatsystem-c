@@ -172,6 +172,18 @@ void scheduleApp(allocPointer_t runningApp) {
                     int8_t tempValue = readArgIntHelper(source, offset, SIGNED_INT_8_TYPE);
                     writeArgIntHelper(destination, offset, SIGNED_INT_8_TYPE, tempValue);
                 }
+            } else if (opcodeOffset == 0x2) {
+                // newArgFrame.
+                allocPointer_t nextArgFrame = getLocalFrameMember(
+                    currentLocalFrame,
+                    nextArgFrame
+                );
+                if (nextArgFrame != NULL_ALLOC_POINTER) {
+                    deleteAlloc(nextArgFrame);
+                }
+                heapMemoryOffset_t argFrameSize = (heapMemoryOffset_t)readArgInt(0);
+                nextArgFrame = createAlloc(ARG_FRAME_ALLOC_TYPE, argFrameSize);
+                setLocalFrameMember(currentLocalFrame, nextArgFrame, nextArgFrame);
             } else if (opcodeOffset == 0x3) {
                 // newAlloc.
                 int8_t isGuarded = (int8_t)readArgInt(1);
@@ -182,6 +194,21 @@ void scheduleApp(allocPointer_t runningApp) {
                     currentImplementerFileHandle
                 );
                 writeArgInt(0, tempAlloc);
+            } else if (opcodeOffset == 0x4) {
+                // delAlloc.
+                allocPointer_t tempAlloc = (allocPointer_t)readArgInt(0);
+                // TODO: Throw error if pointer is invalid.
+                deleteAlloc(tempAlloc);
+            } else if (opcodeOffset == 0x5) {
+                // allocSize.
+                allocPointer_t tempAlloc = (allocPointer_t)readArgInt(1);
+                heapMemoryOffset_t tempSize = getDynamicAllocSize(tempAlloc);
+                writeArgInt(0, tempSize);
+            } else if (opcodeOffset == 0x6) {
+                // allocCreator.
+                allocPointer_t tempAlloc = (allocPointer_t)readArgInt(1);
+                allocPointer_t tempCreator = getDynamicAllocMember(tempAlloc, creator);
+                writeArgInt(0, tempCreator);
             }
         } else if (opcodeCategory == 0x1) {
             // Control flow instructions.

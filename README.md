@@ -136,46 +136,60 @@ The following definitions are shared between all platform implementations:
 
 ### Common Data Structures
 
-* Dynamic allocation (stored in heap allocation)
+* Dynamic allocation header `dynamicAllocHeader_t`
     * `int8_t isGuarded`
     * `allocPointer_t creator`
+* Dynamic allocation (stored in heap allocation)
+    * `dynamicAllocHeader_t dynamicAllocHeader`
     * Dynamic allocation data
-* Running app (stored in heap allocation)
+* Running app header `runningAppHeader_t`
     * `allocPointer_t fileHandle`
     * `allocPointer_t localFrame`
     * `int8_t isWaiting`
+* Running app (stored in heap allocation)
+    * `runningAppHeader_t runningAppHeader`
     * Global frame data
-* Local frame (stored in heap allocation)
+* Local frame header `localFrameHeader_t`
     * `allocPointer_t implementer`
     * `allocPointer_t caller`
     * `int32_t functionIndex`
     * `allocPointer_t previousLocalFrame`
     * `allocPointer_t nextArgFrame`
     * `int8_t lastErrorCode`
+* Local frame (stored in heap allocation)
+    * `localFrameHeader_t localFrameHeader`
     * Local frame data
-* Bytecode app (stored in file)
+* Bytecode app header `bytecodeAppHeader_t`
     * `int32_t globalFrameSize`
     * `int32_t functionTableLength`
     * `int32_t appDataFilePos`
-    * Function table
-    * Instruction array
-    * Application data
-* Bytecode function (stored in bytecode function table)
+* Bytecode function `bytecodeFunction_t`
     * `int32_t functionId`
     * `int8_t isGuarded`
     * `int32_t argumentFrameSize`
     * `int32_t localFrameSize`
     * `int32_t instructionBodyFilePos`
     * `int32_t instructionBodySize`
-* Bytecode global frame (stored in global frame of running app)
+* Bytecode app (stored in file)
+    * `bytecodeAppHeader_t bytecodeAppHeader`
+    * Function table
+    * Instruction array
+    * Application data
+* Bytecode global frame header `bytecodeGlobalFrameHeader_t`
     * `int32_t functionTableLength`
     * `int32_t appDataFilePos`
+* Bytecode running app (stored in heap allocation)
+    * `runningAppHeader_t runningAppHeader`
+    * `bytecodeGlobalFrameHeader_t bytecodeGlobalFrameHeader`
     * Bytecode global frame data
-* Bytecode local frame (stored in local frame)
+* Bytecode local frame header `bytecodeLocalFrameHeader_t`
     * `int32_t instructionBodyStartFilePos`
     * `int32_t instructionBodyEndFilePos`
     * `int32_t instructionFilePos`
     * `int32_t errorHandler`
+* Bytecode local frame (stored in heap allocation)
+    * `localFrameHeader_t localFrameHeader`
+    * `bytecodeLocalFrameHeader_t bytecodeLocalFrameHeader`
     * Bytecode local frame data
 * Instruction argument `instructionArg_t`
     * `uint8_t prefix`

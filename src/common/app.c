@@ -49,15 +49,20 @@ void launchApp(allocPointer_t fileHandle) {
     // Call init function if available.
     int32_t initFunctionIndex = findBytecodeFunction(fileHandle, INIT_FUNC_ID);
     if (initFunctionIndex >= 0) {
-        callFunction(runningApp, runningApp, initFunctionIndex);
+        callFunction(runningApp, NULL_ALLOC_POINTER, runningApp, initFunctionIndex);
     }
 }
 
-void callFunction(allocPointer_t caller, allocPointer_t implementer, int32_t functionIndex) {
+void callFunction(
+    allocPointer_t threadApp,
+    allocPointer_t caller,
+    allocPointer_t implementer,
+    int32_t functionIndex
+) {
     
     allocPointer_t fileHandle = getRunningAppMember(implementer, fileHandle);
     int8_t fileType = getFileHandleType(fileHandle);
-    allocPointer_t previousLocalFrame = getRunningAppMember(caller, localFrame);
+    allocPointer_t previousLocalFrame = getRunningAppMember(threadApp, localFrame);
     
     // Determine local frame size.
     heapMemoryOffset_t localFrameSize = sizeof(localFrameHeader_t);
@@ -102,13 +107,31 @@ void callFunction(allocPointer_t caller, allocPointer_t implementer, int32_t fun
         setBytecodeLocalFrameMember(localFrame, errorHandler, -1);
     }
     
-    // Update caller local frame.
-    setRunningAppMember(caller, localFrame, localFrame);
+    // Update thread app local frame.
+    setRunningAppMember(threadApp, localFrame, localFrame);
 }
 
-void scheduleApp(allocPointer_t runningApp) {
+void cleanUpNextArgFrame() {
+    allocPointer_t nextArgFrame = getLocalFrameMember(currentLocalFrame, nextArgFrame);
+    if (nextArgFrame != NULL_ALLOC_POINTER) {
+        deleteAlloc(nextArgFrame);
+    }
+}
+
+void returnFromFunction() {
+    cleanUpNextArgFrame();
+    allocPointer_t previousLocalFrame = getLocalFrameMember(
+        currentLocalFrame,
+        previousLocalFrame
+    );
+    deleteAlloc(currentLocalFrame);
+    setRunningAppMember(currentThreadApp, localFrame, previousLocalFrame);
+}
+
+void scheduleAppThread(allocPointer_t runningApp) {
     
-    currentLocalFrame = getRunningAppMember(runningApp, localFrame);
+    currentThreadApp = runningApp;
+    currentLocalFrame = getRunningAppMember(currentThreadApp, localFrame);
     if (currentLocalFrame == NULL_ALLOC_POINTER) {
         return;
     }
@@ -130,8 +153,7 @@ void scheduleApp(allocPointer_t runningApp) {
             instructionFilePos
         );
         if (currentInstructionFilePos >= instructionBodyEndFilePos) {
-            // TODO: Return to caller.
-            
+            returnFromFunction();
             return;
         }
         uint8_t opcode = readFileAndAdvance(
@@ -174,15 +196,9 @@ void scheduleApp(allocPointer_t runningApp) {
                 }
             } else if (opcodeOffset == 0x2) {
                 // newArgFrame.
-                allocPointer_t nextArgFrame = getLocalFrameMember(
-                    currentLocalFrame,
-                    nextArgFrame
-                );
-                if (nextArgFrame != NULL_ALLOC_POINTER) {
-                    deleteAlloc(nextArgFrame);
-                }
+                cleanUpNextArgFrame();
                 heapMemoryOffset_t argFrameSize = (heapMemoryOffset_t)readArgInt(0);
-                nextArgFrame = createAlloc(ARG_FRAME_ALLOC_TYPE, argFrameSize);
+                allocPointer_t nextArgFrame = createAlloc(ARG_FRAME_ALLOC_TYPE, argFrameSize);
                 setLocalFrameMember(currentLocalFrame, nextArgFrame, nextArgFrame);
             } else if (opcodeOffset == 0x3) {
                 // newAlloc.
@@ -230,6 +246,21 @@ void scheduleApp(allocPointer_t runningApp) {
                     int32_t instructionOffset = readArgInt(0);
                     jumpToBytecodeInstruction(currentLocalFrame, instructionOffset);
                 }
+            }
+        } else if (opcodeCategory == 0x3) {
+            // Function instructions.
+            if (opcodeOffset == 0x1) {
+                // call.
+                int32_t functionIndex = readArgInt(0);
+                callFunction(
+                    currentThreadApp,
+                    currentImplementer,
+                    currentImplementer,
+                    functionIndex
+                );
+            } else if (opcodeOffset == 0x3) {
+                // ret.
+                returnFromFunction();
             }
         } else if (opcodeCategory == 0x4) {
             // Bitwise instructions.

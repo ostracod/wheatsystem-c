@@ -56,8 +56,19 @@ typedef struct localFrameHeader {
 #define writeLocalFrame(localFrame, index, type, value) \
     writeHeapMemory(getLocalFrameDataAddress(localFrame) + index, type, value)
 
+allocPointer_t currentThreadApp;
+allocPointer_t currentLocalFrame;
+allocPointer_t currentImplementer;
+allocPointer_t currentImplementerFileHandle;
+
 void launchApp(allocPointer_t fileHandle);
-void callFunction(allocPointer_t caller, allocPointer_t implementer, int32_t functionIndex);
-void scheduleApp(allocPointer_t runningApp);
+void callFunction(
+    allocPointer_t threadApp,
+    allocPointer_t caller,
+    allocPointer_t implementer,
+    int32_t functionIndex
+);
+void returnFromFunction();
+void scheduleAppThread(allocPointer_t runningApp);
 
 

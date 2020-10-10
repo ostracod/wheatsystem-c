@@ -64,9 +64,6 @@ typedef struct instructionArg {
 #pragma pack(pop)
 
 instructionArg_t instructionArgArray[MAXIMUM_ARG_AMOUNT];
-allocPointer_t currentLocalFrame;
-allocPointer_t currentImplementer;
-allocPointer_t currentImplementerFileHandle;
 int32_t currentInstructionFilePos;
 
 #define getBytecodeAppMember(fileHandle, memberName) \

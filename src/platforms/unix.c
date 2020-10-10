@@ -25,7 +25,7 @@ int main(int argc, const char *argv[]) {
     launchApp(tempFileHandle);
     allocPointer_t runningApp = getFileHandleRunningApp(tempFileHandle);
     while (true) {
-        scheduleApp(runningApp);
+        scheduleAppThread(runningApp);
         sleepMilliseconds(100);
     }
     return 0;

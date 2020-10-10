@@ -12,7 +12,7 @@ int main(void) {
     launchApp(tempFileHandle);
     allocPointer_t runningApp = getFileHandleRunningApp(tempFileHandle);
     while (true) {
-        scheduleApp(runningApp);
+        scheduleAppThread(runningApp);
         _delay_ms(100);
     }
     return 0;

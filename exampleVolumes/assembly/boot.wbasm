@@ -1,27 +1,39 @@
 
-FUNC init, init_ID
+FUNC isPrime
     
-    VAR number, s32
-    VAR isPrime, s8
+    ARG number, s32
+    ARG isPrime, s8
     VAR factor, s32
     VAR condition, s32
     
-    wrt number, 2
-    LBL loop
     wrt isPrime, 1
     wrt factor, 2
-    
     LBL checkFactorLoop
+    
     gre condition, number, factor
-    jmpZ checkFactorSkip, condition
+    jmpNZ retSkip, condition
+    ret
+    LBL retSkip
     mod condition, number, factor
     jmpNZ registerCompositeSkip, condition
     wrt isPrime, 0
-    jmp checkFactorSkip
+    ret
     LBL registerCompositeSkip
+    
     add factor, factor, 1
     jmp checkFactorLoop
-    LBL checkFactorSkip
+END
+
+FUNC init, init_ID
+    
+    VAR number, s32
+    
+    wrt number, 2
+    LBL loop
+    
+    newArgFrame 5
+    wrt nextArgFrame[0]:s32, number
+    call isPrime
     
     # TODO: Print the number if prime.
     

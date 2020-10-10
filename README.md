@@ -186,11 +186,13 @@ The following definitions are shared between all platform implementations:
 
 ### Common Global Variables
 
-* Bytecode interpreter variables
-    * `instructionArg_t instructionArgArray[MAXIMUM_ARG_AMOUNT]`
+* App system variables
+    * `allocPointer_t currentThreadApp`
     * `allocPointer_t currentLocalFrame`
     * `allocPointer_t currentImplementer`
     * `allocPointer_t currentImplementerFileHandle`
+* Bytecode interpreter variables
+    * `instructionArg_t instructionArgArray[MAXIMUM_ARG_AMOUNT]`
     * `int32_t currentInstructionFilePos`
 
 ### Common Functions
@@ -227,8 +229,9 @@ The following definitions are shared between all platform implementations:
     * `<type> readLocalFrame(allocPointer_t localFrame, heapMemoryOffset_t, index, <type>)`
     * `void writeLocalFrame(allocPointer_t localFrame, heapMemoryOffset_t index, <type>, <type> value)`
     * `void launchApp(allocPointer_t fileHandle)`
-    * `void callFunction(allocPointer_t caller, allocPointer_t implementer, int32_t functionIndex)`
-    * `void scheduleApp(allocPointer_t runningApp)`
+    * `void callFunction(allocPointer_t threadApp, allocPointer_t caller, allocPointer_t implementer, int32_t functionIndex)`
+    * `void returnFromFunction()`
+    * `void scheduleAppThread(allocPointer_t runningApp)`
 * Bytecode application functions
     * `<memberType> getBytecodeAppMember(allocPointer_t fileHandle, <memberName>)`
     * `<memberType> getBytecodeFunctionMember(allocPointer_t fileHandle, <memberName>)`

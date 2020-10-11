@@ -1,6 +1,7 @@
 
 #include "./headers.h"
 
+declareArrayConstantWithValue(BOOT_STRING_CONSTANT, "boot");
 declareArrayConstantWithValue(OPCODE_DEBUG_TEXT, "Opcode: ");
 
 void launchApp(allocPointer_t fileHandle) {
@@ -333,6 +334,13 @@ void scheduleAppThread(allocPointer_t runningApp) {
                 result = operand1 % operand2;
             }
             writeArgInt(0, result);
+        } else if (opcodeCategory == 0x7) {
+            // Application instructions.
+            if (opcodeOffset == 0x0) {
+                // launch.
+                allocPointer_t appHandle = readArgInt(0);
+                launchApp(appHandle);
+            }
         } else if (opcodeCategory == 0x9) {
             // File handle instructions.
             if (opcodeOffset == 0x0) {
@@ -349,6 +357,58 @@ void scheduleAppThread(allocPointer_t runningApp) {
     } else {
         // TODO: Perform work in system app.
         
+    }
+}
+
+void runAppSystem() {
+    
+    // Launch boot application.
+    allocPointer_t bootFileName = createStringAllocFromArrayConstant(BOOT_STRING_CONSTANT);
+    allocPointer_t bootFileHandle = openFileByStringAlloc(bootFileName);
+    deleteAlloc(bootFileName);
+    if (bootFileHandle == NULL_ALLOC_POINTER) {
+        return;
+    }
+    launchApp(bootFileHandle);
+    
+    // Enter loop scheduling app threads.
+    int8_t runningAppIndex = 0;
+    while (true) {
+        
+        // Find running app with index equal to runningAppIndex.
+        allocPointer_t runningApp = NULL_ALLOC_POINTER;
+        allocPointer_t firstRunningApp = NULL_ALLOC_POINTER;
+        int8_t index = 0;
+        allocPointer_t tempAlloc = getFirstAlloc();
+        while (tempAlloc != NULL_ALLOC_POINTER) {
+            int8_t tempType = getAllocType(tempAlloc);
+            if (tempType == RUNNING_APP_ALLOC_TYPE) {
+                if (index == 0) {
+                    firstRunningApp = tempAlloc;
+                }
+                if (index == runningAppIndex) {
+                    runningApp = tempAlloc;
+                    break;
+                }
+                index += 1;
+            }
+            tempAlloc = getAllocNext(tempAlloc);
+        }
+        
+        // If we couldn't find running app at runningAppIndex,
+        // try to schedule the first running app.
+        if (runningApp == NULL_ALLOC_POINTER) {
+            if (firstRunningApp == NULL_ALLOC_POINTER) {
+                return;
+            }
+            runningApp = firstRunningApp;
+            runningAppIndex = 0;
+        }
+        
+        // Schedule thread time for runningApp.
+        scheduleAppThread(runningApp);
+        sleepMilliseconds(100);
+        runningAppIndex += 1;
     }
 }
 

@@ -20,4 +20,6 @@ typedef int8_t * arrayConstant_t;
 typedef int16_t heapMemoryOffset_t;
 typedef int16_t allocPointer_t;
 
+void sleepMilliseconds(int32_t milliseconds);
+
 

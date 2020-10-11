@@ -1,8 +1,6 @@
 
 #include "./headers.h"
 
-declareArrayConstantWithValue(BOOT_STRING_CONSTANT, "boot");
-
 void sleepMilliseconds(int32_t milliseconds) {
     struct timespec ts;
     ts.tv_sec = milliseconds / 1000;
@@ -20,14 +18,7 @@ int main(int argc, const char *argv[]) {
     if (!tempResult) {
         return 1;
     }
-    allocPointer_t bootName = createStringAllocFromArrayConstant(BOOT_STRING_CONSTANT);
-    allocPointer_t tempFileHandle = openFileByStringAlloc(bootName);
-    launchApp(tempFileHandle);
-    allocPointer_t runningApp = getFileHandleRunningApp(tempFileHandle);
-    while (true) {
-        scheduleAppThread(runningApp);
-        sleepMilliseconds(100);
-    }
+    runAppSystem();
     return 0;
 }
 

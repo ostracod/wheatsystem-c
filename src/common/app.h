@@ -70,5 +70,6 @@ void callFunction(
 );
 void returnFromFunction();
 void scheduleAppThread(allocPointer_t runningApp);
+void runAppSystem();
 
 

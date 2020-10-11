@@ -246,6 +246,7 @@ The following definitions are shared between all platform implementations:
     * `void callFunction(allocPointer_t threadApp, allocPointer_t caller, allocPointer_t implementer, int32_t functionIndex)`
     * `void returnFromFunction()`
     * `void scheduleAppThread(allocPointer_t runningApp)`
+    * `void runAppSystem()`
 * Bytecode application functions
     * `<memberType> getBytecodeAppMember(allocPointer_t fileHandle, <memberName>)`
     * `<memberType> getBytecodeFunctionMember(allocPointer_t fileHandle, <memberName>)`
@@ -281,6 +282,7 @@ The following definitions must be provided by each platform implementation:
 
 * Debug functions
     * `void printDebugCharacter(int8_t character)`
+    * `void sleepMilliseconds(int32_t milliseconds)`
 * Memory functions
     * `void declareArrayConstantWithValue(<name>, arrayConstant_t value)`
     * `void declareArrayConstantWithSize(<name>, int32_t size)`

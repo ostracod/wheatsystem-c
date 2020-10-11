@@ -17,6 +17,7 @@
 #define NULL ((void *)0)
 
 #define printDebugCharacter(character) sendSerialCharacter(character)
+#define sleepMilliseconds(milliseconds) _delay_ms(milliseconds)
 #define declareArrayConstantWithValue(name, ...) const int8_t name[] PROGMEM = __VA_ARGS__
 #define declareArrayConstantWithSize(name, size) const int8_t name[size]
 #define getArrayConstantSize(name) (int32_t)sizeof(name)

@@ -108,7 +108,7 @@ instructionArg_t parseInstructionArg() {
             heapMemoryOffset_t tempOffset;
             if (referenceType == DYNAMIC_ALLOC_REF_TYPE) {
                 allocPointer_t tempPointer = (allocPointer_t)argValue1;
-                baseAddress = convertPointerToAddress(tempPointer);
+                baseAddress = getDynamicAllocDataAddress(tempPointer);
                 instructionArg_t tempArg2 = parseInstructionArg();
                 tempOffset = (heapMemoryOffset_t)readArgIntHelper(&tempArg2, 0, -1);
             } else {

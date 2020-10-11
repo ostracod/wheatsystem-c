@@ -6,7 +6,7 @@ const childProcess = require("child_process");
 const assemblerDirectoryPath = pathUtils.join(__dirname, "../../../wheatbytecode-asm");
 const unixVolumePath = pathUtils.join(__dirname, "../unixVolume");
 const linkedListVolumePath = pathUtils.join(__dirname, "../linkedListVolume");
-const bytecodeAppNameList = ["boot"];
+const bytecodeAppNameList = ["boot", "helper"];
 
 const fileTypeSet = {
     generic: 0,

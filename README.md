@@ -97,7 +97,6 @@ The following definitions are shared between all platform implementations:
     * `int8_t LOCAL_FRAME_ALLOC_TYPE`
     * `int8_t ARG_FRAME_ALLOC_TYPE`
     * `int8_t DYNAMIC_ALLOC_TYPE`
-    * `int8_t STRING_ALLOC_TYPE`
 * `allocPointer_t NULL_ALLOC_POINTER`
 * File types
     * `int8_t GENERIC_FILE_TYPE`
@@ -220,6 +219,7 @@ The following definitions are shared between all platform implementations:
     * `void printDebugNumber(int32_t number)`
     * `void printDebugNewline()`
 * Heap allocation functions
+    * `heapMemoryOffset_t getDynamicAllocDataAddress(allocPointer_t pointer)`
     * `<type> readDynamicAlloc(allocPointer_t pointer, heapMemoryOffset_t index, <type>)`
     * `void writeDynamicAlloc(allocPointer_t pointer, heapMemoryOffset_t index, <type>, <type> value)`
     * `heapMemoryOffset_t getDynamicAllocSize(allocPointer_t pointer)`

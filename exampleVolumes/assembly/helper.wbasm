@@ -1,0 +1,11 @@
+
+FUNC calculate, 1
+    
+    ARG destination, s32
+    ARG operand, s32
+    
+    add destination, operand, 5
+
+END
+
+

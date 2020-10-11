@@ -333,6 +333,18 @@ void scheduleAppThread(allocPointer_t runningApp) {
                 result = operand1 % operand2;
             }
             writeArgInt(0, result);
+        } else if (opcodeCategory == 0x9) {
+            // File handle instructions.
+            if (opcodeOffset == 0x0) {
+                // openFile.
+                allocPointer_t fileName = readArgInt(1);
+                allocPointer_t fileHandle = openFileByStringAlloc(fileName);
+                writeArgInt(0, fileHandle);
+            } else if (opcodeOffset == 0x1) {
+                // closeFile.
+                allocPointer_t fileHandle = readArgInt(0);
+                closeFile(fileHandle);
+            }
         }
     } else {
         // TODO: Perform work in system app.

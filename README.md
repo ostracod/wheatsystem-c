@@ -57,9 +57,9 @@ Each platform definition has the following format:
 
 When building a platform, `./fake.js` will incorporate the following files:
 
-* `.c` and `.h` files with the base path `platforms/(platform name)`
-* `.c` and `.h` files corresponding to each base path in `baseFilePaths`
-* All files provided in `./src/common`
+1. `.c` and `.h` files with the base path `platforms/(platform name)`
+1. All files provided in `./src/common`
+1. `.c` and `.h` files corresponding to each base path in `baseFilePaths`
 
 As part of the build process, `./fake.js` uses `./prepreprocessor.js` to expand prepreprocessor invocations in `.c` and `.h` files. Prepreprocessor invocations have the following syntax:
 
@@ -132,6 +132,10 @@ The following definitions are shared between all platform implementations:
 * Instruction argument data types
     * `uint8_t SIGNED_INT_8_TYPE`
     * `uint8_t SIGNED_INT_32_TYPE`
+* System application IDs
+    * `int8_t TERM_APP_ID`
+    * `int8_t SERIAL_APP_ID`
+    * `int8_t GPIO_APP_ID`
 
 ### Common Data Structures
 
@@ -196,6 +200,15 @@ The following definitions are shared between all platform implementations:
     * `heapMemoryOffset_t maximumAddress`
     * `int32_t constantValue`
     * `int32_t appDataIndex`
+* System application function `systemAppFunction_t`
+    * `int8_t id`
+    * `int8_t localFrameSize`
+    * `void (*threadAction)()`
+* System application `systemApp_t`
+    * `int8_t id`
+    * `int8_t globalFrameSize`
+    * `arrayConstant_t(systemAppFunction_t) functionList`
+    * `int8_t functionAmount`
 
 ### Common Global Variables
 
@@ -263,6 +276,8 @@ The following definitions are shared between all platform implementations:
     * `void writeArgInt(int8_t index, int32_t value)`
     * `instructionArg_t parseInstructionArg()`
     * `void jumpToBytecodeInstruction(allocPointer_t localFrame, int32_t instructionOffset)`
+* System application functions
+    * `systemApp_t createSystemApp(int8_t appId, int8_t globalFrameSize, arrayConstant_t(systemAppFunction_t) systemAppFunctionArray)`
 
 ## Platform-Specific Source Definitions
 
@@ -277,6 +292,7 @@ The following definitions must be provided by each platform implementation:
 ### Platform-Specific Constants
 
 * `heapMemoryOffset_t HEAP_MEMORY_SIZE`
+* `arrayConstant_t(systemApp_t) systemAppArray`
 
 ### Platform-Specific Functions
 

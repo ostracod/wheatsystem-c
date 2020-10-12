@@ -154,12 +154,12 @@ targetPlatformConstants["BUILD_DIR"] = buildPath;
 targetPlatformConstants["EXECUTABLE_PATH"] = executablePath;
 
 const baseFilePathList = [pathUtils.join(platformsPath, targetPlatformDefinition.name)];
-for (const baseFilePath of targetPlatformDefinition.baseFilePaths) {
-    baseFilePathList.push(pathUtils.join(sourcePath, baseFilePath));
-}
 const commonBaseFileNames = getBaseFileNamesInDirectory(commonPath);
 for (const baseFileName of commonBaseFileNames) {
     baseFilePathList.push(pathUtils.join(commonPath, baseFileName));
+}
+for (const baseFilePath of targetPlatformDefinition.baseFilePaths) {
+    baseFilePathList.push(pathUtils.join(sourcePath, baseFilePath));
 }
 
 console.log("Base file paths for compilation:");

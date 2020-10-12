@@ -8,7 +8,9 @@
             "memory/linkedListAllocation",
             "communication/unixNativeFile",
             "fileSystem/unixStorageSpace",
-            "fileSystem/linkedListFileSystem"
+            "fileSystem/linkedListFileSystem",
+            "systemApp/unixTermApp",
+            "systemApp/unixSystemApps"
         ],
         "compiler": {
             "name": "gcc",

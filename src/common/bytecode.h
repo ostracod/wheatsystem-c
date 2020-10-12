@@ -92,7 +92,6 @@ int32_t currentInstructionFilePos;
 #define readArgInt(index) readArgIntHelper(instructionArgArray + index, 0, -1)
 #define writeArgInt(index, value) writeArgIntHelper(instructionArgArray + index, 0, -1, value)
 
-int32_t findBytecodeFunction(allocPointer_t fileHandle, int32_t functionId);
 int32_t readArgIntHelper(instructionArg_t *arg, int32_t offset, int8_t dataType);
 void writeArgIntHelper(instructionArg_t *arg, int32_t offset, int8_t dataType, int32_t value);
 instructionArg_t parseInstructionArg();

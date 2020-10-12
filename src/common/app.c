@@ -4,6 +4,24 @@
 declareArrayConstantWithValue(BOOT_STRING_CONSTANT, "boot");
 declareArrayConstantWithValue(OPCODE_DEBUG_TEXT, "Opcode: ");
 
+int32_t findFunctionById(allocPointer_t fileHandle, int32_t functionId) {
+    int8_t fileType = getFileHandleType(fileHandle);
+    if (fileType == BYTECODE_APP_FILE_TYPE) {
+        int32_t functionTableLength = getBytecodeAppMember(fileHandle, functionTableLength);
+        for (int32_t index = 0; index < functionTableLength; index++) {
+            int32_t tempFunctionId = getBytecodeFunctionMember(fileHandle, index, functionId);
+            if (tempFunctionId == functionId) {
+                return index;
+            }
+        }
+    } else if (fileType == SYSTEM_APP_FILE_TYPE) {
+        // TODO: Find function in system application.
+    } else {
+        // TODO: Throw an error.
+    }
+    return -1;
+}
+
 void launchApp(allocPointer_t fileHandle) {
     
     // Do not launch app again if it is already running.
@@ -48,7 +66,7 @@ void launchApp(allocPointer_t fileHandle) {
     }
     
     // Call init function if available.
-    int32_t initFunctionIndex = findBytecodeFunction(fileHandle, INIT_FUNC_ID);
+    int32_t initFunctionIndex = findFunctionById(fileHandle, INIT_FUNC_ID);
     if (initFunctionIndex >= 0) {
         callFunction(runningApp, NULL_ALLOC_POINTER, runningApp, initFunctionIndex);
     }
@@ -250,7 +268,13 @@ void scheduleAppThread(allocPointer_t runningApp) {
             }
         } else if (opcodeCategory == 0x3) {
             // Function instructions.
-            if (opcodeOffset == 0x1) {
+            if (opcodeOffset == 0x0) {
+                // findFunc.
+                allocPointer_t appHandle = (allocPointer_t)readArgInt(1);
+                int32_t functionId = readArgInt(2);
+                int32_t functionIndex = findFunctionById(appHandle, functionId);
+                writeArgInt(0, functionIndex);
+            } else if (opcodeOffset == 0x1) {
                 // call.
                 int32_t functionIndex = readArgInt(0);
                 callFunction(
@@ -259,9 +283,24 @@ void scheduleAppThread(allocPointer_t runningApp) {
                     currentImplementer,
                     functionIndex
                 );
+            } else if (opcodeOffset == 0x2) {
+                // callRemote.
+                allocPointer_t appHandle = (allocPointer_t)readArgInt(0);
+                int32_t functionIndex = readArgInt(1);
+                allocPointer_t tempImplementer = getFileHandleRunningApp(appHandle);
+                callFunction(
+                    currentThreadApp,
+                    currentImplementer,
+                    tempImplementer,
+                    functionIndex
+                );
             } else if (opcodeOffset == 0x3) {
                 // ret.
                 returnFromFunction();
+            } else if (opcodeOffset == 0x4) {
+                // caller.
+                allocPointer_t tempCaller = getLocalFrameMember(currentLocalFrame, caller);
+                writeArgInt(0, tempCaller);
             }
         } else if (opcodeCategory == 0x4) {
             // Bitwise instructions.

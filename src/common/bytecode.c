@@ -10,17 +10,6 @@ allocPointer_t currentImplementer;
 allocPointer_t currentImplementerFileHandle;
 int32_t currentInstructionFilePos;
 
-int32_t findBytecodeFunction(allocPointer_t fileHandle, int32_t functionId) {
-    int32_t functionTableLength = getBytecodeAppMember(fileHandle, functionTableLength);
-    for (int32_t index = 0; index < functionTableLength; index++) {
-        int32_t tempFunctionId = getBytecodeFunctionMember(fileHandle, index, functionId);
-        if (tempFunctionId == functionId) {
-            return index;
-        }
-    }
-    return -1;
-}
-
 int32_t readArgIntHelper(instructionArg_t *arg, int32_t offset, int8_t dataType) {
     uint8_t tempPrefix = arg->prefix;
     uint8_t referenceType = getArgPrefixReferenceType(tempPrefix);

@@ -8,13 +8,4 @@ FUNC calculate, -1
 
 END
 
-FUNC init, init_ID
-    
-    VAR x, s8
-    LBL loop
-    add x, x, 1
-    jmp loop
-
-END
-
 

@@ -117,8 +117,8 @@ The following definitions are shared between all platform implementations:
     * `int32_t READ_GPIO_FUNC_ID`
     * `int32_t WRT_GPIO_FUNC_ID`
 * Bytecode instruction definitions
-    * `arrayConstant_t argumentAmountOffsetArray`
-    * `arrayConstant_t argumentAmountArray`
+    * `arrayConstant_t(int8_t) argumentAmountOffsetArray`
+    * `arrayConstant_t(int8_t) argumentAmountArray`
     * `int8_t MAXIMUM_ARG_AMOUNT`
 * Instruction argument reference types
     * `uint8_t CONSTANT_REF_TYPE`
@@ -215,7 +215,7 @@ The following definitions are shared between all platform implementations:
     * `<type> getStructMemberType(<structType>, <memberName>)`
 * Debug functions
     * `void printDebugString(int8_t *text)`
-    * `void printDebugStringConstant(arrayConstant_t stringConstant)`
+    * `void printDebugStringConstant(arrayConstant_t(int8_t) stringConstant)`
     * `void printDebugNumber(int32_t number)`
     * `void printDebugNewline()`
 * Heap allocation functions
@@ -224,7 +224,7 @@ The following definitions are shared between all platform implementations:
     * `void writeDynamicAlloc(allocPointer_t pointer, heapMemoryOffset_t index, <type>, <type> value)`
     * `heapMemoryOffset_t getDynamicAllocSize(allocPointer_t pointer)`
     * `<memberType> getDynamicAllocMember(allocPointer_t pointer, <memberName>)`
-    * `createStringAllocFromArrayConstant(arrayConstant_t arrayConstant)`
+    * `void createStringAllocFromArrayConstant(arrayConstant_t(int8_t) arrayConstant)`
     * `allocPointer_t createDynamicAlloc(heapMemoryOffset_t size, int8_t isGuarded, allocPointer_t creator)`
 * File system functions
     * `int8_t getHasAdminPermFromFileAttributes(uint8_t fileAttributes)`
@@ -270,7 +270,7 @@ The following definitions must be provided by each platform implementation:
 
 ### Platform-Specific Types
 
-* `arrayConstant_t` may occupy non-volatile memory
+* `arrayConstant_t(<type>)` may occupy non-volatile memory
 * `heapMemoryOffset_t` must accommodate values up to `HEAP_MEMORY_SIZE`
 * `allocPointer_t` must accommodate maximum pointer value
 
@@ -284,10 +284,10 @@ The following definitions must be provided by each platform implementation:
     * `void printDebugCharacter(int8_t character)`
     * `void sleepMilliseconds(int32_t milliseconds)`
 * Memory functions
-    * `void declareArrayConstantWithValue(<name>, arrayConstant_t value)`
-    * `void declareArrayConstantWithSize(<name>, int32_t size)`
-    * `int32_t getArrayConstantSize(<name>)`
-    * `int8_t readArrayConstantValue(<name>, int32_t index)`
+    * `void declareArrayConstantWithValue(<name>, <type>, arrayConstant_t(<type>) arrayConstant)`
+    * `void declareArrayConstantWithLength(<name>, <type>, int32_t size)`
+    * `int32_t getArrayConstantLength(<name>)`
+    * `<type> readArrayConstantValue(arrayConstant_t(<type>) arrayConstant, int32_t index)`
     * `<type> readHeapMemory(heapMemoryOffset_t address, <type>)`
     * `void writeHeapMemory(heapMemoryOffset_t address, <type>, <type> value)`
     * `void convertNumberToText(int8_t *destination, int32_t number)`

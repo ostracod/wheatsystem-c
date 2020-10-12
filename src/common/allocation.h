@@ -27,7 +27,7 @@ typedef struct dynamicAllocHeader {
     (getAllocSize(pointer) - sizeof(dynamicAllocHeader_t))
 
 #define createStringAllocFromArrayConstant(arrayConstant) \
-    createStringAllocFromArrayConstantHelper(arrayConstant, (heapMemoryOffset_t)(getArrayConstantSize(arrayConstant) - 1))
+    createStringAllocFromArrayConstantHelper(arrayConstant, (heapMemoryOffset_t)(getArrayConstantLength(arrayConstant) - 1))
 
 allocPointer_t createDynamicAlloc(
     heapMemoryOffset_t size,
@@ -35,7 +35,7 @@ allocPointer_t createDynamicAlloc(
     allocPointer_t creator
 );
 allocPointer_t createStringAllocFromArrayConstantHelper(
-    arrayConstant_t arrayConstant,
+    arrayConstant_t(int8_t) arrayConstant,
     heapMemoryOffset_t size
 );
 

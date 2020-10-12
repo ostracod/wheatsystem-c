@@ -1,8 +1,8 @@
 
 #include "./headers.h"
 
-declareArrayConstantWithValue(BOOT_STRING_CONSTANT, "boot");
-declareArrayConstantWithValue(OPCODE_DEBUG_TEXT, "Opcode: ");
+declareArrayConstantWithValue(BOOT_STRING_CONSTANT, int8_t, "boot");
+declareArrayConstantWithValue(OPCODE_DEBUG_TEXT, int8_t, "Opcode: ");
 
 int32_t findFunctionById(allocPointer_t fileHandle, int32_t functionId) {
     int8_t fileType = getFileHandleType(fileHandle);

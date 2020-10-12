@@ -210,14 +210,14 @@ argumentAmountsImplementationPath = pathUtils.join(intermediatePath, "argumentAm
 fs.writeFileSync(argumentAmountsHeaderPath, `
 #define MAXIMUM_ARG_AMOUNT ${maximumArgAmount}
 
-declareArrayConstantWithSize(argumentAmountOffsetArray, ${argumentAmountOffsetArray.length});
-declareArrayConstantWithSize(argumentAmountArray, ${argumentAmountArray.length});
+declareArrayConstantWithLength(argumentAmountOffsetArray, int8_t, ${argumentAmountOffsetArray.length});
+declareArrayConstantWithLength(argumentAmountArray, int8_t, ${argumentAmountArray.length});
 `);
 fs.writeFileSync(argumentAmountsImplementationPath, `
 #include "./headers.h"
 
-declareArrayConstantWithValue(argumentAmountOffsetArray, {${argumentAmountOffsetArray.join(",")}});
-declareArrayConstantWithValue(argumentAmountArray, {${argumentAmountArray.join(",")}});
+declareArrayConstantWithValue(argumentAmountOffsetArray, int8_t, {${argumentAmountOffsetArray.join(",")}});
+declareArrayConstantWithValue(argumentAmountArray, int8_t, {${argumentAmountArray.join(",")}});
 `);
 headerFilePathList.splice(firstCommonHeaderIndex, 0, argumentAmountsHeaderPath);
 implementationFilePathList.splice(firstCommonImplementationIndex, 0, argumentAmountsImplementationPath);

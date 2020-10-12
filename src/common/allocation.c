@@ -22,7 +22,7 @@ allocPointer_t createDynamicAlloc(
 }
 
 allocPointer_t createStringAllocFromArrayConstantHelper(
-    arrayConstant_t arrayConstant,
+    arrayConstant_t(int8_t) arrayConstant,
     heapMemoryOffset_t size
 ) {
     allocPointer_t output = createDynamicAlloc(size, true, NULL_ALLOC_POINTER);

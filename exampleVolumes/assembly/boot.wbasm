@@ -1,4 +1,10 @@
 
+# Create a text allocation from application data.
+MACRO newTextAlloc, dest, startLbl, endLbl
+    newAlloc dest, 0, ?endLbl - ?startLbl
+    wrtBuff dest[0]:s8, startLbl, ?endLbl - ?startLbl
+END
+
 FUNC isPrime
     
     ARG isPrime, s8
@@ -26,6 +32,12 @@ END
 
 FUNC init, init_ID
     
+    VAR termName, s32
+    VAR termHandle, s32
+    newTextAlloc termName, termNameStart, termNameEnd
+    openFile termHandle, termName
+    launch termHandle
+    
     VAR number, s32
     
     wrt number, 2
@@ -39,6 +51,12 @@ FUNC init, init_ID
     
     add number, number, 1
     jmp loop
+END
+
+APP_DATA
+    LBL termNameStart
+    DATA "term"
+    LBL termNameEnd
 END
 
 

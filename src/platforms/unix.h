@@ -14,7 +14,8 @@
 #define declareArrayConstantWithValue(name, type, ...) type name[] = __VA_ARGS__
 #define declareArrayConstantWithLength(name, type, size) type name[size]
 #define getArrayConstantLength(name) (int32_t)(sizeof(name) / sizeof(*name))
-#define readArrayConstantValue(name, index) name[index]
+#define getArrayConstantElementType(name) typeof(*name)
+#define readArrayConstantValue(name, index, type) *(type *)((int8_t *)name + index)
 #define convertNumberToText(destination, number) sprintf((char *)destination, "%d", number)
 
 typedef int16_t heapMemoryOffset_t;

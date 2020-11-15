@@ -1,8 +1,4 @@
 
-#define TERM_APP_ID 1
-#define SERIAL_APP_ID 2
-#define GPIO_APP_ID 3
-
 #pragma pack(push, 1)
 typedef struct systemAppFunction {
     int8_t id;
@@ -13,13 +9,24 @@ typedef struct systemAppFunction {
 
 #pragma pack(push, 1)
 typedef struct systemApp {
-    int8_t id;
     int8_t globalFrameSize;
     arrayConstant_t(systemAppFunction_t) functionList;
     int8_t functionAmount;
 } systemApp_t;
 #pragma pack(pop)
 
-#define createSystemApp(appId, globalFrameSize, systemAppFunctionArray) (systemApp_t){appId, globalFrameSize, systemAppFunctionArray, getArrayConstantLength(systemAppFunctionArray)}
+#pragma pack(push, 1)
+typedef struct systemGlobalFrameHeader {
+    int8_t id;
+} systemGlobalFrameHeader_t;
+#pragma pack(pop)
+
+#define createSystemApp(globalFrameSize, systemAppFunctionArray) (systemApp_t){globalFrameSize, systemAppFunctionArray, getArrayConstantLength(systemAppFunctionArray)}
+#define getSystemAppMember(id, memberName) \
+    !!!readArrayStructByPointer systemAppArray readArrayConstantValue id systemApp_t memberName
+#define getSystemGlobalFrameMember(runningApp, memberName) \
+    !!!readStructByPointer runningApp readGlobalFrame systemGlobalFrameHeader_t memberName
+#define setSystemGlobalFrameMember(runningApp, memberName, value) \
+    !!!writeStructByPointer runningApp writeGlobalFrame systemGlobalFrameHeader_t memberName value
 
 

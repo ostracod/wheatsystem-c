@@ -73,7 +73,7 @@ int32_t currentInstructionFilePos;
     readFile(fileHandle, sizeof(bytecodeAppHeader_t) + index, type)
 
 #define getBytecodeFunctionMember(fileHandle, functionIndex, memberName) \
-    !!!readTableStructByPointer fileHandle readBytecodeFunctionTable functionIndex bytecodeFunction_t memberName
+    !!!readArrayStructByPointer fileHandle readBytecodeFunctionTable functionIndex bytecodeFunction_t memberName
 
 #define getBytecodeGlobalFrameMember(runningApp, memberName) \
     !!!readStructByPointer runningApp readGlobalFrame bytecodeGlobalFrameHeader_t memberName

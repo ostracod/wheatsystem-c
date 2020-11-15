@@ -27,7 +27,7 @@ allocPointer_t createStringAllocFromArrayConstantHelper(
 ) {
     allocPointer_t output = createDynamicAlloc(size, true, NULL_ALLOC_POINTER);
     for (heapMemoryOffset_t index = 0; index < size; index++) {
-        int8_t tempCharacter = readArrayConstantValue(arrayConstant, index);
+        int8_t tempCharacter = readArrayConstantElement(arrayConstant, index);
         writeDynamicAlloc(output, index, int8_t, tempCharacter);
     }
     return output;

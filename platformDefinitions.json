@@ -35,7 +35,8 @@
             "communication/avrSpi",
             "communication/avrSerial",
             "fileSystem/externalEepromStorageSpace",
-            "fileSystem/linkedListFileSystem"
+            "fileSystem/linkedListFileSystem",
+            "systemApp/avrSystemApps"
         ],
         "compiler": {
             "name": "avr-gcc",

@@ -6,5 +6,7 @@
     (int32_t)((void *)&((structDefinition *)NULL)->memberName - NULL)
 #define getStructMemberType(structDefinition, memberName) \
     typeof(((structDefinition *)NULL)->memberName)
+#define readArrayConstantElement(name, index) \
+    !!!readArrayElementByPointer name readArrayConstantValue index getArrayConstantElementType(name)
 
 

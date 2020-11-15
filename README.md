@@ -132,10 +132,6 @@ The following definitions are shared between all platform implementations:
 * Instruction argument data types
     * `uint8_t SIGNED_INT_8_TYPE`
     * `uint8_t SIGNED_INT_32_TYPE`
-* System application IDs
-    * `int8_t TERM_APP_ID`
-    * `int8_t SERIAL_APP_ID`
-    * `int8_t GPIO_APP_ID`
 
 ### Common Data Structures
 
@@ -181,7 +177,7 @@ The following definitions are shared between all platform implementations:
 * Bytecode global frame header `bytecodeGlobalFrameHeader_t`
     * `int32_t functionTableLength`
     * `int32_t appDataFilePos`
-* Bytecode running app (stored in heap allocation)
+* Running bytecode app (stored in heap allocation)
     * `runningAppHeader_t runningAppHeader`
     * `bytecodeGlobalFrameHeader_t bytecodeGlobalFrameHeader`
     * Bytecode global frame data
@@ -205,10 +201,15 @@ The following definitions are shared between all platform implementations:
     * `int8_t localFrameSize`
     * `void (*threadAction)()`
 * System application `systemApp_t`
-    * `int8_t id`
     * `int8_t globalFrameSize`
     * `arrayConstant_t(systemAppFunction_t) functionList`
     * `int8_t functionAmount`
+* System global frame header `systemGlobalFrameHeader_t`
+    * `int8_t id`
+* Running system app (stored in heap allocation)
+    * `runningAppHeader_t runningAppHeader`
+    * `systemGlobalFrameHeader_t systemGlobalFrameHeader`
+    * System global frame data
 
 ### Common Global Variables
 
@@ -223,14 +224,10 @@ The following definitions are shared between all platform implementations:
 
 ### Common Functions
 
-* Struct manipulation macros
+* Memory functions
     * `int32_t getStructMemberOffset(<structType>, <memberName>)`
     * `<type> getStructMemberType(<structType>, <memberName>)`
-* Debug functions
-    * `void printDebugString(int8_t *text)`
-    * `void printDebugStringConstant(arrayConstant_t(int8_t) stringConstant)`
-    * `void printDebugNumber(int32_t number)`
-    * `void printDebugNewline()`
+    * `<type> readArrayConstantElement(arrayConstant_t(<type>) arrayConstant, int32_t index)`
 * Heap allocation functions
     * `heapMemoryOffset_t getDynamicAllocDataAddress(allocPointer_t pointer)`
     * `<type> readDynamicAlloc(allocPointer_t pointer, heapMemoryOffset_t index, <type>)`
@@ -277,7 +274,15 @@ The following definitions are shared between all platform implementations:
     * `instructionArg_t parseInstructionArg()`
     * `void jumpToBytecodeInstruction(allocPointer_t localFrame, int32_t instructionOffset)`
 * System application functions
-    * `systemApp_t createSystemApp(int8_t appId, int8_t globalFrameSize, arrayConstant_t(systemAppFunction_t) systemAppFunctionArray)`
+    * `systemApp_t createSystemApp(int8_t globalFrameSize, arrayConstant_t(systemAppFunction_t) systemAppFunctionArray)`
+    * `<memberType> getSystemAppMember(int8_t id, <memberName>)`
+    * `<memberType> getSystemGlobalFrameMember(allocPointer_t runningApp, <memberName>)`
+    * `void setSystemGlobalFrameMember(allocPointer_t runningApp, <memberName>, <memberType> value)`
+* Debug functions
+    * `void printDebugString(int8_t *text)`
+    * `void printDebugStringConstant(arrayConstant_t(int8_t) stringConstant)`
+    * `void printDebugNumber(int32_t number)`
+    * `void printDebugNewline()`
 
 ## Platform-Specific Source Definitions
 
@@ -303,7 +308,8 @@ The following definitions must be provided by each platform implementation:
     * `void declareArrayConstantWithValue(<name>, <type>, arrayConstant_t(<type>) arrayConstant)`
     * `void declareArrayConstantWithLength(<name>, <type>, int32_t size)`
     * `int32_t getArrayConstantLength(<name>)`
-    * `<type> readArrayConstantValue(arrayConstant_t(<type>) arrayConstant, int32_t index)`
+    * `<type> getArrayConstantElementType(arrayConstant_t(<type>) arrayConstant)`
+    * `<type1> readArrayConstantValue(arrayConstant_t(<type2>) arrayConstant, int32_t index, <type1>)`
     * `<type> readHeapMemory(heapMemoryOffset_t address, <type>)`
     * `void writeHeapMemory(heapMemoryOffset_t address, <type>, <type> value)`
     * `void convertNumberToText(int8_t *destination, int32_t number)`
@@ -350,7 +356,9 @@ The following definitions are recognized by the prepreprocessor:
     * `<type> readValue(allocPointer_t pointer, int32_t index, <type>)`
 * `!!!writeStructByPointer pointer writeValue structType memberName value`
     * `void writeValue(allocPointer_t pointer, int32_t index, <type>, <type> value)`
-* `!!!readTableStructByPointer pointer readValue tableIndex structDefinition memberName`
+* `!!!readArrayElementByPointer pointer readValue arrayIndex type`
+    * `<type> readValue(allocPointer_t pointer, int32_t index, <type>)`
+* `!!!readArrayStructByPointer pointer readValue arrayIndex structDefinition memberName`
     * `<type> readValue(allocPointer_t pointer, int32_t index, <type>)`
 
 

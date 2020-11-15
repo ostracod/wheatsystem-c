@@ -22,7 +22,8 @@
 #define declareArrayConstantWithValue(name, type, ...) const type name[] PROGMEM = __VA_ARGS__
 #define declareArrayConstantWithLength(name, type, size) const type name[size]
 #define getArrayConstantLength(name) (int32_t)(sizeof(name) / sizeof(*name))
-#define readArrayConstantValue(name, index) ({typeof(*name + 0) result; memcpy_P(&result, name + index, sizeof(*name)); result;})
+#define getArrayConstantElementType(name) typeof(*name)
+#define readArrayConstantValue(name, index, type) ({int8_t result[sizeof(type)]; memcpy_P(&result, (int8_t *)name + index, sizeof(type)); *(type *)result;})
 #define convertNumberToText(destination, number) ltoa(number, (char *)destination, 10)
 
 typedef int16_t heapMemoryOffset_t;

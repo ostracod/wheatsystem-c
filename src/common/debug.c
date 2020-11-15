@@ -15,7 +15,7 @@ void printDebugString(int8_t *text) {
 void printDebugStringConstant(arrayConstant_t(int8_t) stringConstant) {
     int32_t index = 0;
     while (true) {
-        int8_t tempCharacter = readArrayConstantValue(stringConstant, index);
+        int8_t tempCharacter = readArrayConstantElement(stringConstant, index);
         if (tempCharacter == 0) {
             break;
         }

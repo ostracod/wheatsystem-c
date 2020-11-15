@@ -30,15 +30,15 @@ void launchApp(allocPointer_t fileHandle) {
         return;
     }
     int8_t fileType = getFileHandleType(fileHandle);
+    int8_t systemAppId;
     
     // Determine global frame size.
     heapMemoryOffset_t globalFrameSize;
     if (fileType == BYTECODE_APP_FILE_TYPE) {
         globalFrameSize = sizeof(bytecodeGlobalFrameHeader_t) + (heapMemoryOffset_t)getBytecodeAppMember(fileHandle, globalFrameSize);
     } else if (fileType == SYSTEM_APP_FILE_TYPE) {
-        // TODO: Determine size of global frame for system application.
-        
-        globalFrameSize = 0;
+        systemAppId = readFile(fileHandle, 0, int8_t);
+        globalFrameSize = sizeof(systemGlobalFrameHeader_t) + getSystemAppMember(systemAppId, globalFrameSize);
     } else {
         // TODO: Throw an error.
         return;
@@ -63,6 +63,8 @@ void launchApp(allocPointer_t fileHandle) {
         int32_t appDataFilePos = getBytecodeAppMember(fileHandle, appDataFilePos);
         setBytecodeGlobalFrameMember(runningApp, functionTableLength, functionTableLength);
         setBytecodeGlobalFrameMember(runningApp, appDataFilePos, appDataFilePos);
+    } else {
+        setSystemGlobalFrameMember(runningApp, id, systemAppId);
     }
     
     // Call init function if available.
@@ -185,8 +187,11 @@ void scheduleAppThread(allocPointer_t runningApp) {
         printDebugNewline();
         uint8_t opcodeCategory = opcode >> 4;
         uint8_t opcodeOffset = opcode & 0x0F;
-        int8_t tempOffset = readArrayConstantValue(argumentAmountOffsetArray, opcodeCategory);
-        int8_t argumentAmount = readArrayConstantValue(
+        int8_t tempOffset = readArrayConstantElement(
+            argumentAmountOffsetArray,
+            opcodeCategory
+        );
+        int8_t argumentAmount = readArrayConstantElement(
             argumentAmountArray,
             tempOffset + opcodeOffset
         );

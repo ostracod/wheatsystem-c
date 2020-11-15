@@ -31,8 +31,12 @@ DEFINE writeStructByPointer pointer writeValue structDefinition memberName value
 writeValue(pointer, getStructMemberOffset(structDefinition, memberName), getStructMemberType(structDefinition, memberName), value)
 END
 
-DEFINE readTableStructByPointer pointer readValue tableIndex structDefinition memberName
-readValue(pointer, tableIndex * sizeof(structDefinition) + getStructMemberOffset(structDefinition, memberName), getStructMemberType(structDefinition, memberName))
+DEFINE readArrayElementByPointer pointer readValue arrayIndex type
+readValue(pointer, arrayIndex * sizeof(type), type)
+END
+
+DEFINE readArrayStructByPointer pointer readValue arrayIndex structDefinition memberName
+readValue(pointer, arrayIndex * sizeof(structDefinition) + getStructMemberOffset(structDefinition, memberName), getStructMemberType(structDefinition, memberName))
 END
 
 

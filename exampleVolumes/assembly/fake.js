@@ -120,7 +120,7 @@ for (const name of bytecodeAppNameList) {
     new WheatSystemFile(name, bytecodeAppAttributes, fileContent);
 }
 
-new SystemApp("term", 1);
+new SystemApp("term", 0);
 
 if (!fs.existsSync(unixVolumePath)) {
     fs.mkdirSync(unixVolumePath);

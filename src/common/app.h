@@ -61,7 +61,7 @@ allocPointer_t currentLocalFrame;
 allocPointer_t currentImplementer;
 allocPointer_t currentImplementerFileHandle;
 
-int32_t findFunctionById(allocPointer_t fileHandle, int32_t functionId);
+int32_t findFunctionById(allocPointer_t runningApp, int32_t functionId);
 void launchApp(allocPointer_t fileHandle);
 void callFunction(
     allocPointer_t threadApp,

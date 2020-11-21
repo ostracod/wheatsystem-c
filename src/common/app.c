@@ -4,10 +4,14 @@
 declareArrayConstantWithValue(BOOT_STRING_CONSTANT, int8_t, "boot");
 declareArrayConstantWithValue(OPCODE_DEBUG_TEXT, int8_t, "Opcode: ");
 
-int32_t findFunctionById(allocPointer_t fileHandle, int32_t functionId) {
+int32_t findFunctionById(allocPointer_t runningApp, int32_t functionId) {
+    allocPointer_t fileHandle = getRunningAppMember(runningApp, fileHandle);
     int8_t fileType = getFileHandleType(fileHandle);
     if (fileType == BYTECODE_APP_FILE_TYPE) {
-        int32_t functionTableLength = getBytecodeAppMember(fileHandle, functionTableLength);
+        int32_t functionTableLength = getBytecodeGlobalFrameMember(
+            runningApp,
+            functionTableLength
+        );
         for (int32_t index = 0; index < functionTableLength; index++) {
             int32_t tempFunctionId = getBytecodeFunctionMember(fileHandle, index, functionId);
             if (tempFunctionId == functionId) {
@@ -15,7 +19,18 @@ int32_t findFunctionById(allocPointer_t fileHandle, int32_t functionId) {
             }
         }
     } else if (fileType == SYSTEM_APP_FILE_TYPE) {
-        // TODO: Find function in system application.
+        int8_t systemAppId = getSystemGlobalFrameMember(runningApp, id);
+        arrayConstant_t(systemAppFunction_t) functionList = getSystemAppMember(
+            systemAppId,
+            functionList
+        );
+        int8_t functionAmount = getSystemAppMember(systemAppId, functionAmount);
+        for (int8_t index = 0; index < functionAmount; index++) {
+            int8_t tempId = getSystemAppFunctionMember(functionList, index, id);
+            if (tempId == functionId) {
+                return index;
+            }
+        }
     } else {
         // TODO: Throw an error.
     }
@@ -68,7 +83,7 @@ void launchApp(allocPointer_t fileHandle) {
     }
     
     // Call init function if available.
-    int32_t initFunctionIndex = findFunctionById(fileHandle, INIT_FUNC_ID);
+    int32_t initFunctionIndex = findFunctionById(runningApp, INIT_FUNC_ID);
     if (initFunctionIndex >= 0) {
         callFunction(runningApp, NULL_ALLOC_POINTER, runningApp, initFunctionIndex);
     }
@@ -276,8 +291,9 @@ void scheduleAppThread(allocPointer_t runningApp) {
             if (opcodeOffset == 0x0) {
                 // findFunc.
                 allocPointer_t appHandle = (allocPointer_t)readArgInt(1);
+                allocPointer_t tempRunningApp = getFileHandleRunningApp(appHandle);
                 int32_t functionId = readArgInt(2);
-                int32_t functionIndex = findFunctionById(appHandle, functionId);
+                int32_t functionIndex = findFunctionById(tempRunningApp, functionId);
                 writeArgInt(0, functionIndex);
             } else if (opcodeOffset == 0x1) {
                 // call.
@@ -399,8 +415,18 @@ void scheduleAppThread(allocPointer_t runningApp) {
             }
         }
     } else {
-        // TODO: Perform work in system app.
-        
+        int8_t systemAppId = getSystemGlobalFrameMember(currentThreadApp, id);
+        int8_t functionIndex = (int8_t)getLocalFrameMember(currentLocalFrame, functionIndex);
+        arrayConstant_t(systemAppFunction_t) functionList = getSystemAppMember(
+            systemAppId,
+            functionList
+        );
+        void (*threadAction)() = getSystemAppFunctionMember(
+            functionList,
+            functionIndex,
+            threadAction
+        );
+        threadAction();
     }
 }
 

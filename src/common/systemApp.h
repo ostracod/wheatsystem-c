@@ -24,6 +24,9 @@ typedef struct systemGlobalFrameHeader {
 #define createSystemApp(globalFrameSize, systemAppFunctionArray) (systemApp_t){globalFrameSize, systemAppFunctionArray, getArrayConstantLength(systemAppFunctionArray)}
 #define getSystemAppMember(id, memberName) \
     !!!readArrayStructByPointer systemAppArray readArrayConstantValue id systemApp_t memberName
+#define getSystemAppFunctionMember(systemAppFunctionArray, index, memberName) \
+    !!!readArrayStructByPointer systemAppFunctionArray readArrayConstantValue index systemAppFunction_t memberName
+
 #define getSystemGlobalFrameMember(runningApp, memberName) \
     !!!readStructByPointer runningApp readGlobalFrame systemGlobalFrameHeader_t memberName
 #define setSystemGlobalFrameMember(runningApp, memberName, value) \

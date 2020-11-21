@@ -5,9 +5,6 @@
 #define getArgPrefixDataType(argPrefix) (argPrefix & 0x0F)
 
 instructionArg_t instructionArgArray[MAXIMUM_ARG_AMOUNT];
-allocPointer_t currentLocalFrame;
-allocPointer_t currentImplementer;
-allocPointer_t currentImplementerFileHandle;
 int32_t currentInstructionFilePos;
 
 int32_t readArgIntHelper(instructionArg_t *arg, int32_t offset, int8_t dataType) {

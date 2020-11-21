@@ -56,6 +56,11 @@ typedef struct localFrameHeader {
 #define writeLocalFrame(localFrame, index, type, value) \
     writeHeapMemory(getLocalFrameDataAddress(localFrame) + index, type, value)
 
+#define getPreviousArgFrame() ({ \
+    allocPointer_t tempLocalFrame = getLocalFrameMember(currentLocalFrame, previousLocalFrame); \
+    getLocalFrameMember(tempLocalFrame, nextArgFrame); \
+})
+
 allocPointer_t currentThreadApp;
 allocPointer_t currentLocalFrame;
 allocPointer_t currentImplementer;

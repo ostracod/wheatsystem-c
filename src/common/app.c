@@ -4,6 +4,11 @@
 declareArrayConstantWithValue(BOOT_STRING_CONSTANT, int8_t, "boot");
 declareArrayConstantWithValue(OPCODE_DEBUG_TEXT, int8_t, "Opcode: ");
 
+allocPointer_t currentThreadApp;
+allocPointer_t currentLocalFrame;
+allocPointer_t currentImplementer;
+allocPointer_t currentImplementerFileHandle;
+
 int32_t findFunctionById(allocPointer_t runningApp, int32_t functionId) {
     allocPointer_t fileHandle = getRunningAppMember(runningApp, fileHandle);
     int8_t fileType = getFileHandleType(fileHandle);
@@ -106,7 +111,7 @@ void callFunction(
         localFrameSize += sizeof(bytecodeLocalFrameHeader_t) + (heapMemoryOffset_t)getBytecodeFunctionMember(fileHandle, functionIndex, localFrameSize);
     } else {
         localFrameSize += getRunningSystemAppFunctionMember(
-            threadApp,
+            implementer,
             functionIndex,
             localFrameSize
         );
@@ -200,9 +205,6 @@ void scheduleAppThread(allocPointer_t runningApp) {
             currentInstructionFilePos,
             uint8_t
         );
-        printDebugStringConstant(OPCODE_DEBUG_TEXT);
-        printDebugNumber(opcode);
-        printDebugNewline();
         uint8_t opcodeCategory = opcode >> 4;
         uint8_t opcodeOffset = opcode & 0x0F;
         int8_t tempOffset = readArrayConstantElement(
@@ -420,7 +422,7 @@ void scheduleAppThread(allocPointer_t runningApp) {
     } else {
         int8_t functionIndex = (int8_t)getLocalFrameMember(currentLocalFrame, functionIndex);
         void (*threadAction)() = getRunningSystemAppFunctionMember(
-            currentThreadApp,
+            currentImplementer,
             functionIndex,
             threadAction
         );
@@ -475,7 +477,7 @@ void runAppSystem() {
         
         // Schedule thread time for runningApp.
         scheduleAppThread(runningApp);
-        sleepMilliseconds(100);
+        sleepMilliseconds(20);
         runningAppIndex += 1;
     }
 }

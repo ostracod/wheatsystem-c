@@ -252,6 +252,7 @@ The following definitions are shared between all platform implementations:
     * `void setLocalFrameMember(allocPointer_t localFrame, <memberName>, <memberType> value)`
     * `<type> readLocalFrame(allocPointer_t localFrame, heapMemoryOffset_t, index, <type>)`
     * `void writeLocalFrame(allocPointer_t localFrame, heapMemoryOffset_t index, <type>, <type> value)`
+    * `allocPointer_t getPreviousArgFrame()`
     * `int32_t findFunctionById(allocPointer_t fileHandle, int32_t functionId)`
     * `void launchApp(allocPointer_t fileHandle)`
     * `void callFunction(allocPointer_t threadApp, allocPointer_t caller, allocPointer_t implementer, int32_t functionIndex)`

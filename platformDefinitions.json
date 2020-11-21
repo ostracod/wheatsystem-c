@@ -18,7 +18,7 @@
         },
         "linker": {
             "name": "gcc",
-            "flags": []
+            "flags": ["-lncurses"]
         },
         "executableName": "unixWheatSystem",
         "commandsAfterBuild": []

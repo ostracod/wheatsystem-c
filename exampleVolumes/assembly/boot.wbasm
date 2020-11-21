@@ -5,6 +5,8 @@ MACRO newTextAlloc, dest, startLbl, endLbl
     wrtBuff dest[0]:s8, startLbl, ?endLbl - ?startLbl
 END
 
+DEF termTextSize, 6
+
 FUNC isPrime
     
     ARG isPrime, s8
@@ -34,11 +36,15 @@ FUNC init, init_ID
     
     VAR termName, s32
     VAR termHandle, s32
+    VAR wrtTermIndex, s32
     newTextAlloc termName, termNameStart, termNameEnd
     openFile termHandle, termName
     launch termHandle
+    findFunc wrtTermIndex, termHandle, wrtTerm_ID
     
     VAR number, s32
+    VAR termText, s32
+    newAlloc termText, 0, termTextSize
     
     wrt number, 2
     LBL loop
@@ -46,9 +52,34 @@ FUNC init, init_ID
     newArgFrame 5
     wrt nextArgFrame[1]:s32, number
     call isPrime
+    jmpZ printSkip, nextArgFrame[0]:s8
     
-    # TODO: Print the number if prime.
+    VAR termTextIndex, s8
+    VAR unitPlace, s32
+    VAR tempNumber, s32
+    VAR termDigit, s8
+    VAR condition, s8
     
+    wrt termTextIndex, 0
+    wrt unitPlace, 100000
+    wrt tempNumber, number
+    
+    LBL digitLoop
+    div termDigit, tempNumber, unitPlace
+    add termText[termTextIndex]:s8, 48, termDigit
+    mod tempNumber, tempNumber, unitPlace
+    div unitPlace, unitPlace, 10
+    add termTextIndex, termTextIndex, 1
+    gre condition, termTextSize, termTextIndex
+    jmpNZ digitLoop, condition
+    
+    newArgFrame 12
+    wrt nextArgFrame[0]:s32, 0
+    wrt nextArgFrame[4]:s32, 0
+    wrt nextArgFrame[8]:s32, termText
+    callRemote termHandle, wrtTermIndex
+    
+    LBL printSkip
     add number, number, 1
     jmp loop
 END

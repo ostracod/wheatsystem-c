@@ -32,4 +32,10 @@ typedef struct systemGlobalFrameHeader {
 #define setSystemGlobalFrameMember(runningApp, memberName, value) \
     !!!writeStructByPointer runningApp writeGlobalFrame systemGlobalFrameHeader_t memberName value
 
+#define getRunningSystemAppFunctionMember(runningApp, functionIndex, memberName) ({ \
+    int8_t systemAppId = getSystemGlobalFrameMember(runningApp, id); \
+    arrayConstant_t(systemAppFunction_t) functionList = getSystemAppMember(systemAppId, functionList); \
+    getSystemAppFunctionMember(functionList, functionIndex, memberName); \
+})
+
 

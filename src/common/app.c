@@ -105,8 +105,11 @@ void callFunction(
     if (fileType == BYTECODE_APP_FILE_TYPE) {
         localFrameSize += sizeof(bytecodeLocalFrameHeader_t) + (heapMemoryOffset_t)getBytecodeFunctionMember(fileHandle, functionIndex, localFrameSize);
     } else {
-        // TODO: Determine size of local frame for system application.
-        
+        localFrameSize += getRunningSystemAppFunctionMember(
+            threadApp,
+            functionIndex,
+            localFrameSize
+        );
     }
     
     // Create allocation for the local frame.
@@ -415,14 +418,9 @@ void scheduleAppThread(allocPointer_t runningApp) {
             }
         }
     } else {
-        int8_t systemAppId = getSystemGlobalFrameMember(currentThreadApp, id);
         int8_t functionIndex = (int8_t)getLocalFrameMember(currentLocalFrame, functionIndex);
-        arrayConstant_t(systemAppFunction_t) functionList = getSystemAppMember(
-            systemAppId,
-            functionList
-        );
-        void (*threadAction)() = getSystemAppFunctionMember(
-            functionList,
+        void (*threadAction)() = getRunningSystemAppFunctionMember(
+            currentThreadApp,
             functionIndex,
             threadAction
         );

@@ -1,6 +1,8 @@
 
 #include "./headers.h"
 
+int8_t currentSpiDeviceId;
+
 void initializeSpi() {
     
     DDRB |= 1 << DDB5; // SCK.
@@ -9,6 +11,15 @@ void initializeSpi() {
     
     DDRB |= 1 << DDB2; // Fix SS pin.
     SPCR = (1 << SPE) | (1 << MSTR);
+}
+
+void acquireSpiDevice(int8_t id) {
+    if (currentSpiDeviceId == id) {
+        return;
+    }
+    releaseEepromSpiDevice();
+    releaseLcdSpiDevice();
+    currentSpiDeviceId = id;
 }
 
 int8_t receiveSpiInt8() {

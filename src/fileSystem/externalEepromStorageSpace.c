@@ -16,6 +16,11 @@ int8_t initializeStorageSpace() {
     return true;
 }
 
+void releaseEepromSpiDevice() {
+    eepromCsPinHigh();
+    eepromAddress = -100;
+}
+
 void sendAddressToEeprom(int32_t address) {
     sendSpiInt8((address & 0x00FF0000) >> 16);
     sendSpiInt8((address & 0x0000FF00) >> 8);
@@ -26,6 +31,7 @@ void readStorageSpaceRange(void *destination, int32_t address, int32_t amount) {
     if (amount <= 0) {
         return;
     }
+    acquireSpiDevice(EEPROM_SPI_DEVICE_ID);
     int32_t index = 0;
     if (address == eepromAddress - 1) {
         *(int8_t *)(destination + index) = lastEepromData;
@@ -51,6 +57,7 @@ void writeStorageSpaceRange(int32_t address, void *source, int32_t amount) {
     if (amount <= 0) {
         return;
     }
+    acquireSpiDevice(EEPROM_SPI_DEVICE_ID);
     eepromAddress = address;
     int8_t tempShouldWrite = true;
     int32_t index = 0;

@@ -21,20 +21,24 @@ declareArrayConstantWithValue(LCD_INIT_COMMANDS, int8_t, {
 
 int8_t hasInitializedLcd = false;
 
+void releaseLcdSpiDevice() {
+    lcdSelectPinHigh();
+}
+
 void sendLcdCommand(int8_t command) {
+    acquireSpiDevice(LCD_SPI_DEVICE_ID);
     lcdModePinLow();
     lcdSelectPinLow();
     sendSpiInt8(command);
     sleepMilliseconds(5);
-    lcdSelectPinHigh();
 }
 
 void sendLcdCharacter(int8_t character) {
+    acquireSpiDevice(LCD_SPI_DEVICE_ID);
     lcdModePinHigh();
     lcdSelectPinLow();
     sendSpiInt8(character);
     sleepMilliseconds(2);
-    lcdSelectPinHigh();
 }
 
 void initializeTermApp() {
@@ -54,7 +58,7 @@ void initializeTermApp() {
     lcdResetPinHigh();
     sleepMilliseconds(20);
     
-    for (int8_t index; index < getArrayConstantLength(LCD_INIT_COMMANDS); index++) {
+    for (int8_t index = 0; index < getArrayConstantLength(LCD_INIT_COMMANDS); index++) {
         int8_t tempCommand = readArrayConstantElement(LCD_INIT_COMMANDS, index);
         sendLcdCommand(tempCommand);
     }

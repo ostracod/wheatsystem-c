@@ -9,4 +9,6 @@ typedef struct termAppGlobalFrame {
 
 declareArrayConstantWithLength(termAppFunctionArray, systemAppFunction_t, 4);
 
+void releaseLcdSpiDevice();
+
 

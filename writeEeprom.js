@@ -61,24 +61,24 @@ const sendWriteCommand = async (address, data) => {
 
 const writeAndVerifyVolume = async () => {
     const volumeData = fs.readFileSync(volumePath);
-    //for (
-        //let startAddress = 0;
-        //startAddress < volumeData.length;
-        //startAddress += debugModeBufferSize
-    //) {
-        //let tempBuffer;
-        //if (startAddress + debugModeBufferSize > volumeData.length) {
-            //tempBuffer = volumeData.slice(startAddress, volumeData.length);
-            //tempBuffer = Buffer.concat([
-                //tempBuffer,
-                //Buffer.alloc(debugModeBufferSize - tempBuffer.length),
-            //]);
-        //} else {
-            //tempBuffer = volumeData.slice(startAddress, startAddress + debugModeBufferSize);
-        //}
-        //console.log(`Writing at address ${startAddress}...`);
-        //await sendWriteCommand(startAddress, tempBuffer);
-    //}
+    for (
+        let startAddress = 0;
+        startAddress < volumeData.length;
+        startAddress += debugModeBufferSize
+    ) {
+        let tempBuffer;
+        if (startAddress + debugModeBufferSize > volumeData.length) {
+            tempBuffer = volumeData.slice(startAddress, volumeData.length);
+            tempBuffer = Buffer.concat([
+                tempBuffer,
+                Buffer.alloc(debugModeBufferSize - tempBuffer.length),
+            ]);
+        } else {
+            tempBuffer = volumeData.slice(startAddress, startAddress + debugModeBufferSize);
+        }
+        console.log(`Writing at address ${startAddress}...`);
+        await sendWriteCommand(startAddress, tempBuffer);
+    }
     for (
         let startAddress = 0;
         startAddress < volumeData.length;

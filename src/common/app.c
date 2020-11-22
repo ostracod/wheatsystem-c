@@ -2,7 +2,6 @@
 #include "./headers.h"
 
 declareArrayConstantWithValue(BOOT_STRING_CONSTANT, int8_t, "boot");
-declareArrayConstantWithValue(OPCODE_DEBUG_TEXT, int8_t, "Opcode: ");
 
 allocPointer_t currentThreadApp;
 allocPointer_t currentLocalFrame;

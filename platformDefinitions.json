@@ -36,6 +36,7 @@
             "communication/avrSerial",
             "fileSystem/externalEepromStorageSpace",
             "fileSystem/linkedListFileSystem",
+            "systemApp/avrTermApp",
             "systemApp/avrSystemApps"
         ],
         "compiler": {

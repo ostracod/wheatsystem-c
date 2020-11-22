@@ -1,0 +1,8 @@
+{
+    "name": "writeEeprom",
+    "version": "1.0.0",
+    "main": "writeEeprom.js",
+    "dependencies": {
+        "serialport": "^9.0.1"
+    }
+}

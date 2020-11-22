@@ -6,5 +6,6 @@ linkedListVolume
 boot
 helper
 .DS_Store
+node_modules
 
 

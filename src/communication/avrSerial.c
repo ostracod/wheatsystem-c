@@ -23,4 +23,13 @@ void sendSerialCharacter(int8_t character) {
     UDR0 = character;
 }
 
+int8_t receiveSerialCharacter() {
+    
+    // Wait for receive buffer to be full.
+    while (!(UCSR0A & (1 << RXC0)));
+    
+    // Read character from receive register.
+    return UDR0;
+}
+
 

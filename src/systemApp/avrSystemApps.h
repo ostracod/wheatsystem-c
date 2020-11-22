@@ -1,4 +1,4 @@
 
-declareArrayConstantWithLength(systemAppArray, systemApp_t, 0);
+declareArrayConstantWithLength(systemAppArray, systemApp_t, 1);
 
 

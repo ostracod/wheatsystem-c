@@ -74,6 +74,7 @@ void callFunction(
     allocPointer_t implementer,
     int32_t functionIndex
 );
+void cleanUpNextArgFrame();
 void returnFromFunction();
 void scheduleAppThread(allocPointer_t runningApp);
 void runAppSystem();

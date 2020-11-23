@@ -120,18 +120,6 @@ The following definitions are shared between all platform implementations:
     * `arrayConstant_t(int8_t) argumentAmountOffsetArray`
     * `arrayConstant_t(int8_t) argumentAmountArray`
     * `int8_t MAXIMUM_ARG_AMOUNT`
-* Instruction argument reference types
-    * `uint8_t CONSTANT_REF_TYPE`
-    * `uint8_t GLOBAL_FRAME_REF_TYPE`
-    * `uint8_t LOCAL_FRAME_REF_TYPE`
-    * `uint8_t PREV_ARG_FRAME_REF_TYPE`
-    * `uint8_t NEXT_ARG_FRAME_REF_TYPE`
-    * `uint8_t APP_DATA_REF_TYPE`
-    * `uint8_t DYNAMIC_ALLOC_REF_TYPE`
-    * `uint8_t HEAP_MEM_REF_TYPE`
-* Instruction argument data types
-    * `uint8_t SIGNED_INT_8_TYPE`
-    * `uint8_t SIGNED_INT_32_TYPE`
 
 ### Common Data Structures
 
@@ -190,12 +178,6 @@ The following definitions are shared between all platform implementations:
     * `localFrameHeader_t localFrameHeader`
     * `bytecodeLocalFrameHeader_t bytecodeLocalFrameHeader`
     * Bytecode local frame data
-* Instruction argument `instructionArg_t`
-    * `uint8_t prefix`
-    * `heapMemoryOffset_t address`
-    * `heapMemoryOffset_t maximumAddress`
-    * `int32_t constantValue`
-    * `int32_t appDataIndex`
 * System application function `systemAppFunction_t`
     * `int8_t id`
     * `int8_t localFrameSize`
@@ -218,9 +200,6 @@ The following definitions are shared between all platform implementations:
     * `allocPointer_t currentLocalFrame`
     * `allocPointer_t currentImplementer`
     * `allocPointer_t currentImplementerFileHandle`
-* Bytecode interpreter variables
-    * `instructionArg_t instructionArgArray[MAXIMUM_ARG_AMOUNT]`
-    * `int32_t currentInstructionFilePos`
 
 ### Common Functions
 
@@ -256,6 +235,7 @@ The following definitions are shared between all platform implementations:
     * `int32_t findFunctionById(allocPointer_t fileHandle, int32_t functionId)`
     * `void launchApp(allocPointer_t fileHandle)`
     * `void callFunction(allocPointer_t threadApp, allocPointer_t caller, allocPointer_t implementer, int32_t functionIndex)`
+    * `void cleanUpNextArgFrame()`
     * `void returnFromFunction()`
     * `void scheduleAppThread(allocPointer_t runningApp)`
     * `void runAppSystem()`
@@ -268,12 +248,7 @@ The following definitions are shared between all platform implementations:
     * `<memberType> getBytecodeLocalFrameMember(allocPointer_t localFrame, <memberName>)`
     * `void setBytecodeLocalFrameMember(allocPointer_t localFrame, <memberName>, <memberType> value)`
     * `heapMemoryOffset_t getBytecodeLocalFrameDataAddress(allocPointer_t runningApp)`
-    * `int32_t readArgIntHelper(instructionArg_t *arg, int32_t offset, int8_t dataType)`
-    * `void writeArgIntHelper(instructionArg_t *arg, int32_t offset, int8_t dataType, int32_t value)`
-    * `int32_t readArgInt(int8_t index)`
-    * `void writeArgInt(int8_t index, int32_t value)`
-    * `instructionArg_t parseInstructionArg()`
-    * `void jumpToBytecodeInstruction(allocPointer_t localFrame, int32_t instructionOffset)`
+    * `void evaluateBytecodeInstruction()`
 * System application functions
     * `systemApp_t createSystemApp(int8_t globalFrameSize, arrayConstant_t(systemAppFunction_t) systemAppFunctionArray)`
     * `<memberType> getSystemAppMember(int8_t id, <memberName>)`

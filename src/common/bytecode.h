@@ -1,16 +1,4 @@
 
-#define CONSTANT_REF_TYPE 0x0
-#define GLOBAL_FRAME_REF_TYPE 0x1
-#define LOCAL_FRAME_REF_TYPE 0x2
-#define PREV_ARG_FRAME_REF_TYPE 0x3
-#define NEXT_ARG_FRAME_REF_TYPE 0x4
-#define APP_DATA_REF_TYPE 0x5
-#define DYNAMIC_ALLOC_REF_TYPE 0x6
-#define HEAP_MEM_REF_TYPE 0x7
-
-#define SIGNED_INT_8_TYPE 0x0
-#define SIGNED_INT_32_TYPE 0x1
-
 #pragma pack(push, 1)
 typedef struct bytecodeAppHeader {
     int32_t globalFrameSize;
@@ -46,26 +34,6 @@ typedef struct bytecodeLocalFrameHeader {
 } bytecodeLocalFrameHeader_t;
 #pragma pack(pop)
 
-#pragma pack(push, 1)
-typedef struct instructionArg {
-    uint8_t prefix;
-    union {
-        // For HEAP_MEM_REF_TYPE, the union contains address and maximumAddress.
-        // For CONSTANT_REF_TYPE, the union contains constantValue.
-        // For APP_DATA_REF_TYPE, the union contains appDataIndex.
-        struct {
-            heapMemoryOffset_t address;
-            heapMemoryOffset_t maximumAddress;
-        };
-        int32_t constantValue;
-        int32_t appDataIndex;
-    };
-} instructionArg_t;
-#pragma pack(pop)
-
-instructionArg_t instructionArgArray[MAXIMUM_ARG_AMOUNT];
-int32_t currentInstructionFilePos;
-
 #define getBytecodeAppMember(fileHandle, memberName) \
     !!!readStructByPointer fileHandle readFile bytecodeAppHeader_t memberName
 
@@ -89,12 +57,6 @@ int32_t currentInstructionFilePos;
 #define getBytecodeLocalFrameDataAddress(localFrame) \
     (getLocalFrameDataAddress(localFrame) + sizeof(bytecodeLocalFrameHeader_t))
 
-#define readArgInt(index) readArgIntHelper(instructionArgArray + index, 0, -1)
-#define writeArgInt(index, value) writeArgIntHelper(instructionArgArray + index, 0, -1, value)
-
-int32_t readArgIntHelper(instructionArg_t *arg, int32_t offset, int8_t dataType);
-void writeArgIntHelper(instructionArg_t *arg, int32_t offset, int8_t dataType, int32_t value);
-instructionArg_t parseInstructionArg();
-void jumpToBytecodeInstruction(allocPointer_t localFrame, int32_t instructionOffset);
+void evaluateBytecodeInstruction();
 
 

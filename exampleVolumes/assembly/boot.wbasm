@@ -1,11 +1,25 @@
 
+FUNC myFunc
+    
+    VAR y, s8
+    
+    wrt y, 1
+    div y, 1, 0
+    wrt y, 2
+    
+END
+
 FUNC init, init_ID
     
     VAR x, s8
     
-    add x, 1, 2
-    div x, 1, 0
+    setErrJmp errHandler
+    call myFunc
     mul x, x, 10
+    
+    LBL errHandler
+    
+    sub x, x, 5
     
 END
 

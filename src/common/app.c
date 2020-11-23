@@ -7,6 +7,7 @@ allocPointer_t currentThreadApp;
 allocPointer_t currentLocalFrame;
 allocPointer_t currentImplementer;
 allocPointer_t currentImplementerFileHandle;
+int8_t currentImplementerFileType;
 
 int32_t findFunctionById(allocPointer_t runningApp, int32_t functionId) {
     allocPointer_t fileHandle = getRunningAppMember(runningApp, fileHandle);
@@ -196,7 +197,14 @@ void callFunction(
     setRunningAppMember(threadApp, localFrame, localFrame);
 }
 
-// This function does not update currentImplementer or currentImplementerFileHandle.
+// Does not update currentThreadApp.
+void setCurrentLocalFrame(allocPointer_t localFrame) {
+    currentLocalFrame = localFrame;
+    currentImplementer = getLocalFrameMember(currentLocalFrame, implementer);
+    currentImplementerFileHandle = getRunningAppMember(currentImplementer, fileHandle);
+    currentImplementerFileType = getFileHandleType(currentImplementerFileHandle);
+}
+
 void returnFromFunction() {
     cleanUpNextArgFrame();
     allocPointer_t previousLocalFrame = getLocalFrameMember(
@@ -205,25 +213,19 @@ void returnFromFunction() {
     );
     deleteAlloc(currentLocalFrame);
     setRunningAppMember(currentThreadApp, localFrame, previousLocalFrame);
-    currentLocalFrame = previousLocalFrame;
+    setCurrentLocalFrame(previousLocalFrame);
 }
 
 void scheduleAppThread(allocPointer_t runningApp) {
     
     currentThreadApp = runningApp;
-    currentLocalFrame = getRunningAppMember(currentThreadApp, localFrame);
-    if (currentLocalFrame == NULL_ALLOC_POINTER) {
+    int8_t tempFrame = getRunningAppMember(currentThreadApp, localFrame);
+    if (tempFrame == NULL_ALLOC_POINTER) {
         return;
     }
+    setCurrentLocalFrame(tempFrame);
     
-    currentImplementer = getLocalFrameMember(
-        currentLocalFrame,
-        implementer
-    );
-    currentImplementerFileHandle = getRunningAppMember(currentImplementer, fileHandle);
-    int8_t fileType = getFileHandleType(currentImplementerFileHandle);
-    
-    if (fileType == BYTECODE_APP_FILE_TYPE) {
+    if (currentImplementerFileType == BYTECODE_APP_FILE_TYPE) {
         evaluateBytecodeInstruction();
     } else {
         int8_t functionIndex = (int8_t)getLocalFrameMember(currentLocalFrame, functionIndex);
@@ -237,8 +239,25 @@ void scheduleAppThread(allocPointer_t runningApp) {
     
     if (unhandledErrorCode != 0) {
         while (true) {
-            // TODO: Check for error handler.
-            
+            int8_t shouldHandleError;
+            if (currentImplementerFileType == BYTECODE_APP_FILE_TYPE) {
+                int32_t instructionOffset = getBytecodeLocalFrameMember(
+                    currentLocalFrame,
+                    errorHandler
+                );
+                if (instructionOffset >= 0) {
+                    jumpToBytecodeInstruction(instructionOffset);
+                    shouldHandleError = true;
+                } else {
+                    shouldHandleError = false;
+                }
+            } else {
+                shouldHandleError = true;
+            }
+            if (shouldHandleError) {
+                setLocalFrameMember(currentLocalFrame, lastErrorCode, unhandledErrorCode);
+                break;
+            }
             returnFromFunction();
             if (currentLocalFrame == NULL_ALLOC_POINTER) {
                 hardKillApp(currentThreadApp, unhandledErrorCode);

@@ -157,15 +157,15 @@ instructionArg_t parseInstructionArg() {
     return output;
 }
 
-void jumpToBytecodeInstruction(allocPointer_t localFrame, int32_t instructionOffset) {
+void jumpToBytecodeInstruction(int32_t instructionOffset) {
     int32_t instructionBodyFilePos = getBytecodeLocalFrameMember(
-        localFrame,
+        currentLocalFrame,
         instructionBodyStartFilePos
     );
     // TODO: Verify that instructionOffset is within bounds
     // of instruction body.
     setBytecodeLocalFrameMember(
-        localFrame,
+        currentLocalFrame,
         instructionFilePos,
         instructionBodyFilePos + instructionOffset
     );
@@ -261,21 +261,44 @@ void evaluateBytecodeInstruction() {
         if (opcodeOffset == 0x0) {
             // jmp.
             int32_t instructionOffset = readArgInt(0);
-            jumpToBytecodeInstruction(currentLocalFrame, instructionOffset);
+            jumpToBytecodeInstruction(instructionOffset);
         } else if (opcodeOffset == 0x1) {
             // jmpZ.
             int32_t condition = readArgInt(1);
             if (condition == 0) {
                 int32_t instructionOffset = readArgInt(0);
-                jumpToBytecodeInstruction(currentLocalFrame, instructionOffset);
+                jumpToBytecodeInstruction(instructionOffset);
             }
         } else if (opcodeOffset == 0x2) {
             // jmpNZ.
             int32_t condition = readArgInt(1);
             if (condition != 0) {
                 int32_t instructionOffset = readArgInt(0);
-                jumpToBytecodeInstruction(currentLocalFrame, instructionOffset);
+                jumpToBytecodeInstruction(instructionOffset);
             }
+        }
+    } else if (opcodeCategory == 0x2) {
+        // Error instructions.
+        if (opcodeOffset == 0x0) {
+            // setErrJmp.
+            int32_t instructionOffset = readArgInt(0);
+            setBytecodeLocalFrameMember(currentLocalFrame, errorHandler, instructionOffset);
+        } else if (opcodeOffset == 0x1) {
+            // clrErrJmp.
+            setBytecodeLocalFrameMember(currentLocalFrame, errorHandler, -1);
+        } else if (opcodeOffset == 0x2) {
+            // throw.
+            int32_t tempCode = readArgInt(0);
+            if (tempCode < -128 || tempCode > 127) {
+                unhandledErrorCode = NUM_RANGE_ERR_CODE;
+                return;
+            }
+            unhandledErrorCode = tempCode;
+            return;
+        } else if (opcodeOffset == 0x3) {
+            // err.
+            int8_t tempCode = getLocalFrameMember(currentLocalFrame, lastErrorCode);
+            writeArgInt(0, tempCode);
         }
     } else if (opcodeCategory == 0x3) {
         // Function instructions.

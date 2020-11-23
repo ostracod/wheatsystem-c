@@ -57,6 +57,7 @@ typedef struct bytecodeLocalFrameHeader {
 #define getBytecodeLocalFrameDataAddress(localFrame) \
     (getLocalFrameDataAddress(localFrame) + sizeof(bytecodeLocalFrameHeader_t))
 
+void jumpToBytecodeInstruction(int32_t instructionOffset);
 void evaluateBytecodeInstruction();
 
 

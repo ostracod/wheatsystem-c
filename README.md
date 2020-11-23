@@ -116,6 +116,21 @@ The following definitions are shared between all platform implementations:
     * `int32_t SET_GPIO_MODE_FUNC_ID`
     * `int32_t READ_GPIO_FUNC_ID`
     * `int32_t WRT_GPIO_FUNC_ID`
+* Error codes
+    * `int8_t GENERIC_ERR_CODE`
+    * `int8_t NO_IMPL_ERR_CODE`
+    * `int8_t TYPE_ERR_CODE`
+    * `int8_t NUM_RANGE_ERR_CODE`
+    * `int8_t INDEX_ERR_CODE`
+    * `int8_t PTR_ERR_CODE`
+    * `int8_t NULL_ERR_CODE`
+    * `int8_t DATA_ERR_CODE`
+    * `int8_t ARG_FRAME_ERR_CODE`
+    * `int8_t MISSING_ERR_CODE`
+    * `int8_t STATE_ERR_CODE`
+    * `int8_t PERM_ERR_CODE`
+    * `int8_t CAPACITY_ERR_CODE`
+    * `int8_t THROTTLE_ERR_CODE`
 * Bytecode instruction definitions
     * `arrayConstant_t(int8_t) argumentAmountOffsetArray`
     * `arrayConstant_t(int8_t) argumentAmountArray`
@@ -200,6 +215,7 @@ The following definitions are shared between all platform implementations:
     * `allocPointer_t currentLocalFrame`
     * `allocPointer_t currentImplementer`
     * `allocPointer_t currentImplementerFileHandle`
+    * `int8_t unhandledErrorCode`
 
 ### Common Functions
 
@@ -234,6 +250,7 @@ The following definitions are shared between all platform implementations:
     * `allocPointer_t getPreviousArgFrame()`
     * `int32_t findFunctionById(allocPointer_t fileHandle, int32_t functionId)`
     * `void launchApp(allocPointer_t fileHandle)`
+    * `void hardKillApp(allocPointer_t runningApp, int8_t errorCode)`
     * `void callFunction(allocPointer_t threadApp, allocPointer_t caller, allocPointer_t implementer, int32_t functionIndex)`
     * `void cleanUpNextArgFrame()`
     * `void returnFromFunction()`

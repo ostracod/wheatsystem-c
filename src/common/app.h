@@ -60,6 +60,7 @@ typedef struct localFrameHeader {
     allocPointer_t tempLocalFrame = getLocalFrameMember(currentLocalFrame, previousLocalFrame); \
     getLocalFrameMember(tempLocalFrame, nextArgFrame); \
 })
+#define cleanUpNextArgFrame() cleanUpNextArgFrameHelper(currentLocalFrame)
 
 allocPointer_t currentThreadApp;
 allocPointer_t currentLocalFrame;
@@ -67,6 +68,7 @@ allocPointer_t currentImplementer;
 allocPointer_t currentImplementerFileHandle;
 
 int32_t findFunctionById(allocPointer_t runningApp, int32_t functionId);
+void cleanUpNextArgFrameHelper(allocPointer_t localFrame);
 void launchApp(allocPointer_t fileHandle);
 void callFunction(
     allocPointer_t threadApp,
@@ -74,7 +76,6 @@ void callFunction(
     allocPointer_t implementer,
     int32_t functionIndex
 );
-void cleanUpNextArgFrame();
 void returnFromFunction();
 void scheduleAppThread(allocPointer_t runningApp);
 void runAppSystem();

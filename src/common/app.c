@@ -39,6 +39,13 @@ int32_t findFunctionById(allocPointer_t runningApp, int32_t functionId) {
     return -1;
 }
 
+void cleanUpNextArgFrameHelper(allocPointer_t localFrame) {
+    allocPointer_t nextArgFrame = getLocalFrameMember(localFrame, nextArgFrame);
+    if (nextArgFrame != NULL_ALLOC_POINTER) {
+        deleteAlloc(nextArgFrame);
+    }
+}
+
 void launchApp(allocPointer_t fileHandle) {
     
     // Do not launch app again if it is already running.
@@ -70,6 +77,7 @@ void launchApp(allocPointer_t fileHandle) {
     setRunningAppMember(runningApp, localFrame, NULL_ALLOC_POINTER);
     setRunningAppMember(runningApp, isWaiting, false);
     setFileHandleRunningApp(fileHandle, runningApp);
+    setFileHandleInitErr(fileHandle, 0);
     
     // Initialize global frame.
     for (heapMemoryOffset_t index = 0; index < globalFrameSize; index++) {
@@ -89,6 +97,42 @@ void launchApp(allocPointer_t fileHandle) {
     if (initFunctionIndex >= 0) {
         callFunction(runningApp, NULL_ALLOC_POINTER, runningApp, initFunctionIndex);
     }
+}
+
+void hardKillApp(allocPointer_t runningApp, int8_t errorCode) {
+    
+    // Delete local frames and argument frames.
+    allocPointer_t localFrame = getRunningAppMember(runningApp, localFrame);
+    while (localFrame != NULL_ALLOC_POINTER) {
+        cleanUpNextArgFrameHelper(localFrame);
+        allocPointer_t previousLocalFrame = getLocalFrameMember(
+            localFrame,
+            previousLocalFrame
+        );
+        deleteAlloc(localFrame);
+        localFrame = previousLocalFrame;
+    }
+    
+    // Delete dynamic allocations.
+    allocPointer_t fileHandle = getRunningAppMember(currentThreadApp, fileHandle);
+    allocPointer_t tempAlloc = getFirstAlloc();
+    while (tempAlloc != NULL_ALLOC_POINTER) {
+        allocPointer_t nextAlloc = getAllocNext(tempAlloc);
+        int8_t tempType = getAllocType(tempAlloc);
+        if (tempType == DYNAMIC_ALLOC_TYPE) {
+            allocPointer_t tempCreator = getDynamicAllocMember(tempAlloc, creator);
+            if (tempCreator == fileHandle) {
+                deleteAlloc(tempAlloc);
+            }
+        }
+        tempAlloc = nextAlloc;
+    }
+    
+    // Update file handle and delete running app.
+    setFileHandleRunningApp(fileHandle, NULL_ALLOC_POINTER);
+    setFileHandleInitErr(fileHandle, errorCode);
+    closeFile(fileHandle);
+    deleteAlloc(runningApp);
 }
 
 void callFunction(
@@ -152,13 +196,7 @@ void callFunction(
     setRunningAppMember(threadApp, localFrame, localFrame);
 }
 
-void cleanUpNextArgFrame() {
-    allocPointer_t nextArgFrame = getLocalFrameMember(currentLocalFrame, nextArgFrame);
-    if (nextArgFrame != NULL_ALLOC_POINTER) {
-        deleteAlloc(nextArgFrame);
-    }
-}
-
+// This function does not update currentImplementer or currentImplementerFileHandle.
 void returnFromFunction() {
     cleanUpNextArgFrame();
     allocPointer_t previousLocalFrame = getLocalFrameMember(
@@ -167,6 +205,7 @@ void returnFromFunction() {
     );
     deleteAlloc(currentLocalFrame);
     setRunningAppMember(currentThreadApp, localFrame, previousLocalFrame);
+    currentLocalFrame = previousLocalFrame;
 }
 
 void scheduleAppThread(allocPointer_t runningApp) {
@@ -194,6 +233,19 @@ void scheduleAppThread(allocPointer_t runningApp) {
             threadAction
         );
         threadAction();
+    }
+    
+    if (unhandledErrorCode != 0) {
+        while (true) {
+            // TODO: Check for error handler.
+            
+            returnFromFunction();
+            if (currentLocalFrame == NULL_ALLOC_POINTER) {
+                hardKillApp(currentThreadApp, unhandledErrorCode);
+                break;
+            }
+        }
+        unhandledErrorCode = 0;
     }
 }
 

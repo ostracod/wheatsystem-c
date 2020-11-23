@@ -377,11 +377,17 @@ void evaluateBytecodeInstruction() {
             result = operand1 * operand2;
         } else if (opcodeOffset == 0x3) {
             // div.
-            // TODO: Throw error when dividing by zero.
+            if (operand2 == 0) {
+                unhandledErrorCode = NUM_RANGE_ERR_CODE;
+                return;
+            }
             result = operand1 / operand2;
         } else if (opcodeOffset == 0x4) {
             // mod.
-            // TODO: Throw error when dividing by zero.
+            if (operand2 == 0) {
+                unhandledErrorCode = NUM_RANGE_ERR_CODE;
+                return;
+            }
             result = operand1 % operand2;
         }
         writeArgInt(0, result);

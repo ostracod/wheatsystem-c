@@ -4,6 +4,7 @@ FUNC init, init_ID
     VAR x, s8
     
     add x, 1, 2
+    div x, 1, 0
     mul x, x, 10
     
 END

@@ -165,6 +165,7 @@ The following definitions are shared between all platform implementations:
     * `int32_t globalFrameSize`
     * `int32_t functionTableLength`
     * `int32_t appDataFilePos`
+    * `int32_t appDataSize`
 * Bytecode function `bytecodeFunction_t`
     * `int32_t functionId`
     * `int8_t isGuarded`
@@ -320,9 +321,11 @@ The following definitions must be provided by each platform implementation:
     * `allocPointer_t getAllocNext(allocPointer_t pointer)`
     * `allocPointer_t createAlloc(int8_t type, heapMemoryOffset_t size)`
     * `int8_t deleteAlloc(allocPointer_t pointer)`
+    * `void validateAllocPointer(allocPointer_t pointer)`
 * File system functions
     * `int8_t initializeFileSystem()`
     * `int8_t getFileHandleType(allocPointer_t fileHandle)`
+    * `int32_t getFileHandleSize(allocPointer_t fileHandle)`
     * `allocPointer_t getFileHandleRunningApp(allocPointer_t fileHandle)`
     * `int8_t getFileHandleInitErr(allocPointer_t fileHandle)`
     * `void setFileHandleRunningApp(allocPointer_t fileHandle, allocPointer_t runningApp)`

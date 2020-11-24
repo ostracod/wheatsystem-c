@@ -34,6 +34,7 @@ typedef struct fileHandle {
 
 #define getFileHandleType(fileHandle) \
     getTypeFromFileAttributes(getFileHandleMember(fileHandle, attributes))
+#define getFileHandleSize(fileHandle) getFileHandleMember(fileHandle, contentSize)
 #define getFileHandleRunningApp(fileHandle) getFileHandleMember(fileHandle, runningApp)
 #define getFileHandleInitErr(fileHandle) getFileHandleMember(fileHandle, initErr)
 

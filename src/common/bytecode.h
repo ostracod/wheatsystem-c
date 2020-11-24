@@ -22,6 +22,7 @@ typedef struct bytecodeFunction {
 typedef struct bytecodeGlobalFrameHeader {
     int32_t functionTableLength;
     int32_t appDataFilePos;
+    int32_t appDataSize;
 } bytecodeGlobalFrameHeader_t;
 #pragma pack(pop)
 

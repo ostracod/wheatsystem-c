@@ -1,26 +1,17 @@
 
-FUNC myFunc
-    
-    VAR y, s8
-    
-    wrt y, 1
-    div y, 1, 0
-    wrt y, 2
-    
-END
-
 FUNC init, init_ID
     
     VAR x, s8
+    VAR y, s32
     
-    setErrJmp errHandler
-    call myFunc
-    mul x, x, 10
+    newAlloc y, 0, 10
+    wrt y[0]:s8, appData[2]:s8
+    wrt x, y[0]:s8
     
-    LBL errHandler
-    
-    sub x, x, 5
-    
+END
+
+APP_DATA
+    DATA 10:s8, 20:s8, 30:s8
 END
 
 

@@ -87,8 +87,10 @@ void launchApp(allocPointer_t fileHandle) {
     if (fileType == BYTECODE_APP_FILE_TYPE) {
         int32_t functionTableLength = getBytecodeAppMember(fileHandle, functionTableLength);
         int32_t appDataFilePos = getBytecodeAppMember(fileHandle, appDataFilePos);
+        int32_t appDataSize = getFileHandleSize(fileHandle) - appDataFilePos;
         setBytecodeGlobalFrameMember(runningApp, functionTableLength, functionTableLength);
         setBytecodeGlobalFrameMember(runningApp, appDataFilePos, appDataFilePos);
+        setBytecodeGlobalFrameMember(runningApp, appDataSize, appDataSize);
     } else {
         setSystemGlobalFrameMember(runningApp, id, systemAppId);
     }
@@ -238,6 +240,9 @@ void scheduleAppThread(allocPointer_t runningApp) {
     }
     
     if (unhandledErrorCode != 0) {
+        printDebugString((int8_t *)"UNHANDLED ERROR ");
+        printDebugNumber(unhandledErrorCode);
+        printDebugNewline();
         while (true) {
             int8_t shouldHandleError;
             if (currentImplementerFileType == BYTECODE_APP_FILE_TYPE) {

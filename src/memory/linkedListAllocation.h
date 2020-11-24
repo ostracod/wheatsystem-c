@@ -34,5 +34,6 @@ allocPointer_t firstAlloc;
 
 allocPointer_t createAlloc(int8_t type, heapMemoryOffset_t size);
 int8_t deleteAlloc(allocPointer_t pointer);
+void validateAllocPointer(allocPointer_t pointer);
 
 

@@ -74,4 +74,19 @@ int8_t deleteAlloc(allocPointer_t pointer) {
     return true;
 }
 
+void validateAllocPointer(allocPointer_t pointer) {
+    if (pointer == NULL_ALLOC_POINTER) {
+        unhandledErrorCode = NULL_ERR_CODE;
+        return;
+    }
+    allocPointer_t tempAlloc = getFirstAlloc();
+    while (tempAlloc != NULL_ALLOC_POINTER) {
+        if (tempAlloc == pointer) {
+            return;
+        }
+        tempAlloc = getAllocNext(tempAlloc);
+    }
+    unhandledErrorCode = PTR_ERR_CODE;
+}
+
 

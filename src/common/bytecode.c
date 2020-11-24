@@ -33,8 +33,20 @@ typedef struct instructionArg {
 #define getArgPrefixReferenceType(argPrefix) (argPrefix >> 4)
 #define getArgPrefixDataType(argPrefix) (argPrefix & 0x0F)
 
-#define readArgInt(index) readArgIntHelper(instructionArgArray + index, 0, -1)
-#define writeArgInt(index, value) writeArgIntHelper(instructionArgArray + index, 0, -1, value)
+#define getArgDataTypeSize(dataType) (dataType == SIGNED_INT_8_TYPE ? 1 : 4)
+
+#define readArgInt(index) ({ \
+    int32_t tempResult = readArgIntHelper(instructionArgArray + index, 0, -1); \
+    if (unhandledErrorCode != 0) { \
+        return; \
+    } \
+    tempResult; \
+})
+#define writeArgInt(index, value) \
+    writeArgIntHelper(instructionArgArray + index, 0, -1, value); \
+    if (unhandledErrorCode != 0) { \
+        return; \
+    }
 
 instructionArg_t instructionArgArray[MAXIMUM_ARG_AMOUNT];
 int32_t currentInstructionFilePos;
@@ -48,10 +60,17 @@ int32_t readArgIntHelper(instructionArg_t *arg, int32_t offset, int8_t dataType)
     if (referenceType == CONSTANT_REF_TYPE) {
         return arg->constantValue;
     } else if (referenceType == APP_DATA_REF_TYPE) {
+        int32_t index = arg->appDataIndex + offset;
+        int8_t dataTypeSize = getArgDataTypeSize(dataType);
+        int32_t appDataSize = getBytecodeGlobalFrameMember(currentImplementer, appDataSize);
+        if (index < 0 || index + dataTypeSize > appDataSize) {
+            unhandledErrorCode = INDEX_ERR_CODE;
+            return 0;
+        }
         int32_t tempFilePos = getBytecodeGlobalFrameMember(
             currentImplementer,
             appDataFilePos
-        ) + arg->appDataIndex + offset;
+        ) + index;
         if (dataType == SIGNED_INT_8_TYPE) {
             return readFile(currentImplementerFileHandle, tempFilePos, int8_t);
         } else {
@@ -91,7 +110,7 @@ void writeArgIntHelper(
     }
 }
 
-instructionArg_t parseInstructionArg() {
+void parseInstructionArg(instructionArg_t *destination) {
     uint8_t argPrefix = readFileAndAdvance(
         currentImplementerFileHandle,
         currentInstructionFilePos,
@@ -99,36 +118,57 @@ instructionArg_t parseInstructionArg() {
     );
     uint8_t referenceType = getArgPrefixReferenceType(argPrefix);
     uint8_t dataType = getArgPrefixDataType(argPrefix);
-    instructionArg_t output;
+    if (dataType > SIGNED_INT_32_TYPE) {
+        unhandledErrorCode = TYPE_ERR_CODE;
+        return;
+    }
     if (referenceType == CONSTANT_REF_TYPE) {
-        output.prefix = argPrefix;
+        destination->prefix = argPrefix;
         if (dataType == SIGNED_INT_8_TYPE) {
-            output.constantValue = readFileAndAdvance(
+            destination->constantValue = readFileAndAdvance(
                 currentImplementerFileHandle,
                 currentInstructionFilePos,
                 int8_t
             );
         } else {
-            output.constantValue = readFileAndAdvance(
+            destination->constantValue = readFileAndAdvance(
                 currentImplementerFileHandle,
                 currentInstructionFilePos,
                 int32_t
             );
         }
     } else {
-        instructionArg_t tempArg1 = parseInstructionArg();
+        instructionArg_t tempArg1;
+        parseInstructionArg(&tempArg1);
+        if (unhandledErrorCode != 0) {
+            return;
+        }
         int32_t argValue1 = readArgIntHelper(&tempArg1, 0, -1);
+        if (unhandledErrorCode != 0) {
+            return;
+        }
         if (referenceType == APP_DATA_REF_TYPE) {
-            output.prefix = argPrefix;
-            output.appDataIndex = argValue1;
+            destination->prefix = argPrefix;
+            destination->appDataIndex = argValue1;
         } else {
             heapMemoryOffset_t baseAddress;
             heapMemoryOffset_t tempOffset;
             if (referenceType == DYNAMIC_ALLOC_REF_TYPE) {
                 allocPointer_t tempPointer = (allocPointer_t)argValue1;
+                validateAllocPointer(tempPointer);
+                if (unhandledErrorCode != 0) {
+                    return;
+                }
                 baseAddress = getDynamicAllocDataAddress(tempPointer);
-                instructionArg_t tempArg2 = parseInstructionArg();
+                instructionArg_t tempArg2;
+                parseInstructionArg(&tempArg2);
+                if (unhandledErrorCode != 0) {
+                    return;
+                }
                 tempOffset = (heapMemoryOffset_t)readArgIntHelper(&tempArg2, 0, -1);
+                if (unhandledErrorCode != 0) {
+                    return;
+                }
             } else {
                 tempOffset = (heapMemoryOffset_t)argValue1;
                 if (referenceType == GLOBAL_FRAME_REF_TYPE) {
@@ -142,19 +182,30 @@ instructionArg_t parseInstructionArg() {
                             currentLocalFrame,
                             previousLocalFrame
                         );
-                    } else {
+                        if (tempLocalFrame == NULL_ALLOC_POINTER) {
+                            unhandledErrorCode = ARG_FRAME_ERR_CODE;
+                            return;
+                        }
+                    } else if (referenceType == NEXT_ARG_FRAME_REF_TYPE) {
                         tempLocalFrame = currentLocalFrame;
+                    } else {
+                        unhandledErrorCode = TYPE_ERR_CODE;
+                        return;
                     }
                     allocPointer_t argFrame = getLocalFrameMember(tempLocalFrame, nextArgFrame);
+                    if (argFrame == NULL_ALLOC_POINTER) {
+                        unhandledErrorCode = ARG_FRAME_ERR_CODE;
+                        return;
+                    }
                     baseAddress = getAllocDataAddress(argFrame);
                 }
             }
-            output.prefix = (HEAP_MEM_REF_TYPE << 4) | dataType;
-            output.address = baseAddress + (heapMemoryOffset_t)tempOffset;
+            destination->prefix = (HEAP_MEM_REF_TYPE << 4) | dataType;
+            destination->address = baseAddress + (heapMemoryOffset_t)tempOffset;
             // TODO: Set output.maximumAddress.
+            
         }
     }
-    return output;
 }
 
 void jumpToBytecodeInstruction(int32_t instructionOffset) {
@@ -202,7 +253,10 @@ void evaluateBytecodeInstruction() {
         tempOffset + opcodeOffset
     );
     for (int8_t index = 0; index < argumentAmount; index++) {
-        instructionArgArray[index] = parseInstructionArg();
+        parseInstructionArg(instructionArgArray + index);
+        if (unhandledErrorCode != 0) {
+            return;
+        }
     }
     setBytecodeLocalFrameMember(
         currentLocalFrame,
@@ -222,7 +276,13 @@ void evaluateBytecodeInstruction() {
             int32_t size = readArgInt(2);
             for (int32_t offset = 0; offset < size; offset++) {
                 int8_t tempValue = readArgIntHelper(source, offset, SIGNED_INT_8_TYPE);
+                if (unhandledErrorCode != 0) {
+                    return;
+                }
                 writeArgIntHelper(destination, offset, SIGNED_INT_8_TYPE, tempValue);
+                if (unhandledErrorCode != 0) {
+                    return;
+                }
             }
         } else if (opcodeOffset == 0x2) {
             // newArgFrame.

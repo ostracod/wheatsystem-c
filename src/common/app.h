@@ -39,6 +39,9 @@ typedef struct localFrameHeader {
 
 #define getGlobalFrameDataAddress(runningApp) \
     (getAllocDataAddress(runningApp) + sizeof(runningAppHeader_t))
+#define getGlobalFrameSize(runningApp) \
+    (getAllocSize(runningApp) - sizeof(runningAppHeader_t))
+
 #define readGlobalFrame(runningApp, index, type) \
     readHeapMemory(getGlobalFrameDataAddress(runningApp) + index, type)
 #define writeGlobalFrame(runningApp, index, type, value) \
@@ -51,6 +54,9 @@ typedef struct localFrameHeader {
 
 #define getLocalFrameDataAddress(localFrame) \
     (getAllocDataAddress(localFrame) + sizeof(localFrameHeader_t))
+#define getLocalFrameSize(localFrame) \
+    (getAllocSize(localFrame) - sizeof(localFrameHeader_t))
+
 #define readLocalFrame(localFrame, index, type) \
     readHeapMemory(getLocalFrameDataAddress(localFrame) + index, type)
 #define writeLocalFrame(localFrame, index, type, value) \

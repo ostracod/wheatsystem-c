@@ -48,15 +48,21 @@ typedef struct bytecodeLocalFrameHeader {
     !!!readStructByPointer runningApp readGlobalFrame bytecodeGlobalFrameHeader_t memberName
 #define setBytecodeGlobalFrameMember(runningApp, memberName, value) \
     !!!writeStructByPointer runningApp writeGlobalFrame bytecodeGlobalFrameHeader_t memberName value
+
 #define getBytecodeGlobalFrameDataAddress(runningApp) \
     (getGlobalFrameDataAddress(runningApp) + sizeof(bytecodeGlobalFrameHeader_t))
+#define getBytecodeGlobalFrameSize(runningApp) \
+    (getGlobalFrameSize(runningApp) - sizeof(bytecodeGlobalFrameHeader_t))
 
 #define getBytecodeLocalFrameMember(localFrame, memberName) \
     !!!readStructByPointer localFrame readLocalFrame bytecodeLocalFrameHeader_t memberName
 #define setBytecodeLocalFrameMember(localFrame, memberName, value) \
     !!!writeStructByPointer localFrame writeLocalFrame bytecodeLocalFrameHeader_t memberName value
+
 #define getBytecodeLocalFrameDataAddress(localFrame) \
     (getLocalFrameDataAddress(localFrame) + sizeof(bytecodeLocalFrameHeader_t))
+#define getBytecodeLocalFrameSize(localFrame) \
+    (getLocalFrameSize(localFrame) - sizeof(bytecodeLocalFrameHeader_t))
 
 void jumpToBytecodeInstruction(int32_t instructionOffset);
 void evaluateBytecodeInstruction();

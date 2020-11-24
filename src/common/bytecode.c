@@ -17,12 +17,13 @@
 typedef struct instructionArg {
     uint8_t prefix;
     union {
-        // For HEAP_MEM_REF_TYPE, the union contains address and maximumAddress.
+        // For HEAP_MEM_REF_TYPE, the union contains startAddress, size, and index.
         // For CONSTANT_REF_TYPE, the union contains constantValue.
         // For APP_DATA_REF_TYPE, the union contains appDataIndex.
         struct {
-            heapMemoryOffset_t address;
-            heapMemoryOffset_t maximumAddress;
+            heapMemoryOffset_t startAddress;
+            heapMemoryOffset_t index;
+            heapMemoryOffset_t size;
         };
         int32_t constantValue;
         int32_t appDataIndex;
@@ -51,17 +52,29 @@ typedef struct instructionArg {
 instructionArg_t instructionArgArray[MAXIMUM_ARG_AMOUNT];
 int32_t currentInstructionFilePos;
 
+heapMemoryOffset_t getArgHeapMemoryAddress(
+    instructionArg_t *arg,
+    int32_t offset,
+    int8_t dataTypeSize
+) {
+    heapMemoryOffset_t index = arg->index + offset;
+    if (index < 0 || index + dataTypeSize > arg->size) {
+        unhandledErrorCode = INDEX_ERR_CODE;
+    }
+    return arg->startAddress + index;
+}
+
 int32_t readArgIntHelper(instructionArg_t *arg, int32_t offset, int8_t dataType) {
     uint8_t tempPrefix = arg->prefix;
     uint8_t referenceType = getArgPrefixReferenceType(tempPrefix);
     if (dataType < 0) {
         dataType = getArgPrefixDataType(tempPrefix);
     }
+    int8_t dataTypeSize = getArgDataTypeSize(dataType);
     if (referenceType == CONSTANT_REF_TYPE) {
         return arg->constantValue;
     } else if (referenceType == APP_DATA_REF_TYPE) {
         int32_t index = arg->appDataIndex + offset;
-        int8_t dataTypeSize = getArgDataTypeSize(dataType);
         int32_t appDataSize = getBytecodeGlobalFrameMember(currentImplementer, appDataSize);
         if (index < 0 || index + dataTypeSize > appDataSize) {
             unhandledErrorCode = INDEX_ERR_CODE;
@@ -77,7 +90,10 @@ int32_t readArgIntHelper(instructionArg_t *arg, int32_t offset, int8_t dataType)
             return readFile(currentImplementerFileHandle, tempFilePos, int32_t);
         }
     } else {
-        heapMemoryOffset_t tempAddress = arg->address + offset;
+        heapMemoryOffset_t tempAddress = getArgHeapMemoryAddress(arg, offset, dataTypeSize);
+        if (unhandledErrorCode != 0) {
+            return 0;
+        }
         if (dataType == SIGNED_INT_8_TYPE) {
             return readHeapMemory(tempAddress, int8_t);
         } else {
@@ -97,16 +113,19 @@ void writeArgIntHelper(
     if (dataType < 0) {
         dataType = getArgPrefixDataType(tempPrefix);
     }
+    int8_t dataTypeSize = getArgDataTypeSize(dataType);
     if (referenceType == HEAP_MEM_REF_TYPE) {
-        heapMemoryOffset_t tempAddress = arg->address + offset;
+        heapMemoryOffset_t tempAddress = getArgHeapMemoryAddress(arg, offset, dataTypeSize);
+        if (unhandledErrorCode != 0) {
+            return;
+        }
         if (dataType == SIGNED_INT_8_TYPE) {
             writeHeapMemory(tempAddress, int8_t, (int8_t)value);
         } else {
             writeHeapMemory(tempAddress, int32_t, value);
         }
     } else {
-        // TODO: Throw an error.
-        
+        unhandledErrorCode = TYPE_ERR_CODE;
     }
 }
 
@@ -151,30 +170,34 @@ void parseInstructionArg(instructionArg_t *destination) {
             destination->prefix = argPrefix;
             destination->appDataIndex = argValue1;
         } else {
-            heapMemoryOffset_t baseAddress;
-            heapMemoryOffset_t tempOffset;
+            heapMemoryOffset_t startAddress;
+            heapMemoryOffset_t tempSize;
+            heapMemoryOffset_t index;
             if (referenceType == DYNAMIC_ALLOC_REF_TYPE) {
                 allocPointer_t tempPointer = (allocPointer_t)argValue1;
                 validateAllocPointer(tempPointer);
                 if (unhandledErrorCode != 0) {
                     return;
                 }
-                baseAddress = getDynamicAllocDataAddress(tempPointer);
+                startAddress = getDynamicAllocDataAddress(tempPointer);
                 instructionArg_t tempArg2;
                 parseInstructionArg(&tempArg2);
                 if (unhandledErrorCode != 0) {
                     return;
                 }
-                tempOffset = (heapMemoryOffset_t)readArgIntHelper(&tempArg2, 0, -1);
+                index = (heapMemoryOffset_t)readArgIntHelper(&tempArg2, 0, -1);
                 if (unhandledErrorCode != 0) {
                     return;
                 }
+                tempSize = getDynamicAllocSize(tempPointer);
             } else {
-                tempOffset = (heapMemoryOffset_t)argValue1;
+                index = (heapMemoryOffset_t)argValue1;
                 if (referenceType == GLOBAL_FRAME_REF_TYPE) {
-                    baseAddress = getBytecodeGlobalFrameDataAddress(currentImplementer);
+                    startAddress = getBytecodeGlobalFrameDataAddress(currentImplementer);
+                    tempSize = getBytecodeGlobalFrameSize(currentImplementer);
                 } else if (referenceType == LOCAL_FRAME_REF_TYPE) {
-                    baseAddress = getBytecodeLocalFrameDataAddress(currentLocalFrame);
+                    startAddress = getBytecodeLocalFrameDataAddress(currentLocalFrame);
+                    tempSize = getBytecodeLocalFrameSize(currentLocalFrame);
                 } else {
                     allocPointer_t tempLocalFrame;
                     if (referenceType == PREV_ARG_FRAME_REF_TYPE) {
@@ -197,13 +220,14 @@ void parseInstructionArg(instructionArg_t *destination) {
                         unhandledErrorCode = ARG_FRAME_ERR_CODE;
                         return;
                     }
-                    baseAddress = getAllocDataAddress(argFrame);
+                    startAddress = getAllocDataAddress(argFrame);
+                    tempSize = getAllocSize(argFrame);
                 }
             }
             destination->prefix = (HEAP_MEM_REF_TYPE << 4) | dataType;
-            destination->address = baseAddress + (heapMemoryOffset_t)tempOffset;
-            // TODO: Set output.maximumAddress.
-            
+            destination->startAddress = startAddress;
+            destination->size = tempSize;
+            destination->index = index;
         }
     }
 }

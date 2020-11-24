@@ -242,10 +242,14 @@ The following definitions are shared between all platform implementations:
 * Application system functions
     * `<memberType> getRunningAppMember(allocPointer_t runningApp, <memberName>)`
     * `void setRunningAppMember(allocPointer_t runningApp, <memberName>, <memberType> value)`
+    * `heapMemoryOffset_t getGlobalFrameDataAddress(allocPointer_t runningApp)`
+    * `heapMemoryOffset_t getGlobalFrameSize(allocPointer_t runningApp)`
     * `<type> readGlobalFrame(allocPointer_t runningApp, heapMemoryOffset_t, index, <type>)`
     * `void writeGlobalFrame(allocPointer_t runningApp, heapMemoryOffset_t index, <type>, <type> value)`
     * `<memberType> getLocalFrameMember(allocPointer_t localFrame, <memberName>)`
     * `void setLocalFrameMember(allocPointer_t localFrame, <memberName>, <memberType> value)`
+    * `heapMemoryOffset_t getLocalFrameDataAddress(allocPointer_t localFrame)`
+    * `heapMemoryOffset_t getLocalFrameSize(allocPointer_t localFrame)`
     * `<type> readLocalFrame(allocPointer_t localFrame, heapMemoryOffset_t, index, <type>)`
     * `void writeLocalFrame(allocPointer_t localFrame, heapMemoryOffset_t index, <type>, <type> value)`
     * `allocPointer_t getPreviousArgFrame()`
@@ -263,9 +267,11 @@ The following definitions are shared between all platform implementations:
     * `<memberType> getBytecodeGlobalFrameMember(allocPointer_t runningApp, <memberName>)`
     * `void setBytecodeGlobalFrameMember(allocPointer_t runningApp, <memberName>, <memberType> value)`
     * `heapMemoryOffset_t getBytecodeGlobalFrameDataAddress(allocPointer_t runningApp)`
+    * `heapMemoryOffset_t getBytecodeGlobalFrameSize(allocPointer_t runningApp)`
     * `<memberType> getBytecodeLocalFrameMember(allocPointer_t localFrame, <memberName>)`
     * `void setBytecodeLocalFrameMember(allocPointer_t localFrame, <memberName>, <memberType> value)`
-    * `heapMemoryOffset_t getBytecodeLocalFrameDataAddress(allocPointer_t runningApp)`
+    * `heapMemoryOffset_t getBytecodeLocalFrameDataAddress(allocPointer_t localFrame)`
+    * `heapMemoryOffset_t getBytecodeLocalFrameSize(allocPointer_t localFrame)`
     * `void evaluateBytecodeInstruction()`
 * System application functions
     * `systemApp_t createSystemApp(int8_t globalFrameSize, arrayConstant_t(systemAppFunction_t) systemAppFunctionArray)`

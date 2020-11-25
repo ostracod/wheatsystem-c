@@ -33,4 +33,15 @@ allocPointer_t createStringAllocFromArrayConstantHelper(
     return output;
 }
 
+void validateDynamicAlloc(allocPointer_t dynamicAlloc) {
+    validateAllocPointer(dynamicAlloc);
+    if (unhandledErrorCode != 0) {
+        return;
+    }
+    if (getAllocType(dynamicAlloc) != DYNAMIC_ALLOC_TYPE) {
+        unhandledErrorCode = TYPE_ERR_CODE;
+        return;
+    }
+}
+
 

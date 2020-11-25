@@ -38,5 +38,6 @@ allocPointer_t createStringAllocFromArrayConstantHelper(
     arrayConstant_t(int8_t) arrayConstant,
     heapMemoryOffset_t size
 );
+void validateDynamicAlloc(allocPointer_t dynamicAlloc);
 
 

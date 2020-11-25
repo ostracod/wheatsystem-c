@@ -230,14 +230,16 @@ The following definitions are shared between all platform implementations:
     * `void writeDynamicAlloc(allocPointer_t pointer, heapMemoryOffset_t index, <type>, <type> value)`
     * `heapMemoryOffset_t getDynamicAllocSize(allocPointer_t pointer)`
     * `<memberType> getDynamicAllocMember(allocPointer_t pointer, <memberName>)`
-    * `void createStringAllocFromArrayConstant(arrayConstant_t(int8_t) arrayConstant)`
     * `allocPointer_t createDynamicAlloc(heapMemoryOffset_t size, int8_t isGuarded, allocPointer_t creator)`
+    * `void createStringAllocFromArrayConstant(arrayConstant_t(int8_t) arrayConstant)`
+    * `void validateDynamicAlloc(allocPointer_t dynamicAlloc)`
 * File system functions
     * `int8_t getHasAdminPermFromFileAttributes(uint8_t fileAttributes)`
     * `int8_t getIsGuardedFromFileAttributes(uint8_t fileAttributes)`
     * `int8_t getTypeFromFileAttributes(uint8_t fileAttributes)`
     * `int8_t allocIsFileHandle(allocPointer_t pointer)`
     * `allocPointer_t openFileByStringAlloc(allocPointer_t stringAlloc)`
+    * `void validateFileHandle(allocPointer_t fileHandle)`
 * Application system functions
     * `<memberType> getRunningAppMember(allocPointer_t runningApp, <memberName>)`
     * `void setRunningAppMember(allocPointer_t runningApp, <memberName>, <memberType> value)`

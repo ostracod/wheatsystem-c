@@ -11,5 +11,6 @@
     (getAllocType(pointer) == DYNAMIC_ALLOC_TYPE && getDynamicAllocMember(pointer, creator) == NULL_ALLOC_POINTER)
 
 allocPointer_t openFileByStringAlloc(allocPointer_t stringAlloc);
+void validateFileHandle(allocPointer_t fileHandle);
 
 

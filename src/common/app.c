@@ -65,7 +65,7 @@ void launchApp(allocPointer_t fileHandle) {
         systemAppId = readFile(fileHandle, 0, int8_t);
         globalFrameSize = sizeof(systemGlobalFrameHeader_t) + getSystemAppMember(systemAppId, globalFrameSize);
     } else {
-        // TODO: Throw an error.
+        unhandledErrorCode = TYPE_ERR_CODE;
         return;
     }
     
@@ -149,6 +149,18 @@ void callFunction(
     int8_t fileType = getFileHandleType(fileHandle);
     allocPointer_t previousLocalFrame = getRunningAppMember(threadApp, localFrame);
     
+    // Validate function index.
+    int32_t functionAmount;
+    if (fileType == BYTECODE_APP_FILE_TYPE) {
+        functionAmount = getBytecodeGlobalFrameMember(implementer, functionTableLength);
+    } else {
+        functionAmount = getRunningSystemAppMember(implementer, functionAmount);
+    }
+    if (functionIndex < 0 || functionIndex >= functionAmount) {
+        unhandledErrorCode = INDEX_ERR_CODE;
+        return;
+    }
+    
     // Determine local frame size.
     heapMemoryOffset_t localFrameSize = sizeof(localFrameHeader_t);
     if (fileType == BYTECODE_APP_FILE_TYPE) {
@@ -221,7 +233,7 @@ void returnFromFunction() {
 void scheduleAppThread(allocPointer_t runningApp) {
     
     currentThreadApp = runningApp;
-    int8_t tempFrame = getRunningAppMember(currentThreadApp, localFrame);
+    allocPointer_t tempFrame = getRunningAppMember(currentThreadApp, localFrame);
     if (tempFrame == NULL_ALLOC_POINTER) {
         return;
     }
@@ -283,6 +295,9 @@ void runAppSystem() {
         return;
     }
     launchApp(bootFileHandle);
+    if (unhandledErrorCode != 0) {
+        return;
+    }
     
     // Enter loop scheduling app threads.
     int8_t runningAppIndex = 0;

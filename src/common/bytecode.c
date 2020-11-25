@@ -280,6 +280,7 @@ void readArgRunningAppHelper(allocPointer_t *destination, int8_t index) {
         }
         return;
     }
+    *destination = runningApp;
 }
 
 void evaluateBytecodeInstruction() {
@@ -300,6 +301,7 @@ void evaluateBytecodeInstruction() {
         return;
     }
     uint8_t opcode = readInstructionData(uint8_t);
+    printDebugString((int8_t *)"OPCODE ");
     printDebugNumber(opcode);
     printDebugNewline();
     uint8_t opcodeCategory = opcode >> 4;
@@ -568,7 +570,7 @@ void evaluateBytecodeInstruction() {
         // Application instructions.
         if (opcodeOffset == 0x0) {
             // launch.
-            allocPointer_t appHandle = readArgInt(0);
+            allocPointer_t appHandle = readArgFileHandle(0);
             launchApp(appHandle);
         } else {
             unhandledErrorCode = NO_IMPL_ERR_CODE;
@@ -578,12 +580,16 @@ void evaluateBytecodeInstruction() {
         // File instructions.
         if (opcodeOffset == 0x2) {
             // openFile.
-            allocPointer_t fileName = readArgInt(1);
+            allocPointer_t fileName = readArgDynamicAlloc(1);
             allocPointer_t fileHandle = openFileByStringAlloc(fileName);
+            if (fileHandle == NULL_ALLOC_POINTER) {
+                unhandledErrorCode = MISSING_ERR_CODE;
+                return;
+            }
             writeArgInt(0, fileHandle);
         } else if (opcodeOffset == 0x3) {
             // closeFile.
-            allocPointer_t fileHandle = readArgInt(0);
+            allocPointer_t fileHandle = readArgFileHandle(0);
             closeFile(fileHandle);
         } else {
             unhandledErrorCode = NO_IMPL_ERR_CODE;

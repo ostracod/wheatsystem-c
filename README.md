@@ -280,6 +280,7 @@ The following definitions are shared between all platform implementations:
     * `<memberType> getSystemAppFunctionMember(arrayConstant_t(systemAppFunction_t) systemAppFunctionArray, int8_t index, <memberName>)`
     * `<memberType> getSystemGlobalFrameMember(allocPointer_t runningApp, <memberName>)`
     * `void setSystemGlobalFrameMember(allocPointer_t runningApp, <memberName>, <memberType> value)`
+    * `<memberType> getRunningSystemAppMember(allocPointer_t runningApp, <memberName>)`
     * `<memberType> getRunningSystemAppFunctionMember(allocPointer_t runningApp, int8_t functionIndex, <memberName>)`
 * Debug functions
     * `void printDebugString(int8_t *text)`

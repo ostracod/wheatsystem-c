@@ -238,7 +238,6 @@ The following definitions are shared between all platform implementations:
     * `int8_t getTypeFromFileAttributes(uint8_t fileAttributes)`
     * `int8_t allocIsFileHandle(allocPointer_t pointer)`
     * `allocPointer_t openFileByStringAlloc(allocPointer_t stringAlloc)`
-    * `<type> readFileAndAdvance(allocPointer_t fileHandle, int32_t pos, <type>)`
 * Application system functions
     * `<memberType> getRunningAppMember(allocPointer_t runningApp, <memberName>)`
     * `void setRunningAppMember(allocPointer_t runningApp, <memberName>, <memberType> value)`

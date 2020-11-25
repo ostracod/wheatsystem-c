@@ -31,6 +31,16 @@ typedef struct instructionArg {
 } instructionArg_t;
 #pragma pack(pop)
 
+#define readInstructionData(type) ({ \
+    if (currentInstructionFilePos < instructionBodyStartFilePos || currentInstructionFilePos + sizeof(type) > instructionBodyEndFilePos) { \
+        unhandledErrorCode = INDEX_ERR_CODE; \
+        return; \
+    } \
+    type result = readFile(currentImplementerFileHandle, currentInstructionFilePos, type); \
+    currentInstructionFilePos += sizeof(type); \
+    result; \
+})
+
 #define getArgPrefixReferenceType(argPrefix) (argPrefix >> 4)
 #define getArgPrefixDataType(argPrefix) (argPrefix & 0x0F)
 
@@ -51,6 +61,8 @@ typedef struct instructionArg {
 
 instructionArg_t instructionArgArray[MAXIMUM_ARG_AMOUNT];
 int32_t currentInstructionFilePos;
+int32_t instructionBodyStartFilePos;
+int32_t instructionBodyEndFilePos;
 
 heapMemoryOffset_t getArgHeapMemoryAddress(
     instructionArg_t *arg,
@@ -130,11 +142,7 @@ void writeArgIntHelper(
 }
 
 void parseInstructionArg(instructionArg_t *destination) {
-    uint8_t argPrefix = readFileAndAdvance(
-        currentImplementerFileHandle,
-        currentInstructionFilePos,
-        uint8_t
-    );
+    uint8_t argPrefix = readInstructionData(uint8_t);
     uint8_t referenceType = getArgPrefixReferenceType(argPrefix);
     uint8_t dataType = getArgPrefixDataType(argPrefix);
     if (dataType > SIGNED_INT_32_TYPE) {
@@ -144,17 +152,9 @@ void parseInstructionArg(instructionArg_t *destination) {
     if (referenceType == CONSTANT_REF_TYPE) {
         destination->prefix = argPrefix;
         if (dataType == SIGNED_INT_8_TYPE) {
-            destination->constantValue = readFileAndAdvance(
-                currentImplementerFileHandle,
-                currentInstructionFilePos,
-                int8_t
-            );
+            destination->constantValue = readInstructionData(int8_t);
         } else {
-            destination->constantValue = readFileAndAdvance(
-                currentImplementerFileHandle,
-                currentInstructionFilePos,
-                int32_t
-            );
+            destination->constantValue = readInstructionData(int32_t);
         }
     } else {
         instructionArg_t tempArg1;
@@ -237,8 +237,6 @@ void jumpToBytecodeInstruction(int32_t instructionOffset) {
         currentLocalFrame,
         instructionBodyStartFilePos
     );
-    // TODO: Verify that instructionOffset is within bounds
-    // of instruction body.
     setBytecodeLocalFrameMember(
         currentLocalFrame,
         instructionFilePos,
@@ -247,7 +245,11 @@ void jumpToBytecodeInstruction(int32_t instructionOffset) {
 }
 
 void evaluateBytecodeInstruction() {
-    int32_t instructionBodyEndFilePos = getBytecodeLocalFrameMember(
+    instructionBodyStartFilePos = getBytecodeLocalFrameMember(
+        currentLocalFrame,
+        instructionBodyStartFilePos
+    );
+    instructionBodyEndFilePos = getBytecodeLocalFrameMember(
         currentLocalFrame,
         instructionBodyEndFilePos
     );
@@ -255,15 +257,11 @@ void evaluateBytecodeInstruction() {
         currentLocalFrame,
         instructionFilePos
     );
-    if (currentInstructionFilePos >= instructionBodyEndFilePos) {
+    if (currentInstructionFilePos == instructionBodyEndFilePos) {
         returnFromFunction();
         return;
     }
-    uint8_t opcode = readFileAndAdvance(
-        currentImplementerFileHandle,
-        currentInstructionFilePos,
-        uint8_t
-    );
+    uint8_t opcode = readInstructionData(uint8_t);
     printDebugNumber(opcode);
     printDebugNewline();
     uint8_t opcodeCategory = opcode >> 4;

@@ -11,7 +11,7 @@ typedef struct bytecodeAppHeader {
 typedef struct bytecodeFunction {
     int32_t functionId;
     int8_t isGuarded;
-    int32_t argumentFrameSize;
+    int32_t argFrameSize;
     int32_t localFrameSize;
     int32_t instructionBodyFilePos;
     int32_t instructionBodySize;

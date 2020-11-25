@@ -10,6 +10,7 @@
             "fileSystem/unixStorageSpace",
             "fileSystem/linkedListFileSystem",
             "systemApp/unixTermApp",
+            "systemApp/termApp",
             "systemApp/unixSystemApps"
         ],
         "compiler": {
@@ -37,6 +38,7 @@
             "fileSystem/externalEepromStorageSpace",
             "fileSystem/linkedListFileSystem",
             "systemApp/avrTermApp",
+            "systemApp/termApp",
             "systemApp/avrSystemApps"
         ],
         "compiler": {

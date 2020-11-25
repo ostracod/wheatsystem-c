@@ -1,8 +1,20 @@
 
+FUNC wow
+    
+    ARG myArg1, s8
+    ARG myArg2, s32
+    
+    add myArg2, myArg2, myArg1
+    
+END
+
 FUNC init, init_ID
     
     VAR x, s8
     VAR y, s32
+    
+    newArgFrame 5
+    call wow
     
     newAlloc y, 0, 10
     wrt y[0]:s8, appData[2]:s8

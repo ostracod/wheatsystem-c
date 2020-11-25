@@ -2,6 +2,7 @@
 #pragma pack(push, 1)
 typedef struct systemAppFunction {
     int8_t id;
+    int8_t argFrameSize;
     int8_t localFrameSize;
     void (*threadAction)();
 } systemAppFunction_t;
@@ -22,10 +23,15 @@ typedef struct systemGlobalFrameHeader {
 #pragma pack(pop)
 
 #define createSystemApp(globalFrameSize, systemAppFunctionArray) (systemApp_t){globalFrameSize, systemAppFunctionArray, getArrayConstantLength(systemAppFunctionArray)}
+
 #define getSystemAppMember(id, memberName) \
     !!!readArrayStructByPointer systemAppArray readArrayConstantValue id systemApp_t memberName
-#define getSystemAppFunctionMember(systemAppFunctionArray, index, memberName) \
+#define getSystemAppFunctionListMember(systemAppFunctionArray, index, memberName) \
     !!!readArrayStructByPointer systemAppFunctionArray readArrayConstantValue index systemAppFunction_t memberName
+#define getSystemAppFunctionMember(id, index, memberName) ({ \
+    arrayConstant_t(systemAppFunction_t) functionList = getSystemAppMember(id, functionList); \
+    getSystemAppFunctionListMember(functionList, index, memberName); \
+})
 
 #define getSystemGlobalFrameMember(runningApp, memberName) \
     !!!readStructByPointer runningApp readGlobalFrame systemGlobalFrameHeader_t memberName
@@ -37,8 +43,8 @@ typedef struct systemGlobalFrameHeader {
     getSystemAppMember(systemAppId, memberName); \
 })
 #define getRunningSystemAppFunctionMember(runningApp, functionIndex, memberName) ({ \
-    arrayConstant_t(systemAppFunction_t) functionList = getRunningSystemAppMember(runningApp, functionList); \
-    getSystemAppFunctionMember(functionList, functionIndex, memberName); \
+    int8_t systemAppId = getSystemGlobalFrameMember(runningApp, id); \
+    getSystemAppFunctionMember(systemAppId, functionIndex, memberName); \
 })
 
 

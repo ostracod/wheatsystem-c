@@ -31,7 +31,7 @@ int32_t findFunctionById(allocPointer_t runningApp, int32_t functionId) {
         );
         int8_t functionAmount = getSystemAppMember(systemAppId, functionAmount);
         for (int8_t index = 0; index < functionAmount; index++) {
-            int8_t tempId = getSystemAppFunctionMember(functionList, index, id);
+            int8_t tempId = getSystemAppFunctionListMember(functionList, index, id);
             if (tempId == functionId) {
                 return index;
             }
@@ -148,17 +148,45 @@ void callFunction(
     allocPointer_t fileHandle = getRunningAppMember(implementer, fileHandle);
     int8_t fileType = getFileHandleType(fileHandle);
     allocPointer_t previousLocalFrame = getRunningAppMember(threadApp, localFrame);
+    arrayConstant_t(systemAppFunction_t) systemAppFunctionList;
     
     // Validate function index.
     int32_t functionAmount;
     if (fileType == BYTECODE_APP_FILE_TYPE) {
         functionAmount = getBytecodeGlobalFrameMember(implementer, functionTableLength);
     } else {
-        functionAmount = getRunningSystemAppMember(implementer, functionAmount);
+        int8_t systemAppId = getSystemGlobalFrameMember(implementer, id);
+        systemAppFunctionList = getSystemAppMember(systemAppId, functionList);
+        functionAmount = getSystemAppMember(systemAppId, functionAmount);
     }
     if (functionIndex < 0 || functionIndex >= functionAmount) {
         unhandledErrorCode = INDEX_ERR_CODE;
         return;
+    }
+    
+    // Validate arg frame size.
+    int32_t argFrameSize;
+    if (fileType == BYTECODE_APP_FILE_TYPE) {
+        argFrameSize = getBytecodeFunctionMember(fileHandle, functionIndex, argFrameSize);
+    } else {
+        argFrameSize = getSystemAppFunctionListMember(
+            systemAppFunctionList,
+            functionIndex,
+            argFrameSize
+        );
+    }
+    if (argFrameSize > 0) {
+        allocPointer_t previousArgFrame;
+        if (previousLocalFrame == NULL_ALLOC_POINTER) {
+            previousArgFrame = NULL_ALLOC_POINTER;
+        } else {
+            previousArgFrame = getLocalFrameMember(previousLocalFrame, nextArgFrame);
+        }
+        if (previousArgFrame == NULL_ALLOC_POINTER
+                || getAllocSize(previousArgFrame) != argFrameSize) {
+            unhandledErrorCode = ARG_FRAME_ERR_CODE;
+            return;
+        }
     }
     
     // Determine local frame size.
@@ -166,8 +194,8 @@ void callFunction(
     if (fileType == BYTECODE_APP_FILE_TYPE) {
         localFrameSize += sizeof(bytecodeLocalFrameHeader_t) + (heapMemoryOffset_t)getBytecodeFunctionMember(fileHandle, functionIndex, localFrameSize);
     } else {
-        localFrameSize += getRunningSystemAppFunctionMember(
-            implementer,
+        localFrameSize += getSystemAppFunctionListMember(
+            systemAppFunctionList,
             functionIndex,
             localFrameSize
         );

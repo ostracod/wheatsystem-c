@@ -41,11 +41,4 @@ void writeTermText() {
     returnFromFunction();
 }
 
-declareArrayConstantWithValue(termAppFunctionArray, systemAppFunction_t, {
-    (systemAppFunction_t){INIT_FUNC_ID, 0, initializeTermApp},
-    (systemAppFunction_t){LISTEN_TERM_FUNC_ID, 0, setTermObserver},
-    (systemAppFunction_t){TERM_SIZE_FUNC_ID, 0, getTermSize},
-    (systemAppFunction_t){WRT_TERM_FUNC_ID, 0, writeTermText}
-});
-
 

@@ -169,7 +169,7 @@ The following definitions are shared between all platform implementations:
 * Bytecode function `bytecodeFunction_t`
     * `int32_t functionId`
     * `int8_t isGuarded`
-    * `int32_t argumentFrameSize`
+    * `int32_t argFrameSize`
     * `int32_t localFrameSize`
     * `int32_t instructionBodyFilePos`
     * `int32_t instructionBodySize`
@@ -277,7 +277,8 @@ The following definitions are shared between all platform implementations:
 * System application functions
     * `systemApp_t createSystemApp(int8_t globalFrameSize, arrayConstant_t(systemAppFunction_t) systemAppFunctionArray)`
     * `<memberType> getSystemAppMember(int8_t id, <memberName>)`
-    * `<memberType> getSystemAppFunctionMember(arrayConstant_t(systemAppFunction_t) systemAppFunctionArray, int8_t index, <memberName>)`
+    * `<memberType> getSystemAppFunctionListMember(arrayConstant_t(systemAppFunction_t) systemAppFunctionArray, int8_t index, <memberName>)`
+    * `<memberType> getSystemAppFunctionMember(int8_t id, int8_t index, <memberName>)`
     * `<memberType> getSystemGlobalFrameMember(allocPointer_t runningApp, <memberName>)`
     * `void setSystemGlobalFrameMember(allocPointer_t runningApp, <memberName>, <memberType> value)`
     * `<memberType> getRunningSystemAppMember(allocPointer_t runningApp, <memberName>)`

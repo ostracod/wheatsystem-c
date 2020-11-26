@@ -55,13 +55,50 @@ void launchApp(allocPointer_t fileHandle) {
         return;
     }
     int8_t fileType = getFileHandleType(fileHandle);
+    int32_t fileSize = getFileHandleSize(fileHandle);
+    int32_t functionTableLength;
+    int32_t appDataFilePos;
     int8_t systemAppId;
     
     // Determine global frame size.
     heapMemoryOffset_t globalFrameSize;
     if (fileType == BYTECODE_APP_FILE_TYPE) {
+        
+        // Validate bytecode app file.
+        functionTableLength = getBytecodeAppMember(fileHandle, functionTableLength);
+        appDataFilePos = getBytecodeAppMember(fileHandle, appDataFilePos);
+        int32_t expectedFilePos = sizeof(bytecodeAppHeader_t) + functionTableLength * sizeof(bytecodeFunction_t);
+        for (int32_t index = 0; index < functionTableLength; index++) {
+            int32_t instructionBodyFilePos = getBytecodeFunctionMember(
+                fileHandle,
+                index,
+                instructionBodyFilePos
+            );
+            int32_t instructionBodySize = getBytecodeFunctionMember(
+                fileHandle,
+                index,
+                instructionBodySize
+            );
+            if (instructionBodyFilePos != expectedFilePos) {
+                unhandledErrorCode = DATA_ERR_CODE;
+                return;
+            }
+            expectedFilePos += instructionBodySize;
+        }
+        if (expectedFilePos != appDataFilePos || appDataFilePos > fileSize) {
+            unhandledErrorCode = DATA_ERR_CODE;
+            return;
+        }
+        
         globalFrameSize = sizeof(bytecodeGlobalFrameHeader_t) + (heapMemoryOffset_t)getBytecodeAppMember(fileHandle, globalFrameSize);
     } else if (fileType == SYSTEM_APP_FILE_TYPE) {
+        
+        // Validate system app file.
+        if (fileSize != 1) {
+            unhandledErrorCode = DATA_ERR_CODE;
+            return;
+        }
+        
         systemAppId = readFile(fileHandle, 0, int8_t);
         globalFrameSize = sizeof(systemGlobalFrameHeader_t) + getSystemAppMember(systemAppId, globalFrameSize);
     } else {
@@ -85,12 +122,9 @@ void launchApp(allocPointer_t fileHandle) {
         writeGlobalFrame(runningApp, index, int8_t, 0);
     }
     if (fileType == BYTECODE_APP_FILE_TYPE) {
-        int32_t functionTableLength = getBytecodeAppMember(fileHandle, functionTableLength);
-        int32_t appDataFilePos = getBytecodeAppMember(fileHandle, appDataFilePos);
-        int32_t appDataSize = getFileHandleSize(fileHandle) - appDataFilePos;
         setBytecodeGlobalFrameMember(runningApp, functionTableLength, functionTableLength);
         setBytecodeGlobalFrameMember(runningApp, appDataFilePos, appDataFilePos);
-        setBytecodeGlobalFrameMember(runningApp, appDataSize, appDataSize);
+        setBytecodeGlobalFrameMember(runningApp, appDataSize, fileSize - appDataFilePos);
     } else {
         setSystemGlobalFrameMember(runningApp, id, systemAppId);
     }

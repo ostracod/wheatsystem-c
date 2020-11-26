@@ -59,6 +59,13 @@ typedef struct instructionArg {
         return; \
     }
 
+#define readArgConstantInt(index) ({ \
+    int32_t tempResult = readArgConstantIntHelper(index); \
+    if (unhandledErrorCode != 0) { \
+        return; \
+    } \
+    tempResult; \
+});
 #define readArgDynamicAlloc(index) ({ \
     allocPointer_t pointer = (allocPointer_t)readArgInt(index); \
     validateDynamicAlloc(pointer); \
@@ -67,6 +74,7 @@ typedef struct instructionArg {
     } \
     pointer; \
 })
+
 #define readArgFileHandle(index) ({ \
     allocPointer_t fileHandle = (allocPointer_t)readArgInt(index); \
     validateFileHandle(fileHandle); \
@@ -99,6 +107,18 @@ heapMemoryOffset_t getArgHeapMemoryAddress(
         unhandledErrorCode = INDEX_ERR_CODE;
     }
     return arg->startAddress + index;
+}
+
+int32_t getArgBufferSize(instructionArg_t *arg) {
+    uint8_t referenceType = getArgPrefixReferenceType(arg->prefix);
+    if (referenceType == CONSTANT_REF_TYPE) {
+        return -1;
+    } else if (referenceType == APP_DATA_REF_TYPE) {
+        int32_t appDataSize = getBytecodeGlobalFrameMember(currentImplementer, appDataSize);
+        return appDataSize - arg->appDataIndex;
+    } else {
+        return arg->size - arg->index;
+    }
 }
 
 int32_t readArgIntHelper(instructionArg_t *arg, int32_t offset, int8_t dataType) {
@@ -269,6 +289,15 @@ void jumpToBytecodeInstruction(int32_t instructionOffset) {
     );
 }
 
+int32_t readArgConstantIntHelper(int8_t index) {
+    instructionArg_t *tempArg = instructionArgArray + index;
+    uint8_t referenceType = getArgPrefixReferenceType(tempArg->prefix);
+    if (referenceType != CONSTANT_REF_TYPE) {
+        unhandledErrorCode = TYPE_ERR_CODE;
+    }
+    return tempArg->constantValue;
+}
+
 void readArgRunningAppHelper(allocPointer_t *destination, int8_t index) {
     allocPointer_t appHandle = readArgFileHandle(index);
     allocPointer_t runningApp = getFileHandleRunningApp(appHandle);
@@ -336,7 +365,9 @@ void evaluateBytecodeInstruction() {
             instructionArg_t *destination = instructionArgArray;
             instructionArg_t *source = instructionArgArray + 1;
             int32_t size = readArgInt(2);
-            if (size < 0) {
+            int32_t destinationBufferSize = getArgBufferSize(destination);
+            int32_t sourceBufferSize = getArgBufferSize(source);
+            if (size < 0 || size > destinationBufferSize || size > sourceBufferSize) {
                 unhandledErrorCode = NUM_RANGE_ERR_CODE;
                 return;
             }
@@ -396,20 +427,20 @@ void evaluateBytecodeInstruction() {
         // Control flow instructions.
         if (opcodeOffset == 0x0) {
             // jmp.
-            int32_t instructionOffset = readArgInt(0);
+            int32_t instructionOffset = readArgConstantInt(0);
             jumpToBytecodeInstruction(instructionOffset);
         } else if (opcodeOffset == 0x1) {
             // jmpZ.
             int32_t condition = readArgInt(1);
             if (condition == 0) {
-                int32_t instructionOffset = readArgInt(0);
+                int32_t instructionOffset = readArgConstantInt(0);
                 jumpToBytecodeInstruction(instructionOffset);
             }
         } else if (opcodeOffset == 0x2) {
             // jmpNZ.
             int32_t condition = readArgInt(1);
             if (condition != 0) {
-                int32_t instructionOffset = readArgInt(0);
+                int32_t instructionOffset = readArgConstantInt(0);
                 jumpToBytecodeInstruction(instructionOffset);
             }
         } else {
@@ -420,7 +451,7 @@ void evaluateBytecodeInstruction() {
         // Error instructions.
         if (opcodeOffset == 0x0) {
             // setErrJmp.
-            int32_t instructionOffset = readArgInt(0);
+            int32_t instructionOffset = readArgConstantInt(0);
             setBytecodeLocalFrameMember(currentLocalFrame, errorHandler, instructionOffset);
         } else if (opcodeOffset == 0x1) {
             // clrErrJmp.

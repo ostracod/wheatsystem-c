@@ -255,6 +255,7 @@ The following definitions are shared between all platform implementations:
     * `allocPointer_t getPreviousArgFrame()`
     * `int32_t findFunctionById(allocPointer_t fileHandle, int32_t functionId)`
     * `allocPointer_t getCurrentCaller()`
+    * `allocPointer_t createNextArgFrame(heapMemoryOffset_t size)`
     * `void launchApp(allocPointer_t fileHandle)`
     * `void hardKillApp(allocPointer_t runningApp, int8_t errorCode)`
     * `void callFunction(allocPointer_t threadApp, allocPointer_t implementer, int32_t functionIndex)`

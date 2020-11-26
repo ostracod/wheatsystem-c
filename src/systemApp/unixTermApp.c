@@ -13,21 +13,53 @@ void handleResize() {
 }
 
 void initializeTermApp() {
-    if (window != NULL) {
+    if (window == NULL) {
+        window = initscr();
+        noecho();
+        curs_set(0);
+        keypad(window, true);
+        ESCDELAY = 50;
+        timeout(0);
+        handleResize();
+    }
+    int32_t tempObserver = readTermAppGlobalVariable(observer);
+    if (tempObserver == NULL_ALLOC_POINTER) {
         return;
     }
-    window = initscr();
-    noecho();
-    curs_set(0);
-    keypad(window, true);
-    ESCDELAY = 50;
-    handleResize();
-    returnFromFunction();
+    // TODO: Check whether observer is still running.
+    
+    int32_t tempKey = getch();
+    if (tempKey < 32 || tempKey > 127) {
+        if (tempKey == KEY_LEFT) {
+            tempKey = -1;
+        } else if (tempKey == KEY_RIGHT) {
+            tempKey = -2;
+        } else if (tempKey == KEY_UP) {
+            tempKey = -3;
+        } else if (tempKey == KEY_DOWN) {
+            tempKey = -4;
+        } else if (tempKey == 263) {
+            tempKey = 127;
+        } else if (tempKey != 10 && tempKey != 27) {
+            return;
+        }
+    }
+    allocPointer_t nextArgFrame = createNextArgFrame(1);
+    writeAlloc(nextArgFrame, 0, int8_t, (int8_t)tempKey);
+    int32_t termInputIndex = readTermAppGlobalVariable(termInputIndex);
+    callFunction(currentThreadApp, tempObserver, termInputIndex);
 }
 
 void setTermObserver() {
-    // TODO: Implement.
-    
+    allocPointer_t tempCaller = getCurrentCaller();
+    int32_t termInputIndex = findFunctionById(tempCaller, TERM_INPUT_FUNC_ID);
+    if (termInputIndex < 0) {
+        unhandledErrorCode = MISSING_ERR_CODE;
+    } else {
+        writeTermAppGlobalVariable(observer, tempCaller);
+        writeTermAppGlobalVariable(termInputIndex, termInputIndex);
+    }
+    returnFromFunction();
 }
 
 void getTermSize() {

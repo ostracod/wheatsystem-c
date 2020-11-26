@@ -51,6 +51,13 @@ allocPointer_t getCurrentCaller() {
     return getLocalFrameMember(previousLocalFrame, implementer);
 }
 
+allocPointer_t createNextArgFrame(heapMemoryOffset_t size) {
+    cleanUpNextArgFrame();
+    allocPointer_t output = createAlloc(ARG_FRAME_ALLOC_TYPE, size);
+    setLocalFrameMember(currentLocalFrame, nextArgFrame, output);
+    return output;
+}
+
 void cleanUpNextArgFrameHelper(allocPointer_t localFrame) {
     allocPointer_t nextArgFrame = getLocalFrameMember(localFrame, nextArgFrame);
     if (nextArgFrame != NULL_ALLOC_POINTER) {
@@ -406,7 +413,7 @@ void runAppSystem() {
         
         // Schedule thread time for runningApp.
         scheduleAppThread(runningApp);
-        sleepMilliseconds(20);
+        sleepMilliseconds(1);
         runningAppIndex += 1;
     }
 }

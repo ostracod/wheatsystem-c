@@ -5,21 +5,36 @@ MACRO newTextAlloc, dest, startLbl, endLbl
     wrtBuff dest[0]:s8, startLbl, ?endLbl - ?startLbl
 END
 
+VAR termHandle, s32
+VAR wrtTermIndex, s32
+VAR charAlloc, s32
+
+FUNC termInput, termInput_ID
+    
+    ARG key, s8
+    
+    wrt charAlloc[0]:s8, key
+    newArgFrame 12
+    wrt nextArgFrame[0]:s32, 4
+    wrt nextArgFrame[4]:s32, 4
+    wrt nextArgFrame[8]:s32, charAlloc
+    callRemote termHandle, wrtTermIndex
+    
+END
+
 FUNC init, init_ID
     
     VAR termName, s32
-    VAR termHandle, s32
-    VAR termSizeIndex, s32
-    VAR wrtTermIndex, s32
+    VAR listenTermIndex, s32
     newTextAlloc termName, termNameStart, termNameEnd
     openFile termHandle, termName
     launch termHandle
-    findFunc termSizeIndex, termHandle, termSize_ID
+    findFunc listenTermIndex, termHandle, listenTerm_ID
     findFunc wrtTermIndex, termHandle, wrtTerm_ID
     
-    newArgFrame 8
-    callRemote termHandle, termSizeIndex
-    wrt termName[0]:s8, nextArgFrame[0]:s32
+    newAlloc charAlloc, 0, 1
+    
+    callRemote termHandle, listenTermIndex
     
     newArgFrame 12
     wrt nextArgFrame[0]:s32, 2

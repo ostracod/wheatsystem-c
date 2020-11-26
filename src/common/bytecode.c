@@ -383,14 +383,12 @@ void evaluateBytecodeInstruction() {
             }
         } else if (opcodeOffset == 0x2) {
             // newArgFrame.
-            cleanUpNextArgFrame();
             heapMemoryOffset_t argFrameSize = (heapMemoryOffset_t)readArgInt(0);
             if (argFrameSize < 0) {
                 unhandledErrorCode = NUM_RANGE_ERR_CODE;
                 return;
             }
-            allocPointer_t nextArgFrame = createAlloc(ARG_FRAME_ALLOC_TYPE, argFrameSize);
-            setLocalFrameMember(currentLocalFrame, nextArgFrame, nextArgFrame);
+            createNextArgFrame(argFrameSize);
         } else if (opcodeOffset == 0x3) {
             // newAlloc.
             int8_t isGuarded = (int8_t)readArgInt(1);

@@ -74,6 +74,7 @@ allocPointer_t currentImplementerFileHandle;
 
 int32_t findFunctionById(allocPointer_t runningApp, int32_t functionId);
 allocPointer_t getCurrentCaller();
+allocPointer_t createNextArgFrame(heapMemoryOffset_t size);
 void cleanUpNextArgFrameHelper(allocPointer_t localFrame);
 void launchApp(allocPointer_t fileHandle);
 void callFunction(

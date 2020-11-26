@@ -40,6 +40,17 @@ int32_t findFunctionById(allocPointer_t runningApp, int32_t functionId) {
     return -1;
 }
 
+allocPointer_t getCurrentCaller() {
+    allocPointer_t previousLocalFrame = getLocalFrameMember(
+        currentLocalFrame,
+        previousLocalFrame
+    );
+    if (previousLocalFrame == NULL_ALLOC_POINTER) {
+        return NULL_ALLOC_POINTER;
+    }
+    return getLocalFrameMember(previousLocalFrame, implementer);
+}
+
 void cleanUpNextArgFrameHelper(allocPointer_t localFrame) {
     allocPointer_t nextArgFrame = getLocalFrameMember(localFrame, nextArgFrame);
     if (nextArgFrame != NULL_ALLOC_POINTER) {
@@ -132,7 +143,7 @@ void launchApp(allocPointer_t fileHandle) {
     // Call init function if available.
     int32_t initFunctionIndex = findFunctionById(runningApp, INIT_FUNC_ID);
     if (initFunctionIndex >= 0) {
-        callFunction(runningApp, NULL_ALLOC_POINTER, runningApp, initFunctionIndex);
+        callFunction(runningApp, runningApp, initFunctionIndex);
     }
 }
 
@@ -174,7 +185,6 @@ void hardKillApp(allocPointer_t runningApp, int8_t errorCode) {
 
 void callFunction(
     allocPointer_t threadApp,
-    allocPointer_t caller,
     allocPointer_t implementer,
     int32_t functionIndex
 ) {
@@ -238,7 +248,6 @@ void callFunction(
     // Create allocation for the local frame.
     allocPointer_t localFrame = createAlloc(LOCAL_FRAME_ALLOC_TYPE, localFrameSize);
     setLocalFrameMember(localFrame, implementer, implementer);
-    setLocalFrameMember(localFrame, caller, caller);
     setLocalFrameMember(localFrame, functionIndex, functionIndex);
     setLocalFrameMember(localFrame, previousLocalFrame, previousLocalFrame);
     setLocalFrameMember(localFrame, nextArgFrame, NULL_ALLOC_POINTER);

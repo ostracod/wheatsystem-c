@@ -9,11 +9,17 @@ FUNC init, init_ID
     
     VAR termName, s32
     VAR termHandle, s32
+    VAR termSizeIndex, s32
     VAR wrtTermIndex, s32
     newTextAlloc termName, termNameStart, termNameEnd
     openFile termHandle, termName
     launch termHandle
+    findFunc termSizeIndex, termHandle, termSize_ID
     findFunc wrtTermIndex, termHandle, wrtTerm_ID
+    
+    newArgFrame 8
+    callRemote termHandle, termSizeIndex
+    wrt termName[0]:s8, nextArgFrame[0]:s32
     
     newArgFrame 12
     wrt nextArgFrame[0]:s32, 2

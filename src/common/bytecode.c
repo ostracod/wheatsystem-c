@@ -487,7 +487,6 @@ void evaluateBytecodeInstruction() {
             callFunction(
                 currentThreadApp,
                 currentImplementer,
-                currentImplementer,
                 functionIndex
             );
         } else if (opcodeOffset == 0x2) {
@@ -496,7 +495,6 @@ void evaluateBytecodeInstruction() {
             int32_t functionIndex = readArgInt(1);
             callFunction(
                 currentThreadApp,
-                currentImplementer,
                 tempImplementer,
                 functionIndex
             );
@@ -505,8 +503,14 @@ void evaluateBytecodeInstruction() {
             returnFromFunction();
         } else if (opcodeOffset == 0x4) {
             // caller.
-            allocPointer_t tempCaller = getLocalFrameMember(currentLocalFrame, caller);
-            writeArgInt(0, tempCaller);
+            allocPointer_t tempCaller = getCurrentCaller();
+            allocPointer_t fileHandle;
+            if (tempCaller == NULL_ALLOC_POINTER) {
+                fileHandle = NULL_ALLOC_POINTER;
+            } else {
+                fileHandle = getRunningAppMember(tempCaller, fileHandle);
+            }
+            writeArgInt(0, fileHandle);
         } else {
             unhandledErrorCode = NO_IMPL_ERR_CODE;
             return;

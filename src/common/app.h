@@ -24,7 +24,6 @@ typedef struct runningAppHeader {
 #pragma pack(push, 1)
 typedef struct localFrameHeader {
     allocPointer_t implementer;
-    allocPointer_t caller;
     int32_t functionIndex;
     allocPointer_t previousLocalFrame;
     allocPointer_t nextArgFrame;
@@ -74,11 +73,11 @@ allocPointer_t currentImplementer;
 allocPointer_t currentImplementerFileHandle;
 
 int32_t findFunctionById(allocPointer_t runningApp, int32_t functionId);
+allocPointer_t getCurrentCaller();
 void cleanUpNextArgFrameHelper(allocPointer_t localFrame);
 void launchApp(allocPointer_t fileHandle);
 void callFunction(
     allocPointer_t threadApp,
-    allocPointer_t caller,
     allocPointer_t implementer,
     int32_t functionIndex
 );

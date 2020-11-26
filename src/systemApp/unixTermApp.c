@@ -31,8 +31,12 @@ void setTermObserver() {
 }
 
 void getTermSize() {
-    // TODO: Implement.
-    
+    int32_t tempWidth = readTermAppGlobalVariable(width);
+    int32_t tempHeight = readTermAppGlobalVariable(height);
+    allocPointer_t previousArgFrame = getPreviousArgFrame();
+    writeAlloc(previousArgFrame, 0, int32_t, tempWidth);
+    writeAlloc(previousArgFrame, 4, int32_t, tempHeight);
+    returnFromFunction();
 }
 
 void writeTermText() {

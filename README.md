@@ -153,7 +153,6 @@ The following definitions are shared between all platform implementations:
     * Global frame data
 * Local frame header `localFrameHeader_t`
     * `allocPointer_t implementer`
-    * `allocPointer_t caller`
     * `int32_t functionIndex`
     * `allocPointer_t previousLocalFrame`
     * `allocPointer_t nextArgFrame`
@@ -255,9 +254,10 @@ The following definitions are shared between all platform implementations:
     * `void writeLocalFrame(allocPointer_t localFrame, heapMemoryOffset_t index, <type>, <type> value)`
     * `allocPointer_t getPreviousArgFrame()`
     * `int32_t findFunctionById(allocPointer_t fileHandle, int32_t functionId)`
+    * `allocPointer_t getCurrentCaller()`
     * `void launchApp(allocPointer_t fileHandle)`
     * `void hardKillApp(allocPointer_t runningApp, int8_t errorCode)`
-    * `void callFunction(allocPointer_t threadApp, allocPointer_t caller, allocPointer_t implementer, int32_t functionIndex)`
+    * `void callFunction(allocPointer_t threadApp, allocPointer_t implementer, int32_t functionIndex)`
     * `void cleanUpNextArgFrame()`
     * `void returnFromFunction()`
     * `void scheduleAppThread(allocPointer_t runningApp)`

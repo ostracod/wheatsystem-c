@@ -1,29 +1,32 @@
 
-FUNC wow
-    
-    ARG myArg1, s8
-    ARG myArg2, s32
-    
-    add myArg2, myArg2, myArg1
-    
+# Create a text allocation from application data.
+MACRO newTextAlloc, dest, startLbl, endLbl
+    newAlloc dest, 0, ?endLbl - ?startLbl
+    wrtBuff dest[0]:s8, startLbl, ?endLbl - ?startLbl
 END
 
 FUNC init, init_ID
     
-    VAR x, s8
-    VAR y, s32
+    VAR termName, s32
+    VAR termHandle, s32
+    VAR wrtTermIndex, s32
+    newTextAlloc termName, termNameStart, termNameEnd
+    openFile termHandle, termName
+    launch termHandle
+    findFunc wrtTermIndex, termHandle, wrtTerm_ID
     
-    newArgFrame 5
-    call wow
-    
-    newAlloc y, 0, 10
-    wrt y[0]:s8, appData[2]:s8
-    wrt x, y[0]:s8
+    newArgFrame 12
+    wrt nextArgFrame[0]:s32, 2
+    wrt nextArgFrame[4]:s32, 2
+    wrt nextArgFrame[8]:s32, termName
+    callRemote termHandle, wrtTermIndex
     
 END
 
 APP_DATA
-    DATA 10:s8, 20:s8, 30:s8
+    LBL termNameStart
+    DATA "term"
+    LBL termNameEnd
 END
 
 

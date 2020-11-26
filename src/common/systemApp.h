@@ -38,6 +38,19 @@ typedef struct systemGlobalFrameHeader {
 #define setSystemGlobalFrameMember(runningApp, memberName, value) \
     !!!writeStructByPointer runningApp writeGlobalFrame systemGlobalFrameHeader_t memberName value
 
+#define getSystemGlobalFrameDataAddress(runningApp) \
+    (getGlobalFrameDataAddress(runningApp) + sizeof(systemGlobalFrameHeader_t))
+
+#define readSystemGlobalFrame(runningApp, index, type) \
+    readHeapMemory(getSystemGlobalFrameDataAddress(runningApp) + index, type)
+#define writeSystemGlobalFrame(runningApp, index, type, value) \
+    writeHeapMemory(getSystemGlobalFrameDataAddress(runningApp) + index, type, value)
+
+#define readSystemAppGlobalVariable(structDefinition, memberName) \
+    !!!readStructByPointer currentImplementer readSystemGlobalFrame structDefinition memberName
+#define writeSystemAppGlobalVariable(structDefinition, memberName, value) \
+    !!!writeStructByPointer currentImplementer writeSystemGlobalFrame structDefinition memberName value
+
 #define getRunningSystemAppMember(runningApp, memberName) ({ \
     int8_t systemAppId = getSystemGlobalFrameMember(runningApp, id); \
     getSystemAppMember(systemAppId, memberName); \

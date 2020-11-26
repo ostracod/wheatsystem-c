@@ -4,6 +4,14 @@
 
 WINDOW *window = NULL;
 
+void handleResize() {
+    int32_t tempWidth;
+    int32_t tempHeight;
+    getmaxyx(window, tempHeight, tempWidth);
+    writeTermAppGlobalVariable(width, tempWidth);
+    writeTermAppGlobalVariable(height, tempHeight);
+}
+
 void initializeTermApp() {
     if (window != NULL) {
         return;
@@ -13,6 +21,7 @@ void initializeTermApp() {
     curs_set(0);
     keypad(window, true);
     ESCDELAY = 50;
+    handleResize();
     returnFromFunction();
 }
 

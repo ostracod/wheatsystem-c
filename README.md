@@ -281,6 +281,11 @@ The following definitions are shared between all platform implementations:
     * `<memberType> getSystemAppFunctionMember(int8_t id, int8_t index, <memberName>)`
     * `<memberType> getSystemGlobalFrameMember(allocPointer_t runningApp, <memberName>)`
     * `void setSystemGlobalFrameMember(allocPointer_t runningApp, <memberName>, <memberType> value)`
+    * `heapMemoryOffset_t getSystemGlobalFrameDataAddress(allocPointer_t runningApp)`
+    * `readSystemGlobalFrame(allocPointer_t runningApp, heapMemoryOffset_t index, <type>)`
+    * `writeSystemGlobalFrame(allocPointer_t runningApp, heapMemoryOffset_t index, <type>, <type> value)`
+    * `readSystemAppGlobalVariable(<structType>, <memberName>)`
+    * `writeSystemAppGlobalVariable(<structType>, <memberName>, <memberType> value)`
     * `<memberType> getRunningSystemAppMember(allocPointer_t runningApp, <memberName>)`
     * `<memberType> getRunningSystemAppFunctionMember(allocPointer_t runningApp, int8_t functionIndex, <memberName>)`
 * Debug functions

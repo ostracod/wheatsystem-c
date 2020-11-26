@@ -314,9 +314,9 @@ void scheduleAppThread(allocPointer_t runningApp) {
     }
     
     if (unhandledErrorCode != 0) {
-        printDebugString((int8_t *)"UNHANDLED ERROR ");
-        printDebugNumber(unhandledErrorCode);
-        printDebugNewline();
+        //printDebugString((int8_t *)"UNHANDLED ERROR ");
+        //printDebugNumber(unhandledErrorCode);
+        //printDebugNewline();
         while (true) {
             int8_t shouldHandleError;
             if (currentImplementerFileType == BYTECODE_APP_FILE_TYPE) {

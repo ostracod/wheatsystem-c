@@ -1,4 +1,12 @@
 
+#pragma pack(push, 1)
+typedef struct termAppGlobalFrame {
+    allocPointer_t observer;
+} termAppGlobalFrame_t;
+#pragma pack(pop)
+
+#define TERM_APP_GLOBAL_FRAME_SIZE sizeof(termAppGlobalFrame_t)
+
 void releaseLcdSpiDevice();
 void initializeTermApp();
 void setTermObserver();

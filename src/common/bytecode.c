@@ -330,9 +330,9 @@ void evaluateBytecodeInstruction() {
         return;
     }
     uint8_t opcode = readInstructionData(uint8_t);
-    printDebugString((int8_t *)"OPCODE ");
-    printDebugNumber(opcode);
-    printDebugNewline();
+    //printDebugString((int8_t *)"OPCODE ");
+    //printDebugNumber(opcode);
+    //printDebugNewline();
     uint8_t opcodeCategory = opcode >> 4;
     uint8_t opcodeOffset = opcode & 0x0F;
     int8_t tempOffset = readArrayConstantElement(

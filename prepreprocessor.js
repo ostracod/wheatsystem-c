@@ -47,6 +47,9 @@ class Prepreprocessor {
             if (line.length <= 0) {
                 continue;
             }
+            if (line.trim().startsWith("//")) {
+                continue;
+            }
             if (currentDefinition === null) {
                 const tempTermList = line.split(" ");
                 let tempDirective = tempTermList[0];

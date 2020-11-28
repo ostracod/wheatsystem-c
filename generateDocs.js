@@ -7,18 +7,56 @@ const commentPrefix = "///";
 const commentIndentation = "    ";
 const openEnclosureCharacterSet = "([{";
 const closeEnclosureCharacterSet = ")]}";
+const constantRegex = /^#define ([^ ]+) .+$/;
 
 const fileAnnotationsMap = {};
+const fileDefinitionsMap = {};
+
+class DocError extends Error {
+    
+    constructor(message) {
+        super(message);
+        this.annotation = null;
+    }
+}
 
 class Annotation {
     
-    constructor(name, value) {
+    constructor(name, value, path, lineNumber) {
         this.name = name;
         this.value = value;
+        this.path = path;
+        this.lineNumber = lineNumber;
         this.children = [];
         this.definitionCode = null;
     }
 }
+
+class Definition {
+    
+    constructor(annotation) {
+        this.annotation = annotation;
+        this.name = this.annotation.value;
+    }
+}
+
+class ConstantDefinition extends Definition {
+    
+    constructor(annotation) {
+        super(annotation);
+        if (this.name === null) {
+            const tempResult = this.annotation.definitionCode.match(constantRegex);
+            if (tempResult === null) {
+                throw new DocError("Invalid statement for constant definition.");
+            }
+            this.name = tempResult[1];
+        }
+    }
+}
+
+const definitionConstructorSet = {
+    CONST: ConstantDefinition,
+};
 
 function getCommentDepth(line) {
     let depth = 0;
@@ -50,7 +88,7 @@ function getEnclosureDepthOffset(text) {
     return output;
 }
 
-function readAnnotation(lineList, startIndex) {
+function readAnnotation(path, lineList, startIndex) {
     const firstLine = lineList[startIndex];
     const firstDepth = getCommentDepth(firstLine);
     const trimmedFirstLine = firstLine.trim();
@@ -64,15 +102,15 @@ function readAnnotation(lineList, startIndex) {
         tempValue = null;
     }
     const tempName = trimmedFirstLine.substring(nameStartIndex, nameEndIndex);
-    const annotation = new Annotation(tempName, tempValue);
     let index = startIndex + 1;
+    const annotation = new Annotation(tempName, tempValue, path, index);
     while (index < lineList.length) {
         const tempLine = lineList[index];
         const tempDepth = getCommentDepth(tempLine);
         if (tempDepth === null || tempDepth <= firstDepth) {
             break;
         }
-        const tempResult = readAnnotation(lineList, index);
+        const tempResult = readAnnotation(path, lineList, index);
         index = tempResult.index;
         annotation.children.push(tempResult.annotation);
     }
@@ -99,7 +137,7 @@ function readDefinitionCode(lineList, startIndex) {
             break;
         }
     }
-    const definitionCode = definitionLineList.join("\n");
+    const definitionCode = definitionLineList.join(" ");
     return {index, definitionCode};
 }
 
@@ -110,12 +148,13 @@ function readSourceFile(path) {
     }
     const fileContent = fs.readFileSync(path, "utf8");
     const lineList = fileContent.split("\n");
+    const shortPath = pathUtils.relative(sourcePath, path);
     const annotationList = [];
     let index = 0;
     while (index < lineList.length) {
         const tempLine = lineList[index];
         if (getCommentDepth(tempLine) === 0) {
-            const tempResult1 = readAnnotation(lineList, index);
+            const tempResult1 = readAnnotation(shortPath, lineList, index);
             index = tempResult1.index;
             const tempAnnotation = tempResult1.annotation;
             const tempResult2 = readDefinitionCode(lineList, index);
@@ -129,7 +168,7 @@ function readSourceFile(path) {
         }
     }
     if (annotationList.length > 0) {
-        fileAnnotationsMap[path] = annotationList;
+        fileAnnotationsMap[shortPath] = annotationList;
     }
 }
 
@@ -146,15 +185,45 @@ function iterateOverDirectory(path) {
     });
 }
 
-console.log("Reading source files...");
+function createDefinitions() {
+    Object.keys(fileAnnotationsMap).forEach((path) => {
+        const annotationList = fileAnnotationsMap[path];
+        const definitionList = annotationList.map((annotation) => {
+            try {
+                const annotationName = annotation.name;
+                const tempConstructor = definitionConstructorSet[annotationName];
+                if (typeof tempConstructor === "undefined") {
+                    throw new DocError(`Invalid annotation name "${annotationName}".`);
+                }
+                return new tempConstructor(annotation);
+            } catch(error) {
+                if (error instanceof DocError) {
+                    error.annotation = annotation;
+                }
+                throw error;
+            }
+        });
+        fileDefinitionsMap[path] = definitionList;
+    });
+}
 
-iterateOverDirectory(sourcePath);
-
-console.log("Generating documentation...");
-
-// TODO: Generate documentation.
-console.log(JSON.stringify(fileAnnotationsMap, null, 4));
-
-console.log("Finished.");
+try {
+    
+    console.log("Reading source files...");
+    
+    iterateOverDirectory(sourcePath);
+    
+    console.log("Generating documentation...");
+    
+    createDefinitions();
+    console.log(fileDefinitionsMap);
+    
+    console.log("Finished.");
+    
+} catch (error) {
+    if (error instanceof DocError) {
+        console.log(`Error on line ${error.annotation.lineNumber} in ${error.annotation.path}: ${error.message}`);
+    }
+}
 
 

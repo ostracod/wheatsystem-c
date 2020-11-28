@@ -5,6 +5,8 @@ const pathUtils = require("path");
 const sourcePath = pathUtils.join(__dirname, "src");
 const commentPrefix = "///";
 const commentIndentation = "    ";
+const openEnclosureCharacterSet = "([{";
+const closeEnclosureCharacterSet = ")]}";
 
 const fileAnnotationsMap = {};
 
@@ -14,7 +16,7 @@ class Annotation {
         this.name = name;
         this.value = value;
         this.children = [];
-        this.definition = null;
+        this.definitionCode = null;
     }
 }
 
@@ -34,6 +36,20 @@ function getCommentDepth(line) {
     return null;
 }
 
+function getEnclosureDepthOffset(text) {
+    let output = 0;
+    for (let index = 0; index < text.length; index += 1) {
+        const tempCharacter = text.charAt(index);
+        if (openEnclosureCharacterSet.indexOf(tempCharacter) >= 0) {
+            output += 1;
+        }
+        if (closeEnclosureCharacterSet.indexOf(tempCharacter) >= 0) {
+            output -= 1;
+        }
+    }
+    return output;
+}
+
 function readAnnotation(lineList, startIndex) {
     const firstLine = lineList[startIndex];
     const firstDepth = getCommentDepth(firstLine);
@@ -49,28 +65,42 @@ function readAnnotation(lineList, startIndex) {
     }
     const tempName = trimmedFirstLine.substring(nameStartIndex, nameEndIndex);
     const annotation = new Annotation(tempName, tempValue);
-    let annotationPrecedesDefinition = false;
     let index = startIndex + 1;
     while (index < lineList.length) {
         const tempLine = lineList[index];
         const tempDepth = getCommentDepth(tempLine);
-        if (tempDepth === null) {
-            annotationPrecedesDefinition = (tempLine.trim().length > 0);
-            break;
-        }
-        if (tempDepth <= firstDepth) {
+        if (tempDepth === null || tempDepth <= firstDepth) {
             break;
         }
         const tempResult = readAnnotation(lineList, index);
         index = tempResult.index;
         annotation.children.push(tempResult.annotation);
     }
-    if (annotationPrecedesDefinition) {
-        // TODO: Handle multi-line definitions.
-        annotation.definition = lineList[index];
-        index += 1;
-    }
     return {index, annotation};
+}
+
+function readDefinitionCode(lineList, startIndex) {
+    if (startIndex >= lineList.length) {
+        return null;
+    }
+    const firstLine = lineList[startIndex];
+    if (firstLine.length <= 0 || getCommentDepth(firstLine) !== null) {
+        return null;
+    }
+    const definitionLineList = [];
+    let enclosureDepth = 0;
+    let index = startIndex;
+    while (index < lineList.length) {
+        const tempLine = lineList[index];
+        enclosureDepth += getEnclosureDepthOffset(tempLine);
+        definitionLineList.push(tempLine);
+        index += 1;
+        if (enclosureDepth <= 0) {
+            break;
+        }
+    }
+    const definitionCode = definitionLineList.join("\n");
+    return {index, definitionCode};
 }
 
 function readSourceFile(path) {
@@ -85,9 +115,15 @@ function readSourceFile(path) {
     while (index < lineList.length) {
         const tempLine = lineList[index];
         if (getCommentDepth(tempLine) === 0) {
-            const tempResult = readAnnotation(lineList, index);
-            index = tempResult.index;
-            annotationList.push(tempResult.annotation);
+            const tempResult1 = readAnnotation(lineList, index);
+            index = tempResult1.index;
+            const tempAnnotation = tempResult1.annotation;
+            const tempResult2 = readDefinitionCode(lineList, index);
+            if (tempResult2 !== null) {
+                index = tempResult2.index;
+                tempAnnotation.definitionCode = tempResult2.definitionCode;
+            }
+            annotationList.push(tempAnnotation);
         } else {
             index += 1;
         }

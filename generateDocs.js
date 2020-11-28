@@ -7,7 +7,8 @@ const commentPrefix = "///";
 const commentIndentation = "    ";
 const openEnclosureCharacterSet = "([{";
 const closeEnclosureCharacterSet = ")]}";
-const constantRegex = /^#define ([^ ]+) .+$/;
+const constantRegex = /^ *#define +([^ ]+) .+$/;
+const variableRegex = /^ *(.+) +([^ ]+) *; *$/;
 
 const fileAnnotationsMap = {};
 const fileDefinitionsMap = {};
@@ -30,6 +31,21 @@ class Annotation {
         this.children = [];
         this.definitionCode = null;
     }
+    
+    getChildren(name) {
+        return this.children.filter((annotation) => annotation.name === name);
+    }
+    
+    getChildValue(name) {
+        const annotationList = this.getChildren(name);
+        if (annotationList.length <= 0) {
+            return null;
+        }
+        if (annotationList.length > 1) {
+            throw new DocError(`Expected at most one "${name}" annotation.`);
+        }
+        return annotationList[0].value;
+    }
 }
 
 class Definition {
@@ -37,25 +53,56 @@ class Definition {
     constructor(annotation) {
         this.annotation = annotation;
         this.name = this.annotation.value;
+        this.description = this.annotation.getChildValue("DESC");
     }
 }
 
-class ConstantDefinition extends Definition {
+class TypedDefinition extends Definition {
+    
+    constructor(annotation, regex, regexNameIndex) {
+        super(annotation);
+        const definitionCode = this.annotation.definitionCode;
+        if (definitionCode === null) {
+            this.regexResult = null;
+        } else {
+            this.regexResult = definitionCode.match(regex);
+            if (this.regexResult === null) {
+                throw new DocError(`Invalid statement for "${this.annotation.name}" definition.`);
+            }
+        }
+        if (this.name === null) {
+            if (this.regexResult === null) {
+                throw new DocError("Missing definition name.");
+            }
+            this.name = this.regexResult[regexNameIndex];
+        }
+        this.type = this.annotation.getChildValue("TYPE");
+    }
+}
+
+class ConstantDefinition extends TypedDefinition {
     
     constructor(annotation) {
-        super(annotation);
-        if (this.name === null) {
-            const tempResult = this.annotation.definitionCode.match(constantRegex);
-            if (tempResult === null) {
-                throw new DocError("Invalid statement for constant definition.");
+        super(annotation, constantRegex, 1);
+    }
+}
+
+class VariableDefinition extends TypedDefinition {
+    
+    constructor(annotation) {
+        super(annotation, variableRegex, 2);
+        if (this.type === null) {
+            if (this.regexResult === null) {
+                throw new DocError("Missing definition type.");
             }
-            this.name = tempResult[1];
+            this.type = this.regexResult[1];
         }
     }
 }
 
 const definitionConstructorSet = {
     CONST: ConstantDefinition,
+    VAR: VariableDefinition,
 };
 
 function getCommentDepth(line) {

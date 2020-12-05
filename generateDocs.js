@@ -9,7 +9,9 @@ const openEnclosureCharacterSet = "([{";
 const closeEnclosureCharacterSet = ")]}";
 const typeRegex = /^ *typedef +.+ +([^ ]+) *; *$/;
 const constantRegex = /^ *#define +([^ ]+) +.+$/;
-const variableRegex = /^ *(.+) +([^ ]+) *; *$/;
+const variableRegex = /^ *(.*[^ ]) +([^ ]+) *; *$/;
+const structRegex = /^ *typedef +struct +.+ +{(.+)} +([^ ]+) *; *$/;
+const structFieldRegex = /^ *(.*[^ ]) +([^ ]+) *$/;
 
 const fileAnnotationsMap = {};
 const fileDefinitionsMap = {};
@@ -115,10 +117,54 @@ class VariableDefinition extends TypedDefinition {
     }
 }
 
+class DefinitionMember {
+    
+    constructor(name) {
+        this.name = name;
+        this.type = null;
+        this.description = null;
+    }
+}
+
+class StructDefinition extends SimpleDefinition {
+    
+    constructor(annotation, regex, regexNameIndex) {
+        super(annotation, structRegex, 2);
+        this.fields = [];
+        if (this.regexResult !== null) {
+            const fieldCodeList = this.regexResult[1].split(";");
+            fieldCodeList.forEach((fieldCode) => {
+                const tempResult = fieldCode.match(structFieldRegex);
+                if (tempResult !== null) {
+                    const tempField = new DefinitionMember(tempResult[2]);
+                    tempField.type = tempResult[1];
+                    this.fields.push(tempField);
+                }
+            });
+        }
+        const fieldAnnotationList = this.annotation.getChildren("FIELD");
+        fieldAnnotationList.forEach((fieldAnnotation) => {
+            let tempField = this.fields.find((field) => (
+                field.name === fieldAnnotation.value
+            ));
+            if (typeof tempField === "undefined") {
+                tempField = new DefinitionMember(fieldAnnotation.value);
+                this.fields.push(tempField);
+            }
+            tempField.description = fieldAnnotation.getChildValue("DESC");
+            const tempType = fieldAnnotation.getChildValue("TYPE");
+            if (tempType !== null) {
+                tempField.type = tempType;
+            }
+        });
+    }
+}
+
 const definitionConstructorSet = {
     TYPE: TypeDefinition,
     CONST: ConstantDefinition,
     VAR: VariableDefinition,
+    STRUCT: StructDefinition,
 };
 
 function getCommentDepth(line) {
@@ -279,7 +325,7 @@ try {
     console.log("Generating documentation...");
     
     createDefinitions();
-    console.log(fileDefinitionsMap);
+    console.log(JSON.stringify(fileDefinitionsMap, null, 4));
     
     console.log("Finished.");
     

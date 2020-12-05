@@ -7,7 +7,8 @@ const commentPrefix = "///";
 const commentIndentation = "    ";
 const openEnclosureCharacterSet = "([{";
 const closeEnclosureCharacterSet = ")]}";
-const constantRegex = /^ *#define +([^ ]+) .+$/;
+const typeRegex = /^ *typedef +.+ +([^ ]+) *; *$/;
+const constantRegex = /^ *#define +([^ ]+) +.+$/;
 const variableRegex = /^ *(.+) +([^ ]+) *; *$/;
 
 const fileAnnotationsMap = {};
@@ -57,7 +58,7 @@ class Definition {
     }
 }
 
-class TypedDefinition extends Definition {
+class SimpleDefinition extends Definition {
     
     constructor(annotation, regex, regexNameIndex) {
         super(annotation);
@@ -76,6 +77,20 @@ class TypedDefinition extends Definition {
             }
             this.name = this.regexResult[regexNameIndex];
         }
+    }
+}
+
+class TypeDefinition extends SimpleDefinition {
+    
+    constructor(annotation, regex, regexNameIndex) {
+        super(annotation, typeRegex, 1);
+    }
+}
+
+class TypedDefinition extends SimpleDefinition {
+    
+    constructor(annotation, regex, regexNameIndex) {
+        super(annotation, regex, regexNameIndex);
         this.type = this.annotation.getChildValue("TYPE");
     }
 }
@@ -101,6 +116,7 @@ class VariableDefinition extends TypedDefinition {
 }
 
 const definitionConstructorSet = {
+    TYPE: TypeDefinition,
     CONST: ConstantDefinition,
     VAR: VariableDefinition,
 };

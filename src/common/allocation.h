@@ -1,7 +1,15 @@
 
+///CONST
+    ///TYPE int8_t
 #define RUNNING_APP_ALLOC_TYPE 0
+///CONST
+    ///TYPE int8_t
 #define LOCAL_FRAME_ALLOC_TYPE 1
+///CONST
+    ///TYPE int8_t
 #define ARG_FRAME_ALLOC_TYPE 2
+///CONST
+    ///TYPE int8_t
 #define DYNAMIC_ALLOC_TYPE 3
 
 #define NULL_ALLOC_POINTER 0

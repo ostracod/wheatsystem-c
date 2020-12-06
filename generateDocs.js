@@ -3,6 +3,8 @@ const fs = require("fs");
 const pathUtils = require("path");
 
 const sourcePath = pathUtils.join(__dirname, "src");
+const templatePath = pathUtils.join(__dirname, "docTemplate.html");
+const documentPath = pathUtils.join(__dirname, "cImplDoc.html");
 const commentPrefix = "///";
 const commentIndentation = "    ";
 const openEnclosureCharacterSet = "([{";
@@ -103,6 +105,15 @@ class ConstantDefinition extends TypedDefinition {
     
     constructor(annotation) {
         super(annotation, constantRegex, 1);
+    }
+    
+    convertToHtml() {
+        const htmlList = [`<p>Constant <span class="code">${this.name}</span></p><div class="description"><ul>`];
+        if (this.type !== null) {
+            htmlList.push(`<li>Type = <span class="code">${this.type}</span></li>`);
+        }
+        htmlList.push(`</ul></div>`);
+        return htmlList.join("\n");
     }
 }
 
@@ -463,6 +474,40 @@ function createDefinitions() {
     });
 }
 
+function populateTemplatePlaceholders(templateText, replacementMap) {
+    let output = templateText;
+    Object.keys(replacementMap).forEach((name) => {
+        output = output.replace(`{${name}}`, replacementMap[name]);
+    });
+    return output;
+}
+
+function createDocument() {
+    const templateText = fs.readFileSync(templatePath, "utf8");
+    const tempDate = new Date();
+    const dateText = tempDate.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        timeZoneName: "short",
+    });
+    const definitionsHtml = Object.keys(fileDefinitionsMap).map((path) => {
+        const htmlList = [`<p class="pathTitle">${path}</p>`];
+        const definitionList = fileDefinitionsMap[path];
+        definitionList.forEach((definition) => {
+            htmlList.push(definition.convertToHtml());
+        });
+        return htmlList.join("\n");
+    }).join("\n");
+    const documentHtml = populateTemplatePlaceholders(templateText, {
+        TIMESTAMP: dateText,
+        DEFINITIONS: definitionsHtml,
+    });
+    fs.writeFileSync(documentPath, documentHtml);
+}
+
 try {
     
     console.log("Reading source files...");
@@ -472,7 +517,7 @@ try {
     console.log("Generating documentation...");
     
     createDefinitions();
-    console.log(JSON.stringify(fileDefinitionsMap, null, 4));
+    createDocument();
     
     console.log("Finished.");
     

@@ -11,7 +11,7 @@ const typeRegex = /^ *typedef +.+ +([^ ]+) *; *$/;
 const constantRegex = /^ *#define +([^ ]+) +.+$/;
 const variableRegex = /^ *(.*[^ ]) +([^ ]+) *; *$/;
 const structRegex = /^ *typedef +struct +.+ +{(.+)} +([^ ]+) *; *$/;
-const structFieldRegex = /^ *(.*[^ ]) +([^ ]+) *$/;
+const definitionMemberRegex = /^ *(.*[^ ]) +([^ ]+) *$/;
 const preprocessorMacroRegex = /^#define *([^ ]+) *\((.*)\) *.*$/;
 const prepreprocessorMacroRegex = /^DEFINE ([^ ]+) ?(.*)$/;
 
@@ -134,15 +134,8 @@ class StructDefinition extends SimpleDefinition {
         super(annotation, structRegex, 2);
         this.fields = [];
         if (this.regexResult !== null) {
-            const fieldCodeList = this.regexResult[1].split(";");
-            fieldCodeList.forEach((fieldCode) => {
-                const tempResult = fieldCode.match(structFieldRegex);
-                if (tempResult !== null) {
-                    const tempField = new DefinitionMember(tempResult[2]);
-                    tempField.type = tempResult[1];
-                    this.fields.push(tempField);
-                }
-            });
+            const fieldCodeList = safeSplit(this.regexResult[1], ";");
+            parseTypedDefinitionMembers(this.fields, fieldCodeList);
         }
         const fieldAnnotationList = this.annotation.getChildren("FIELD");
         populateMemberDefinitions(this.fields, fieldAnnotationList);
@@ -154,9 +147,14 @@ class FunctionDefinition extends Definition {
     constructor(annotation) {
         super(annotation);
         this.args = [];
+        this.returnType = null;
         this.readFunctionDefinitionCode();
         const argAnnotationList = this.annotation.getChildren("ARG");
         populateMemberDefinitions(this.args, argAnnotationList);
+        const tempType = this.annotation.getChildValue("RET");
+        if (tempType !== null) {
+            this.returnType = tempType;
+        }
     }
     
     readFunctionDefinitionCode() {
@@ -186,8 +184,29 @@ class FunctionDefinition extends Definition {
             });
             return;
         }
-        // TODO: Parse runtime function definition.
-        
+        const endParenthesisIndex = definitionCode.lastIndexOf(")");
+        if (endParenthesisIndex < 0) {
+            return;
+        }
+        const startParenthesisIndex = findMatchingStartParenthesis(
+            definitionCode,
+            endParenthesisIndex,
+        );
+        if (startParenthesisIndex < 0) {
+            return;
+        }
+        const tempText = definitionCode.substring(0, startParenthesisIndex);
+        tempResult = tempText.match(definitionMemberRegex);
+        if (tempResult === null) {
+            return;
+        }
+        const argCodeList = safeSplit(definitionCode.substring(
+            startParenthesisIndex + 1,
+            endParenthesisIndex,
+        ), ",");
+        this.name = tempResult[2];
+        parseTypedDefinitionMembers(this.args, argCodeList);
+        this.returnType = tempResult[1];
     }
 }
 
@@ -224,6 +243,74 @@ function getEnclosureDepthOffset(text) {
         }
         if (closeEnclosureCharacterSet.indexOf(tempCharacter) >= 0) {
             output -= 1;
+        }
+    }
+    return output;
+}
+
+function findMatchingStartParenthesis(text, endParenthesisIndex) {
+    let depth = 1;
+    for (let index = endParenthesisIndex - 1; index >= 0; index -= 1) {
+        const tempCharacter = text.charAt(index);
+        if (tempCharacter === "(") {
+            depth -= 1;
+            if (depth === 0) {
+                return index;
+            }
+        } else if (tempCharacter === ")") {
+            depth += 1;
+        }
+    }
+    return -1;
+}
+
+function findMatchingEndParenthesis(text, startParenthesisIndex) {
+    let depth = 1;
+    for (let index = startParenthesisIndex + 1; index < text.length; index += 1) {
+        const tempCharacter = text.charAt(index);
+        if (tempCharacter === ")") {
+            depth -= 1;
+            if (depth === 0) {
+                return index;
+            }
+        } else if (tempCharacter === "(") {
+            depth += 1;
+        }
+    }
+    return -1;
+}
+
+function safeSplit(text, delimiter) {
+    const output = [];
+    let termStartIndex = 0;
+    let index = 0;
+    while (true) {
+        let lastIndex = index;
+        let shouldAddTerm = false;
+        let shouldBreak = false;
+        if (index >= text.length) {
+            shouldAddTerm = true;
+            shouldBreak = true;
+        } else if (text.substring(index, index + delimiter.length) === delimiter) {
+            index += delimiter.length;
+            shouldAddTerm = true;
+        } else {
+            const tempCharacter = text.charAt(index);
+            if (tempCharacter === "(") {
+                index = findMatchingEndParenthesis(text, index);
+                if (index < 0) {
+                    throw new DocError("Missing close parenthesis.");
+                }
+            }
+            index += 1;
+        }
+        if (shouldAddTerm) {
+            const tempTerm = text.substring(termStartIndex, lastIndex);
+            output.push(tempTerm);
+            termStartIndex = index;
+        }
+        if (shouldBreak) {
+            break;
         }
     }
     return output;
@@ -322,6 +409,17 @@ function iterateOverDirectory(path) {
             iterateOverDirectory(tempPath);
         } else {
             readSourceFile(tempPath);
+        }
+    });
+}
+
+function parseTypedDefinitionMembers(destination, memberCodeList) {
+    memberCodeList.forEach((memberCode) => {
+        const tempResult = memberCode.match(definitionMemberRegex);
+        if (tempResult !== null) {
+            const tempMember = new DefinitionMember(tempResult[2]);
+            tempMember.type = tempResult[1];
+            destination.push(tempMember);
         }
     });
 }

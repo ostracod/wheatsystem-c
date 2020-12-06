@@ -12,6 +12,8 @@ const constantRegex = /^ *#define +([^ ]+) +.+$/;
 const variableRegex = /^ *(.*[^ ]) +([^ ]+) *; *$/;
 const structRegex = /^ *typedef +struct +.+ +{(.+)} +([^ ]+) *; *$/;
 const structFieldRegex = /^ *(.*[^ ]) +([^ ]+) *$/;
+const preprocessorMacroRegex = /^#define *([^ ]+) *\((.*)\) *.*$/;
+const prepreprocessorMacroRegex = /^DEFINE ([^ ]+) ?(.*)$/;
 
 const fileAnnotationsMap = {};
 const fileDefinitionsMap = {};
@@ -143,20 +145,49 @@ class StructDefinition extends SimpleDefinition {
             });
         }
         const fieldAnnotationList = this.annotation.getChildren("FIELD");
-        fieldAnnotationList.forEach((fieldAnnotation) => {
-            let tempField = this.fields.find((field) => (
-                field.name === fieldAnnotation.value
-            ));
-            if (typeof tempField === "undefined") {
-                tempField = new DefinitionMember(fieldAnnotation.value);
-                this.fields.push(tempField);
+        populateMemberDefinitions(this.fields, fieldAnnotationList);
+    }
+}
+
+class FunctionDefinition extends Definition {
+    
+    constructor(annotation) {
+        super(annotation);
+        this.args = [];
+        this.readFunctionDefinitionCode();
+        const argAnnotationList = this.annotation.getChildren("ARG");
+        populateMemberDefinitions(this.args, argAnnotationList);
+    }
+    
+    readFunctionDefinitionCode() {
+        const definitionCode = this.annotation.definitionCode;
+        if (definitionCode === null) {
+            return;
+        }
+        let argNameList = null;
+        let tempResult = definitionCode.match(preprocessorMacroRegex);
+        if (tempResult !== null) {
+            this.name = tempResult[1];
+            argNameList = tempResult[2].split(",");
+        } else {
+            tempResult = definitionCode.match(prepreprocessorMacroRegex);
+            if (tempResult !== null) {
+                this.name = tempResult[1];
+                argNameList = tempResult[2].split(" ");
             }
-            tempField.description = fieldAnnotation.getChildValue("DESC");
-            const tempType = fieldAnnotation.getChildValue("TYPE");
-            if (tempType !== null) {
-                tempField.type = tempType;
-            }
-        });
+        }
+        if (argNameList !== null) {
+            argNameList.forEach((name) => {
+                name = name.trim();
+                if (name.length <= 0) {
+                    return;
+                }
+                this.args.push(new DefinitionMember(name));
+            });
+            return;
+        }
+        // TODO: Parse runtime function definition.
+        
     }
 }
 
@@ -165,6 +196,7 @@ const definitionConstructorSet = {
     CONST: ConstantDefinition,
     VAR: VariableDefinition,
     STRUCT: StructDefinition,
+    FUNC: FunctionDefinition,
 };
 
 function getCommentDepth(line) {
@@ -294,6 +326,23 @@ function iterateOverDirectory(path) {
     });
 }
 
+function populateMemberDefinitions(memberDefinitionList, annotationList) {
+    annotationList.forEach((annotation) => {
+        let tempMember = memberDefinitionList.find((memberDefinition) => (
+            memberDefinition.name === annotation.value
+        ));
+        if (typeof tempMember === "undefined") {
+            tempMember = new DefinitionMember(annotation.value);
+            memberDefinitionList.push(tempMember);
+        }
+        tempMember.description = annotation.getChildValue("DESC");
+        const tempType = annotation.getChildValue("TYPE");
+        if (tempType !== null) {
+            tempMember.type = tempType;
+        }
+    });
+}
+
 function createDefinitions() {
     Object.keys(fileAnnotationsMap).forEach((path) => {
         const annotationList = fileAnnotationsMap[path];
@@ -332,6 +381,8 @@ try {
 } catch (error) {
     if (error instanceof DocError) {
         console.log(`Error on line ${error.annotation.lineNumber} in ${error.annotation.path}: ${error.message}`);
+    } else {
+        throw(error);
     }
 }
 

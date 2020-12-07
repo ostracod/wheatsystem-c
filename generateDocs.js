@@ -70,18 +70,26 @@ class Definition {
         return [];
     }
     
+    getTypeHtml() {
+        return null
+    }
+    
+    getMembersHtml() {
+        return null
+    }
+    
     convertToHtml() {
         const htmlList = [`<p>${this.getClassDisplayName()} <span class="code">${this.name}</span></p><div class="description">`];
+        const typeHtml = this.getTypeHtml();
+        if (typeHtml !== null) {
+            htmlList.push(typeHtml);
+        }
         if (this.description !== null) {
             htmlList.push(`<p>${this.description}</p>`);
         }
-        const bulletHtmlList = this.getBulletHtmlList();
-        if (bulletHtmlList.length > 0) {
-            htmlList.push(`<ul>`);
-            bulletHtmlList.forEach((bulletHtml) => {
-                htmlList.push(bulletHtml);
-            });
-            htmlList.push(`</ul>`);
+        const membersHtml = this.getMembersHtml();
+        if (membersHtml !== null) {
+            htmlList.push(membersHtml);
         }
         htmlList.push(`</div>`);
         return htmlList.join("\n");
@@ -128,12 +136,8 @@ class TypedDefinition extends SimpleDefinition {
         this.type = this.annotation.getChildValue("TYPE");
     }
     
-    getBulletHtmlList() {
-        const output = super.getBulletHtmlList();
-        if (this.type !== null) {
-            output.push(`<li>Type = <span class="code">${this.type}</span></li>`);
-        }
-        return output;
+    getTypeHtml() {
+        return `<p>Type = <span class="code">${this.type}</span></p>`;
     }
 }
 
@@ -172,6 +176,12 @@ class DefinitionMember {
         this.type = null;
         this.description = null;
     }
+    
+    convertToHtml() {
+        const typeText = (this.type === null) ? "(None)" : this.type;
+        const descriptionText = (this.description === null) ? "(None)" : this.description;
+        return `<tr><td><span class="code">${this.name}</span></td><td><span class="code">${typeText}</span></td><td>${descriptionText}</td></tr>`;
+    }
 }
 
 class StructDefinition extends SimpleDefinition {
@@ -209,6 +219,22 @@ class FunctionDefinition extends Definition {
     
     getClassDisplayName() {
         return "Function";
+    }
+    
+    getTypeHtml() {
+        return `<p>Return type = <span class="code">${this.returnType}</span></p>`;
+    }
+    
+    getMembersHtml() {
+        if (this.args.length <= 0) {
+            return `<p>This function does not accept any arguments.</p>`;
+        }
+        const htmlList = [`<table><tr><th>Argument name</th><th>Type</th><th>Description</th></tr>`];
+        this.args.forEach((arg) => {
+            htmlList.push(arg.convertToHtml());
+        });
+        htmlList.push(`</table>`);
+        return htmlList.join("\n");
     }
     
     readFunctionDefinitionCode() {

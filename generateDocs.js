@@ -57,10 +57,34 @@ class Annotation {
 
 class Definition {
     
+    // Concrete subclasses of Definition must implement these methods:
+    // getClassDisplayName
+    
     constructor(annotation) {
         this.annotation = annotation;
         this.name = this.annotation.value;
         this.description = this.annotation.getChildValue("DESC");
+    }
+    
+    getBulletHtmlList() {
+        return [];
+    }
+    
+    convertToHtml() {
+        const htmlList = [`<p>${this.getClassDisplayName()} <span class="code">${this.name}</span></p><div class="description">`];
+        if (this.description !== null) {
+            htmlList.push(`<p>${this.description}</p>`);
+        }
+        const bulletHtmlList = this.getBulletHtmlList();
+        if (bulletHtmlList.length > 0) {
+            htmlList.push(`<ul>`);
+            bulletHtmlList.forEach((bulletHtml) => {
+                htmlList.push(bulletHtml);
+            });
+            htmlList.push(`</ul>`);
+        }
+        htmlList.push(`</div>`);
+        return htmlList.join("\n");
     }
 }
 
@@ -91,6 +115,10 @@ class TypeDefinition extends SimpleDefinition {
     constructor(annotation, regex, regexNameIndex) {
         super(annotation, typeRegex, 1);
     }
+    
+    getClassDisplayName() {
+        return "Type";
+    }
 }
 
 class TypedDefinition extends SimpleDefinition {
@@ -98,6 +126,14 @@ class TypedDefinition extends SimpleDefinition {
     constructor(annotation, regex, regexNameIndex) {
         super(annotation, regex, regexNameIndex);
         this.type = this.annotation.getChildValue("TYPE");
+    }
+    
+    getBulletHtmlList() {
+        const output = super.getBulletHtmlList();
+        if (this.type !== null) {
+            output.push(`<li>Type = <span class="code">${this.type}</span></li>`);
+        }
+        return output;
     }
 }
 
@@ -107,13 +143,8 @@ class ConstantDefinition extends TypedDefinition {
         super(annotation, constantRegex, 1);
     }
     
-    convertToHtml() {
-        const htmlList = [`<p>Constant <span class="code">${this.name}</span></p><div class="description"><ul>`];
-        if (this.type !== null) {
-            htmlList.push(`<li>Type = <span class="code">${this.type}</span></li>`);
-        }
-        htmlList.push(`</ul></div>`);
-        return htmlList.join("\n");
+    getClassDisplayName() {
+        return "Constant";
     }
 }
 
@@ -127,6 +158,10 @@ class VariableDefinition extends TypedDefinition {
             }
             this.type = this.regexResult[1];
         }
+    }
+    
+    getClassDisplayName() {
+        return "Global variable";
     }
 }
 
@@ -151,6 +186,10 @@ class StructDefinition extends SimpleDefinition {
         const fieldAnnotationList = this.annotation.getChildren("FIELD");
         populateMemberDefinitions(this.fields, fieldAnnotationList);
     }
+    
+    getClassDisplayName() {
+        return "Data structure";
+    }
 }
 
 class FunctionDefinition extends Definition {
@@ -166,6 +205,10 @@ class FunctionDefinition extends Definition {
         if (tempType !== null) {
             this.returnType = tempType;
         }
+    }
+    
+    getClassDisplayName() {
+        return "Function";
     }
     
     readFunctionDefinitionCode() {
@@ -482,6 +525,22 @@ function populateTemplatePlaceholders(templateText, replacementMap) {
     return output;
 }
 
+function formatHtmlStyle(documentHtml) {
+    const oldHtmlList = documentHtml.split("`");
+    const newHtmlList = [];
+    oldHtmlList.forEach((htmlSnippet, index) => {
+        if (index > 0) {
+            if (index % 2 == 1) {
+                newHtmlList.push(`<span class="code">`);
+            } else {
+                newHtmlList.push(`</span>`);
+            }
+        }
+        newHtmlList.push(htmlSnippet);
+    });
+    return newHtmlList.join("");
+}
+
 function createDocument() {
     const templateText = fs.readFileSync(templatePath, "utf8");
     const tempDate = new Date();
@@ -501,10 +560,11 @@ function createDocument() {
         });
         return htmlList.join("\n");
     }).join("\n");
-    const documentHtml = populateTemplatePlaceholders(templateText, {
+    let documentHtml = populateTemplatePlaceholders(templateText, {
         TIMESTAMP: dateText,
         DEFINITIONS: definitionsHtml,
     });
+    documentHtml = formatHtmlStyle(documentHtml);
     fs.writeFileSync(documentPath, documentHtml);
 }
 

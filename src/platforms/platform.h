@@ -12,10 +12,77 @@
 ///TYPE allocPointer_t
     ///DESC Stores a pointer to a heap allocation. Must accommodate the maximum possible pointer value.
 
+///FUNC declareArrayConstantWithValue
+    ///RET void
+    ///DESC Declares an array constant with the given values.
+    ///ARG name
+        ///TYPE :Identifier
+        ///DESC The name of the array constant to declare.
+    ///ARG type
+        ///TYPE :Type
+        ///DESC The type of each element in the array.
+    ///ARG arrayConstant
+        ///TYPE arrayConstant_t(type)
+        ///DESC The values to populate in the array.
+
+///FUNC declareArrayConstantWithLength
+    ///RET void
+    ///DESC Declares an array constant with the given length. The array must later be populated with values using `declareArrayConstantWithValue`.
+    ///ARG name
+        ///TYPE :Identifier
+        ///DESC The name of the array constant to declare.
+    ///ARG type
+        ///TYPE :Type
+        ///DESC The type of each element in the array.
+    ///ARG length
+        ///TYPE int32_t
+        ///DESC The number of elements to allocate in the array.
+
+///FUNC getArrayConstantLength
+    ///RET int32_t
+    ///DESC Retrieves the number of elements in the given array constant.
+    ///ARG name
+        ///TYPE :Identifier
+        ///DESC The name of an array constant.
+
+///FUNC getArrayConstantElementType
+    ///RET :Type
+    ///DESC Retrieves the type of each element in the given array constant.
+    ///ARG arrayConstant
+        ///TYPE arrayConstant_t(type)
+
+///FUNC readArrayConstantValue
+    ///RET type2
+    ///DESC Retrieves a value within the given array constant. Note that `index` does not need to conform to element boundaries within the array.
+    ///ARG arrayConstant
+        ///TYPE arrayConstant(type1)
+    ///ARG index
+        ///TYPE int32_t
+        ///DESC Index of byte from which to start reading.
+    ///ARG type2
+        ///TYPE :Type
+        ///DESC Type of value to read from the array constant.
+
 ///FUNC printDebugCharacter
     ///RET void
     ///DESC Prints a single character for debugging purposes.
     ///ARG character
         ///TYPE int8_t
+
+///FUNC sleepMilliseconds
+    ///RET void
+    ///DESC Pauses the WheatSystem implementation for the given number of milliseconds.
+    ///ARG delay
+        ///TYPE int32_t
+        ///DESC The number of milliseconds to wait.
+
+///FUNC convertNumberToText
+    ///RET void
+    ///DESC Converts the given number to a decimal string.
+    ///ARG destination
+        ///TYPE int8_t *
+        ///DESC The destination for the decimal string.
+    ///ARG number
+        ///TYPE int_32
 
 

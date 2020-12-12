@@ -137,7 +137,7 @@ class TypedDefinition extends SimpleDefinition {
     }
     
     getTypeHtml() {
-        return `<p>Type = <span class="code">${this.type}</span></p>`;
+        return `<p>Type = ${getTypeHtml(this.type)}</p>`;
     }
 }
 
@@ -178,9 +178,10 @@ class DefinitionMember {
     }
     
     convertToHtml() {
-        const typeText = (this.type === null) ? "(None)" : this.type;
+        const typeText = (this.type === null) ? ":(None)" : this.type;
+        const typeHtml = getTypeHtml(typeText);
         const descriptionText = (this.description === null) ? "(None)" : this.description;
-        return `<tr><td><span class="code">${this.name}</span></td><td><span class="code">${typeText}</span></td><td>${descriptionText}</td></tr>`;
+        return `<tr><td><span class="code">${this.name}</span></td><td>${typeHtml}</td><td>${descriptionText}</td></tr>`;
     }
 }
 
@@ -371,7 +372,7 @@ class FunctionDefinition extends Definition {
     }
     
     getTypeHtml() {
-        return `<p>Return type = <span class="code">${this.extension.returnType}</span></p>`;
+        return `<p>Return type = ${getTypeHtml(this.extension.returnType)}</p>`;
     }
     
     getMembersHtml() {
@@ -602,6 +603,14 @@ function createDefinitions() {
         });
         fileDefinitionsMap[path] = definitionList;
     });
+}
+
+function getTypeHtml(typeText) {
+    if (typeText.charAt(0) === ":") {
+        return typeText.substring(1, typeText.length);
+    } else {
+        return `<span class="code">${typeText}</span>`;
+    }
 }
 
 function populateTemplatePlaceholders(templateText, replacementMap) {

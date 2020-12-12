@@ -15,6 +15,12 @@
 #define NULL_ALLOC_POINTER 0
 
 #pragma pack(push, 1)
+///STRUCT dynamicAllocHeader_t
+    ///DESC Stored at the beginning of a dynamic allocation.
+    ///FIELD isGuarded
+        ///DESC Whether the allocation is guarded.
+    ///FIELD creator
+        ///DESC File handle of app which created the allocation.
 typedef struct dynamicAllocHeader {
     int8_t isGuarded;
     allocPointer_t creator;

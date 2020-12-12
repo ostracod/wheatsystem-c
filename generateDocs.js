@@ -184,60 +184,97 @@ class DefinitionMember {
     }
 }
 
-class StructDefinition extends SimpleDefinition {
+class MemberDefinitionExtension {
     
-    constructor(annotation, regex, regexNameIndex) {
-        super(annotation, structRegex, 2);
-        this.fields = [];
-        if (this.regexResult !== null) {
-            const fieldCodeList = safeSplit(this.regexResult[1], ";");
-            parseTypedDefinitionMembers(this.fields, fieldCodeList);
-        }
-        const fieldAnnotationList = this.annotation.getChildren("FIELD");
-        populateMemberDefinitions(this.fields, fieldAnnotationList);
+    // Concrete subclasses of MemberDefinitionExtension must implement these methods:
+    // readDefinitionCode, getMemberAnnotationName, getMemberDisplayName
+    
+    constructor(annotation) {
+        this.annotation = annotation;
+        this.members = [];
     }
     
-    getClassDisplayName() {
-        return "Data structure";
+    initialize() {
+        this.readDefinitionCode();
+        this.populateMemberDefinitions(this.getMemberAnnotationName());
+    }
+    
+    populateMemberDefinitions(annotationName) {
+        const annotationList = this.annotation.getChildren(annotationName);
+        annotationList.forEach((annotation) => {
+            let tempMember = this.members.find((memberDefinition) => (
+                memberDefinition.name === annotation.value
+            ));
+            if (typeof tempMember === "undefined") {
+                tempMember = new DefinitionMember(annotation.value);
+                this.members.push(tempMember);
+            }
+            tempMember.description = annotation.getChildValue("DESC");
+            const tempType = annotation.getChildValue("TYPE");
+            if (tempType !== null) {
+                tempMember.type = tempType;
+            }
+        });
+    }
+    
+    parseTypedDefinitionMembers(memberCodeList) {
+        memberCodeList.forEach((memberCode) => {
+            const tempResult = memberCode.match(definitionMemberRegex);
+            if (tempResult !== null) {
+                const tempMember = new DefinitionMember(tempResult[2]);
+                tempMember.type = tempResult[1];
+                this.members.push(tempMember);
+            }
+        });
+    }
+    
+    getMembersHtml() {
+        const htmlList = [`<table><tr><th>${this.getMemberDisplayName()} name</th><th>Type</th><th>Description</th></tr>`];
+        this.members.forEach((member) => {
+            htmlList.push(member.convertToHtml());
+        });
+        htmlList.push(`</table>`);
+        return htmlList.join("\n");
     }
 }
 
-class FunctionDefinition extends Definition {
+class StructDefinitionExtension extends MemberDefinitionExtension {
+    
+    constructor(annotation, regexGroup) {
+        super(annotation);
+        this.regexGroup = regexGroup;
+        this.initialize();
+    }
+    
+    readDefinitionCode() {
+        if (this.regexGroup !== null) {
+            const fieldCodeList = safeSplit(this.regexGroup, ";");
+            this.parseTypedDefinitionMembers(fieldCodeList);
+        }
+    }
+    
+    getMemberAnnotationName() {
+        return "FIELD";
+    }
+    
+    getMemberDisplayName() {
+        return "Field";
+    }
+}
+
+class FunctionDefinitionExtension extends MemberDefinitionExtension {
     
     constructor(annotation) {
         super(annotation);
-        this.args = [];
-        this.returnType = null;
-        this.readFunctionDefinitionCode();
-        const argAnnotationList = this.annotation.getChildren("ARG");
-        populateMemberDefinitions(this.args, argAnnotationList);
+        this.initialize();
         const tempType = this.annotation.getChildValue("RET");
         if (tempType !== null) {
             this.returnType = tempType;
         }
     }
     
-    getClassDisplayName() {
-        return "Function";
-    }
-    
-    getTypeHtml() {
-        return `<p>Return type = <span class="code">${this.returnType}</span></p>`;
-    }
-    
-    getMembersHtml() {
-        if (this.args.length <= 0) {
-            return `<p>This function does not accept any arguments.</p>`;
-        }
-        const htmlList = [`<table><tr><th>Argument name</th><th>Type</th><th>Description</th></tr>`];
-        this.args.forEach((arg) => {
-            htmlList.push(arg.convertToHtml());
-        });
-        htmlList.push(`</table>`);
-        return htmlList.join("\n");
-    }
-    
-    readFunctionDefinitionCode() {
+    readDefinitionCode() {
+        this.returnType = null;
         const definitionCode = this.annotation.definitionCode;
         if (definitionCode === null) {
             return;
@@ -260,7 +297,7 @@ class FunctionDefinition extends Definition {
                 if (name.length <= 0) {
                     return;
                 }
-                this.args.push(new DefinitionMember(name));
+                this.members.push(new DefinitionMember(name));
             });
             return;
         }
@@ -285,8 +322,60 @@ class FunctionDefinition extends Definition {
             endParenthesisIndex,
         ), ",");
         this.name = tempResult[2];
-        parseTypedDefinitionMembers(this.args, argCodeList);
+        this.parseTypedDefinitionMembers(argCodeList);
         this.returnType = tempResult[1];
+    }
+    
+    getMemberAnnotationName() {
+        return "ARG";
+    }
+    
+    getMemberDisplayName() {
+        return "Argument";
+    }
+    
+    getMembersHtml() {
+        if (this.members.length <= 0) {
+            return `<p>This function does not accept any arguments.</p>`;
+        }
+        return super.getMembersHtml();
+    }
+}
+
+class StructDefinition extends SimpleDefinition {
+    
+    constructor(annotation, regex, regexNameIndex) {
+        super(annotation, structRegex, 2);
+        const regexGroup = (this.regexResult === null) ? null : this.regexResult[1];
+        this.extension = new StructDefinitionExtension(annotation, regexGroup);
+    }
+    
+    getClassDisplayName() {
+        return "Data structure";
+    }
+    
+    getMembersHtml() {
+        return this.extension.getMembersHtml();
+    }
+}
+
+class FunctionDefinition extends Definition {
+    
+    constructor(annotation) {
+        super(annotation);
+        this.extension = new FunctionDefinitionExtension(annotation);
+    }
+    
+    getClassDisplayName() {
+        return "Function";
+    }
+    
+    getTypeHtml() {
+        return `<p>Return type = <span class="code">${this.extension.returnType}</span></p>`;
+    }
+    
+    getMembersHtml() {
+        return this.extension.getMembersHtml();
     }
 }
 
@@ -489,34 +578,6 @@ function iterateOverDirectory(path) {
             iterateOverDirectory(tempPath);
         } else {
             readSourceFile(tempPath);
-        }
-    });
-}
-
-function parseTypedDefinitionMembers(destination, memberCodeList) {
-    memberCodeList.forEach((memberCode) => {
-        const tempResult = memberCode.match(definitionMemberRegex);
-        if (tempResult !== null) {
-            const tempMember = new DefinitionMember(tempResult[2]);
-            tempMember.type = tempResult[1];
-            destination.push(tempMember);
-        }
-    });
-}
-
-function populateMemberDefinitions(memberDefinitionList, annotationList) {
-    annotationList.forEach((annotation) => {
-        let tempMember = memberDefinitionList.find((memberDefinition) => (
-            memberDefinition.name === annotation.value
-        ));
-        if (typeof tempMember === "undefined") {
-            tempMember = new DefinitionMember(annotation.value);
-            memberDefinitionList.push(tempMember);
-        }
-        tempMember.description = annotation.getChildValue("DESC");
-        const tempType = annotation.getChildValue("TYPE");
-        if (tempType !== null) {
-            tempMember.type = tempType;
         }
     });
 }

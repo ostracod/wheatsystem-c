@@ -1,4 +1,29 @@
 
+///FUNC_TYPE readRange_t
+    ///RET void
+    ///DESC Reads a range of bytes from some location.
+    ///ARG destination
+        ///TYPE int8_t *
+        ///DESC Destination for the data.
+    ///ARG address
+        ///TYPE int32_t
+        ///DESC Address of first byte to read.
+    ///ARG amount
+        ///TYPE int32_t
+        ///DESC Number of bytes to read.
+
+///PPP_FUNC
+    ///RET type
+    ///DESC Reads a value from some location determined by `readRange`.
+    ///ARG address
+        ///TYPE int32_t
+        ///DESC Address of first byte in the value to read.
+    ///ARG readRange
+        ///TYPE readRange_t
+        ///DESC Function to read data.
+    ///ARG type
+        ///TYPE :Type
+        ///DESC Type of value to read.
 DEFINE readValueByAddress address readRange type
 ({type result; readRange(&result, address, sizeof(type)); result;})
 END

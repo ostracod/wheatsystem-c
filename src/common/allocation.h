@@ -15,7 +15,7 @@
 #define NULL_ALLOC_POINTER 0
 
 #pragma pack(push, 1)
-///STRUCT dynamicAllocHeader_t
+///STRUCT
     ///DESC Stored at the beginning of a dynamic allocation.
     ///FIELD isGuarded
         ///DESC Whether the allocation is guarded.

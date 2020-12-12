@@ -267,6 +267,8 @@ class FunctionDefinitionExtension extends MemberDefinitionExtension {
     
     constructor(annotation) {
         super(annotation);
+        this.name = null;
+        this.returnType = null;
         this.initialize();
         const tempType = this.annotation.getChildValue("RET");
         if (tempType !== null) {
@@ -275,7 +277,6 @@ class FunctionDefinitionExtension extends MemberDefinitionExtension {
     }
     
     readDefinitionCode() {
-        this.returnType = null;
         const definitionCode = this.annotation.definitionCode;
         if (definitionCode === null) {
             return;
@@ -365,6 +366,9 @@ class FunctionDefinition extends Definition {
     constructor(annotation) {
         super(annotation);
         this.extension = new FunctionDefinitionExtension(annotation);
+        if (this.name === null) {
+            this.name = this.extension.name;
+        }
     }
     
     getClassDisplayName() {
@@ -380,12 +384,28 @@ class FunctionDefinition extends Definition {
     }
 }
 
+class FunctionTypeDefinition extends FunctionDefinition {
+    
+    getClassDisplayName() {
+        return "Function type";
+    }
+}
+
+class PrepreprocessorFunctionDefinition extends FunctionDefinition {
+    
+    getClassDisplayName() {
+        return "Prepreprocessor function";
+    }
+}
+
 const definitionConstructorSet = {
     TYPE: TypeDefinition,
     CONST: ConstantDefinition,
     VAR: VariableDefinition,
     STRUCT: StructDefinition,
     FUNC: FunctionDefinition,
+    FUNC_TYPE: FunctionTypeDefinition,
+    PPP_FUNC: PrepreprocessorFunctionDefinition,
 };
 
 function getCommentDepth(line) {

@@ -17,33 +17,33 @@
     ///DESC Declares an array constant with the given values.
     ///ARG name
         ///TYPE :Identifier
-        ///DESC The name of the array constant to declare.
+        ///DESC Name of the array constant to declare.
     ///ARG type
         ///TYPE :Type
-        ///DESC The type of each element in the array.
+        ///DESC Type of each element in the array.
     ///ARG arrayConstant
         ///TYPE arrayConstant_t(type)
-        ///DESC The values to populate in the array.
+        ///DESC Values to populate in the array.
 
 ///FUNC declareArrayConstantWithLength
     ///RET void
     ///DESC Declares an array constant with the given length. The array must later be populated with values using `declareArrayConstantWithValue`.
     ///ARG name
         ///TYPE :Identifier
-        ///DESC The name of the array constant to declare.
+        ///DESC Name of the array constant to declare.
     ///ARG type
         ///TYPE :Type
-        ///DESC The type of each element in the array.
+        ///DESC Type of each element in the array.
     ///ARG length
         ///TYPE int32_t
-        ///DESC The number of elements to allocate in the array.
+        ///DESC Number of elements to allocate in the array.
 
 ///FUNC getArrayConstantLength
     ///RET int32_t
     ///DESC Retrieves the number of elements in the given array constant.
     ///ARG name
         ///TYPE :Identifier
-        ///DESC The name of an array constant.
+        ///DESC Name of an array constant.
 
 ///FUNC getArrayConstantElementType
     ///RET :Type
@@ -74,14 +74,14 @@
     ///DESC Pauses the WheatSystem implementation for the given number of milliseconds.
     ///ARG delay
         ///TYPE int32_t
-        ///DESC The number of milliseconds to wait.
+        ///DESC Number of milliseconds to wait.
 
 ///FUNC convertNumberToText
     ///RET void
     ///DESC Converts the given number to a decimal string.
     ///ARG destination
         ///TYPE int8_t *
-        ///DESC The destination for the decimal string.
+        ///DESC Destination for the decimal string.
     ///ARG number
         ///TYPE int_32
 

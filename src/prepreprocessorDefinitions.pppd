@@ -1,5 +1,5 @@
 
-///FUNC_TYPE readRange_t
+///FUNC_TYPE readRangeByAddress_t
     ///RET void
     ///DESC Reads a range of bytes from some location.
     ///ARG destination
@@ -19,7 +19,7 @@
         ///TYPE int32_t
         ///DESC Address of first byte in the value to read.
     ///ARG readRange
-        ///TYPE readRange_t
+        ///TYPE readRangeByAddress_t
         ///DESC Function to read data.
     ///ARG type
         ///TYPE :Type
@@ -28,38 +28,282 @@ DEFINE readValueByAddress address readRange type
 ({type result; readRange(&result, address, sizeof(type)); result;})
 END
 
+///FUNC_TYPE writeRangeByAddress_t
+    ///RET void
+    ///DESC Writes a range of bytes to some location.
+    ///ARG address
+        ///TYPE int32_t
+        ///DESC Address of first byte to write.
+    ///ARG source
+        ///TYPE int8_t *
+        ///DESC Source of the data.
+    ///ARG amount
+        ///TYPE int32_t
+        ///DESC Number of bytes to write.
+
+///PPP_FUNC
+    ///RET void
+    ///DESC Writes a value to some location determined by `writeRange`.
+    ///ARG address
+        ///TYPE int32_t
+        ///DESC Address of first byte in the destination to write.
+    ///ARG writeRange
+        ///TYPE writeRangeByAddress_t
+        ///DESC Function to write data.
+    ///ARG type
+        ///TYPE :Type
+        ///DESC Type of value to write.
+    ///ARG value
+        ///TYPE type
+        ///DESC Value to write.
 DEFINE writeValueByAddress address writeRange type value
 ({type tempValue = value; writeRange(address, &tempValue, sizeof(type));})
 END
 
+///FUNC_TYPE readValueByAddress_t
+    ///RET type
+    ///DESC Reads a value from some location.
+    ///ARG address
+        ///TYPE int32_t
+        ///DESC Address of first byte to read.
+    ///ARG type
+        ///TYPE :Type
+        ///DESC Type of value to read.
+
+///PPP_FUNC
+    ///RET :Type of `memberName` in `structDefinition`
+    ///DESC Reads a member value in the struct at the given address.
+    ///ARG address
+        ///TYPE int32_t
+        ///DESC Address of first byte in the struct.
+    ///ARG readValue
+        ///TYPE readValueByAddress_t
+        ///DESC Function to read data.
+    ///ARG structDefinition
+        ///TYPE :Struct type
+        ///DESC Type of struct to read.
+    ///ARG memberName
+        ///TYPE :Identifier
+        ///DESC Name of struct member to read.
 DEFINE readStructByAddress address readValue structDefinition memberName
 readValue(address + getStructMemberOffset(structDefinition, memberName), getStructMemberType(structDefinition, memberName))
 END
 
+///FUNC_TYPE writeValueByAddress_t
+    ///RET void
+    ///DESC Writes a value to some location.
+    ///ARG address
+        ///TYPE int32_t
+        ///DESC Address of first byte to write.
+    ///ARG type
+        ///TYPE :Type
+        ///DESC Type of value to write.
+    ///ARG value
+        ///TYPE type
+        ///DESC Value to write.
+
+///PPP_FUNC
+    ///RET void
+    ///DESC Writes a member value in the struct at the given address.
+    ///ARG address
+        ///TYPE int32_t
+        ///DESC Address of first byte in the struct.
+    ///ARG writeValue
+        ///TYPE writeValueByAddress_t
+        ///DESC Function to write data.
+    ///ARG structDefinition
+        ///TYPE :Struct type
+        ///DESC Type of struct to write.
+    ///ARG memberName
+        ///TYPE :Identifier
+        ///DESC Name of struct member to write.
+    ///ARG value
+        ///TYPE :Type of `memberName` in `structDefinition`
+        ///DESC Value to write.
 DEFINE writeStructByAddress address writeValue structDefinition memberName value
 writeValue(address + getStructMemberOffset(structDefinition, memberName), getStructMemberType(structDefinition, memberName), value)
 END
 
+///FUNC_TYPE readRangeByPointer_t
+    ///RET void
+    ///DESC Reads a range of bytes from some location.
+    ///ARG destination
+        ///TYPE int8_t *
+        ///DESC Destination for the data.
+    ///ARG pointer
+        ///TYPE allocPointer_t
+        ///DESC Pointer of allocation to read.
+    ///ARG index
+        ///TYPE int32_t
+        ///DESC Offset of value to read.
+    ///ARG amount
+        ///TYPE int32_t
+        ///DESC Number of bytes to read.
+
+///PPP_FUNC
+    ///RET type
+    ///DESC Reads a value from some location determined by `readRange`.
+    ///ARG pointer
+        ///TYPE allocPointer_t
+        ///DESC Pointer of allocation to read.
+    ///ARG readRange
+        ///TYPE readRangeByPointer_t
+        ///DESC Function to read data.
+    ///ARG index
+        ///TYPE int32_t
+        ///DESC Offset of value to read.
+    ///ARG type
+        ///TYPE :Type
+        ///DESC Type of value to read.
 DEFINE readValueByPointer pointer readRange index type
 ({type result; readRange(&result, pointer, index, sizeof(type)); result;})
 END
 
+///FUNC_TYPE writeRangeByPointer_t
+    ///RET void
+    ///DESC Writes a range of bytes to some location.
+    ///ARG pointer
+        ///TYPE allocPointer_t
+        ///DESC Pointer of allocation to write.
+    ///ARG index
+        ///TYPE int32_t
+        ///DESC Offset of value to write.
+    ///ARG source
+        ///TYPE int8_t *
+        ///DESC Source of the data.
+    ///ARG amount
+        ///TYPE int32_t
+        ///DESC Number of bytes to write.
+
+///PPP_FUNC
+    ///RET void
+    ///DESC Writes a value to some location determined by `writeRange`.
+    ///ARG pointer
+        ///TYPE allocPointer_t
+        ///DESC Pointer of allocation to write.
+    ///ARG writeRange
+        ///TYPE writeRangeByPointer_t
+        ///DESC Function to write data.
+    ///ARG index
+        ///TYPE int32_t
+        ///DESC Offset of value to write.
+    ///ARG type
+        ///TYPE :Type
+        ///DESC Type of value to write.
+    ///ARG value
+        ///TYPE type
+        ///DESC Value to write.
 DEFINE writeValueByPointer pointer writeRange index type value
 ({type tempValue = value; writeRange(pointer, index, &tempValue, sizeof(type));})
 END
 
+///FUNC_TYPE readValueByPointer_t
+    ///RET type
+    ///DESC Reads a value from some location.
+    ///ARG pointer
+        ///TYPE allocPointer_t
+        ///DESC Pointer of allocation to read.
+    ///ARG index
+        ///TYPE int32_t
+        ///DESC Offset of value to read.
+    ///ARG type
+        ///TYPE :Type
+        ///DESC Type of value to read.
+
+///PPP_FUNC
+    ///RET :Type of `memberName` in `structDefinition`
+    ///DESC Reads a member value in the struct with the given pointer.
+    ///ARG pointer
+        ///TYPE allocPointer_t
+        ///DESC Pointer of allocation to read.
+    ///ARG readValue
+        ///TYPE readValueByPointer_t
+        ///DESC Function to read data.
+    ///ARG structDefinition
+        ///TYPE :Struct type
+        ///DESC Type of struct to read.
+    ///ARG memberName
+        ///TYPE :Identifier
+        ///DESC Name of struct member to read.
 DEFINE readStructByPointer pointer readValue structDefinition memberName
 readValue(pointer, getStructMemberOffset(structDefinition, memberName), getStructMemberType(structDefinition, memberName))
 END
 
+///FUNC_TYPE writeValueByPointer_t
+    ///RET void
+    ///DESC Writes a value to some location.
+    ///ARG pointer
+        ///TYPE allocPointer_t
+        ///DESC Pointer of allocation to write.
+    ///ARG index
+        ///TYPE int32_t
+        ///DESC Offset of value to write.
+    ///ARG type
+        ///TYPE :Type
+        ///DESC Type of value to write.
+    ///ARG value
+        ///TYPE type
+        ///DESC Value to write.
+
+///PPP_FUNC
+    ///RET void
+    ///DESC Writes a member value in the struct  with the given pointer.
+    ///ARG pointer
+        ///TYPE allocPointer_t
+        ///DESC Pointer of allocation to write.
+    ///ARG writeValue
+        ///TYPE writeValueByPointer_t
+        ///DESC Function to write data.
+    ///ARG structDefinition
+        ///TYPE :Struct type
+        ///DESC Type of struct to write.
+    ///ARG memberName
+        ///TYPE :Identifier
+        ///DESC Name of struct member to write.
+    ///ARG value
+        ///TYPE :Type of `memberName` in `structDefinition`
+        ///DESC Value to write.
 DEFINE writeStructByPointer pointer writeValue structDefinition memberName value
 writeValue(pointer, getStructMemberOffset(structDefinition, memberName), getStructMemberType(structDefinition, memberName), value)
 END
 
+///PPP_FUNC
+    ///RET type
+    ///DESC Reads an element of an array.
+    ///ARG pointer
+        ///TYPE allocPointer_t
+        ///DESC Pointer of allocation to read.
+    ///ARG readValue
+        ///TYPE readValueByPointer_t
+        ///DESC Function to read data.
+    ///ARG arrayIndex
+        ///TYPE int32_t
+        ///DESC Index of element in the array.
+    ///ARG type
+        ///TYPE :Type
+        ///DESC Type of array element.
 DEFINE readArrayElementByPointer pointer readValue arrayIndex type
 readValue(pointer, arrayIndex * sizeof(type), type)
 END
 
+///PPP_FUNC
+    ///RET :Type of `memberName` in `structDefinition`
+    ///DESC Reads a member of a struct in an array.
+    ///ARG pointer
+        ///TYPE allocPointer_t
+        ///DESC Pointer of allocation to read.
+    ///ARG readValue
+        ///TYPE readValueByPointer_t
+        ///DESC Function to read data.
+    ///ARG arrayIndex
+        ///TYPE int32_t
+        ///DESC Index of struct in the array.
+    ///ARG structDefinition
+        ///TYPE :Struct type
+        ///DESC Type of struct in the array.
+    ///ARG memberName
+        ///TYPE :Identifier
+        ///DESC Name of struct member to read.
 DEFINE readArrayStructByPointer pointer readValue arrayIndex structDefinition memberName
 readValue(pointer, arrayIndex * sizeof(structDefinition) + getStructMemberOffset(structDefinition, memberName), getStructMemberType(structDefinition, memberName))
 END

@@ -1,8 +1,6 @@
 
 #include "./headers.h"
 
-// This code is compatible with 25LC1024 produced by Microchip.
-
 #define eepromCsPinOutput() DDRB |= 1 << DDB1
 #define eepromCsPinHigh() PORTB |= 1 << PORTB1
 #define eepromCsPinLow() PORTB &= ~(1 << PORTB1)

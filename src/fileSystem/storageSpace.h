@@ -1,4 +1,6 @@
 
+///DESC This file describes platform-specific definitions to access non-volatile storage which may be used for the file system. A platform only needs to implement these definitions when using certain implementations of `fileSystem/fileSystem`.
+
 ///FUNC initializeStorageSpace
     ///RET int8_t
     ///DESC Initializes non-volatile storage. Must be called before using non-volatile storage. Returns false if non-volatile storage could not be initialized successfully.

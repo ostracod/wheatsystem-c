@@ -1,4 +1,6 @@
 
+///DESC This file provides an implementation of the definitions decribed by `fileSystem/fileSystem`. This implementation uses the native Unix file system to store WheatSystem files.
+
 #pragma pack(push, 1)
 typedef struct fileHandle {
     int8_t *name;

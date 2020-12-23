@@ -1,4 +1,6 @@
 
+///DESC This file provides common definitions for manipulating heap allocations. Every platform shares the same implementation of these definitions.
+
 ///CONST
     ///TYPE int8_t
 #define RUNNING_APP_ALLOC_TYPE 0

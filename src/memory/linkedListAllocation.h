@@ -1,4 +1,6 @@
 
+///DESC This file provides an implementation of the definitions decribed by `memory/allocation`. This implementation uses a linked list to store heap allocations.
+
 #pragma pack(push, 1)
 typedef struct allocHeader {
     int8_t type;

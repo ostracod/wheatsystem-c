@@ -1,4 +1,6 @@
 
+///DESC This file describes platform-specific definitions for manipulating files. Every platform must implement all definitions in this file.
+
 ///FUNC initializeFileSystem
     ///RET int8_t
     ///DESC Initializes the file system. Must be called before using the file system. Returns false if the file system could not be initialized successfully.

@@ -1,4 +1,6 @@
 
+///DESC This file provides prepreprocessor definitions which are shared by all platforms.
+
 ///FUNC_TYPE readRangeByAddress_t
     ///RET void
     ///DESC Reads a range of bytes from some location.

@@ -1,4 +1,6 @@
 
+///DESC This file provides an implementation of the definitions decribed by `fileSystem/storageSpace`. This implementation uses a file in the native Unix file system to behave as non-volatile storage.
+
 #define readStorageSpaceRange(destination, address, amount) \
     memcpy(destination, storageSpace + address, amount);
 

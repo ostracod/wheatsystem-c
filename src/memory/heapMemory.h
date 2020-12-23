@@ -1,4 +1,6 @@
 
+///DESC This file describes platform-specific definitions to access memory which will be used for heap allocation. Every platform must implement all definitions in this file.
+
 ///FUNC readHeapMemory
     ///RET type
     ///DESC Reads a value from heap memory.

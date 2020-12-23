@@ -1,4 +1,6 @@
 
+///DESC This file describes platform-specific definitions which will be placed at the beginning of `intermediate/headers.h`. Every platform must implement all definitions in this file.
+
 ///CONST HEAP_MEMORY_SIZE
     ///TYPE heapMemoryOffset_t
     ///DESC Defines the size of memory available in the heap.

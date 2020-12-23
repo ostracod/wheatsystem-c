@@ -1,4 +1,6 @@
 
+///DESC This file provides an implementation of the definitions decribed by `fileSystem/fileSystem`. This implementation uses a linked list to store files. This implemenation of `fileSystem/fileSystem` requires an implemenation of `fileSystem/storageSpace`.
+
 #pragma pack(push, 1)
 typedef struct fileHeader {
     uint8_t attributes;

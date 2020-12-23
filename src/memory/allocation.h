@@ -1,4 +1,6 @@
 
+///DESC This file describes platform-specific definitions for manipulating heap allocations. Every platform must implement all definitions in this file.
+
 ///FUNC convertPointerToAddress
     ///RET heapMemoryOffset_t
     ///DESC Converts the given pointer to a heap memory address.

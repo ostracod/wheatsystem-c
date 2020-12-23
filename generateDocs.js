@@ -18,6 +18,7 @@ const preprocessorMacroRegex = /^#define *([^ ]+) *\((.*)\) *.*$/;
 const prepreprocessorMacroRegex = /^DEFINE ([^ ]+) ?(.*)$/;
 
 const fileAnnotationsMap = {};
+const fileDescriptionMap = {};
 const fileDefinitionsMap = {};
 
 class DocError extends Error {
@@ -603,17 +604,23 @@ function iterateOverDirectory(path) {
     });
 }
 
-function createDefinitions() {
+function processAnnotations() {
     Object.keys(fileAnnotationsMap).forEach((path) => {
         const annotationList = fileAnnotationsMap[path];
-        const definitionList = annotationList.map((annotation) => {
+        const definitionList = []
+        annotationList.forEach((annotation) => {
+            const annotationName = annotation.name;
+            if (annotationName === "DESC") {
+                fileDescriptionMap[path] = annotation.value;
+                return;
+            }
             try {
-                const annotationName = annotation.name;
                 const tempConstructor = definitionConstructorSet[annotationName];
                 if (typeof tempConstructor === "undefined") {
                     throw new DocError(`Invalid annotation name "${annotationName}".`);
                 }
-                return new tempConstructor(annotation);
+                const tempDefinition = new tempConstructor(annotation);
+                definitionList.push(tempDefinition);
             } catch(error) {
                 if (error instanceof DocError) {
                     error.annotation = annotation;
@@ -670,6 +677,10 @@ function createDocument() {
     });
     const definitionsHtml = Object.keys(fileDefinitionsMap).map((path) => {
         const htmlList = [`<p class="pathTitle">${path}</p>`];
+        const tempDescription = fileDescriptionMap[path];
+        if (typeof tempDescription !== 'undefined') {
+            htmlList.push(`<p>${tempDescription}</p>`);
+        }
         const definitionList = fileDefinitionsMap[path];
         definitionList.forEach((definition) => {
             htmlList.push(definition.convertToHtml());
@@ -692,7 +703,7 @@ try {
     
     console.log("Generating documentation...");
     
-    createDefinitions();
+    processAnnotations();
     createDocument();
     
     console.log("Finished.");

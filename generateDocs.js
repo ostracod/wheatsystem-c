@@ -13,7 +13,7 @@ const typeRegex = /^ *typedef +.+ +([^ ]+) *; *$/;
 const constantRegex = /^ *#define +([^ ]+) +.+$/;
 const variableRegex = /^ *(.*[^ ]) +([^ ]+) *; *$/;
 const structRegex = /^ *typedef +struct +.+ +{(.+)} +([^ ]+) *; *$/;
-const definitionMemberRegex = /^ *(.*[^ ]) +([^ ]+) *$/;
+const definitionMemberRegex = /^ *(.*[^ ][ \*]+)([^ ]+) *$/;
 const preprocessorMacroRegex = /^#define *([^ ]+) *\((.*)\) *.*$/;
 const prepreprocessorMacroRegex = /^DEFINE ([^ ]+) ?(.*)$/;
 
@@ -224,7 +224,7 @@ class MemberDefinitionExtension {
             const tempResult = memberCode.match(definitionMemberRegex);
             if (tempResult !== null) {
                 const tempMember = new DefinitionMember(tempResult[2]);
-                tempMember.type = tempResult[1];
+                tempMember.type = tempResult[1].trim();
                 this.members.push(tempMember);
             }
         });
@@ -326,7 +326,7 @@ class FunctionDefinitionExtension extends MemberDefinitionExtension {
         ), ",");
         this.name = tempResult[2];
         this.parseTypedDefinitionMembers(argCodeList);
-        this.returnType = tempResult[1];
+        this.returnType = tempResult[1].trim();
     }
     
     getMemberAnnotationName() {
@@ -633,7 +633,9 @@ function processAnnotations() {
 }
 
 function getTypeHtml(typeText) {
-    if (typeText.charAt(0) === ":") {
+    if (typeText === null) {
+        return "(None)";
+    } else if (typeText.charAt(0) === ":") {
         return typeText.substring(1, typeText.length);
     } else {
         return `<span class="code">${typeText}</span>`;

@@ -1,5 +1,5 @@
 
-///DESC This file provides an implementation of the definitions decribed by `fileSystem/fileSystem`. This implementation uses the native Unix file system to store WheatSystem files.
+///DESC This file provides an implementation of the definitions decribed by `fileSystem/fileSystem`. This implementation uses the native Unix file system to store WheatSystem files. This implementation of `fileSystem/fileSystem` requires an implementation of `communication/unixNativeFile`.
 
 #pragma pack(push, 1)
 typedef struct fileHandle {

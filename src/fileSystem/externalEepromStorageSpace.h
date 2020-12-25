@@ -1,5 +1,5 @@
 
-///DESC This file provides an implementation of the definitions decribed by `fileSystem/storageSpace`. This implementation uses the 25LC1024 EEPROM chip produced by Microchip.
+///DESC This file provides an implementation of the definitions decribed by `fileSystem/storageSpace`. This implementation uses the 25LC1024 EEPROM chip produced by Microchip. This implemenation of `fileSystem/storageSpace` requires the definitions provided by `communication/avrSpi`.
 
 #define readStorageSpace(address, type) \
     !!!readValueByAddress address readStorageSpaceRange type

@@ -106,9 +106,6 @@ class SimpleDefinition extends Definition {
             this.regexResult = null;
         } else {
             this.regexResult = definitionCode.match(regex);
-            if (this.regexResult === null) {
-                throw new DocError(`Invalid statement for "${this.annotation.name}" definition.`);
-            }
         }
         if (this.name === null) {
             if (this.regexResult === null) {

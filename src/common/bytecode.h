@@ -36,18 +36,18 @@ typedef struct bytecodeLocalFrameHeader {
 #pragma pack(pop)
 
 #define getBytecodeAppMember(fileHandle, memberName) \
-    !!!readStructByPointer fileHandle readFile bytecodeAppHeader_t memberName
+    readStructByPointer(fileHandle, readFile, bytecodeAppHeader_t, memberName)
 
 #define readBytecodeFunctionTable(fileHandle, index, type) \
     readFile(fileHandle, sizeof(bytecodeAppHeader_t) + index, type)
 
 #define getBytecodeFunctionMember(fileHandle, functionIndex, memberName) \
-    !!!readArrayStructByPointer fileHandle readBytecodeFunctionTable functionIndex bytecodeFunction_t memberName
+    readArrayStructByPointer(fileHandle, readBytecodeFunctionTable, functionIndex, bytecodeFunction_t, memberName)
 
 #define getBytecodeGlobalFrameMember(runningApp, memberName) \
-    !!!readStructByPointer runningApp readGlobalFrame bytecodeGlobalFrameHeader_t memberName
+    readStructByPointer(runningApp, readGlobalFrame, bytecodeGlobalFrameHeader_t, memberName)
 #define setBytecodeGlobalFrameMember(runningApp, memberName, value) \
-    !!!writeStructByPointer runningApp writeGlobalFrame bytecodeGlobalFrameHeader_t memberName value
+    writeStructByPointer(runningApp, writeGlobalFrame, bytecodeGlobalFrameHeader_t, memberName, value)
 
 #define getBytecodeGlobalFrameDataAddress(runningApp) \
     (getGlobalFrameDataAddress(runningApp) + sizeof(bytecodeGlobalFrameHeader_t))
@@ -55,9 +55,9 @@ typedef struct bytecodeLocalFrameHeader {
     (getGlobalFrameSize(runningApp) - sizeof(bytecodeGlobalFrameHeader_t))
 
 #define getBytecodeLocalFrameMember(localFrame, memberName) \
-    !!!readStructByPointer localFrame readLocalFrame bytecodeLocalFrameHeader_t memberName
+    readStructByPointer(localFrame, readLocalFrame, bytecodeLocalFrameHeader_t, memberName)
 #define setBytecodeLocalFrameMember(localFrame, memberName, value) \
-    !!!writeStructByPointer localFrame writeLocalFrame bytecodeLocalFrameHeader_t memberName value
+    writeStructByPointer(localFrame, writeLocalFrame, bytecodeLocalFrameHeader_t, memberName, value)
 
 #define getBytecodeLocalFrameDataAddress(localFrame) \
     (getLocalFrameDataAddress(localFrame) + sizeof(bytecodeLocalFrameHeader_t))

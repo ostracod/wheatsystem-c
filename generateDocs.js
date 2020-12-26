@@ -390,13 +390,6 @@ class FunctionTypeDefinition extends FunctionDefinition {
     }
 }
 
-class PrepreprocessorFunctionDefinition extends FunctionDefinition {
-    
-    getClassDisplayName() {
-        return "Prepreprocessor function";
-    }
-}
-
 const definitionConstructorSet = {
     TYPE: TypeDefinition,
     CONST: ConstantDefinition,
@@ -404,7 +397,6 @@ const definitionConstructorSet = {
     STRUCT: StructDefinition,
     FUNC: FunctionDefinition,
     FUNC_TYPE: FunctionTypeDefinition,
-    PPP_FUNC: PrepreprocessorFunctionDefinition,
 };
 
 function getCommentDepth(line) {

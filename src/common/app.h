@@ -32,9 +32,9 @@ typedef struct localFrameHeader {
 #pragma pack(pop)
 
 #define getRunningAppMember(runningApp, memberName) \
-    !!!readStructByPointer runningApp readAlloc runningAppHeader_t memberName
+    readStructByPointer(runningApp, readAlloc, runningAppHeader_t, memberName)
 #define setRunningAppMember(runningApp, memberName, value) \
-    !!!writeStructByPointer runningApp writeAlloc runningAppHeader_t memberName value
+    writeStructByPointer(runningApp, writeAlloc, runningAppHeader_t, memberName, value)
 
 #define getGlobalFrameDataAddress(runningApp) \
     (getAllocDataAddress(runningApp) + sizeof(runningAppHeader_t))
@@ -47,9 +47,9 @@ typedef struct localFrameHeader {
     writeHeapMemory(getGlobalFrameDataAddress(runningApp) + index, type, value)
 
 #define getLocalFrameMember(localFrame, memberName) \
-    !!!readStructByPointer localFrame readAlloc localFrameHeader_t memberName
+    readStructByPointer(localFrame, readAlloc, localFrameHeader_t, memberName)
 #define setLocalFrameMember(localFrame, memberName, value) \
-    !!!writeStructByPointer localFrame writeAlloc localFrameHeader_t memberName value
+    writeStructByPointer(localFrame, writeAlloc, localFrameHeader_t, memberName, value)
 
 #define getLocalFrameDataAddress(localFrame) \
     (getAllocDataAddress(localFrame) + sizeof(localFrameHeader_t))

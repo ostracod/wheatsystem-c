@@ -61,13 +61,7 @@ When building a platform, `./fake.js` will incorporate the following files:
 1. All files provided in `./src/common`
 1. `.c` and `.h` files corresponding to each base path in `baseFilePaths`
 
-As part of the build process, `./fake.js` uses `./prepreprocessor.js` to expand prepreprocessor invocations in `.c` and `.h` files. Prepreprocessor invocations have the following syntax:
-
-```
-!!!name arg1 arg2 arg3...
-```
-
-Prepreprocessor definitions are read from `./src/prepreprocessorDefinitions.pppd`.
+As part of the build process, `./fake.js` uses `./prepreprocessor.js` to expand prepreprocessor invocations in `.c` and `.h` files. Prepreprocessor definitions are read from `./src/prepreprocessorDefinitions.pppd`.
 
 `./fake.js` creates a header file in `./intermediate/headers.h` which includes all headers for the target platform. This header should be included in each `.c` file with the statement below:
 

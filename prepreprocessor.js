@@ -1,5 +1,6 @@
 
 const fs = require("fs");
+const commonUtils = require("./commonUtils");
 
 function isFirstIdentifierCharacter(characterCode) {
     return ((characterCode >= 65 && characterCode <= 90)
@@ -7,16 +8,21 @@ function isFirstIdentifierCharacter(characterCode) {
         || characterCode === 95);
 }
 
+function isDigitCharacter(characterCode) {
+    return (characterCode >= 48 && characterCode <= 57)
+}
+
 function isIdentifierCharacter(characterCode) {
     return (isFirstIdentifierCharacter(characterCode)
-        || (characterCode >= 48 && characterCode <= 57));
+        || isDigitCharacter(characterCode));
 }
 
 function findNextIdentifier(text, index) {
     while (index < text.length) {
         const startIndex = index;
         const firstCharacterCode = text.charCodeAt(startIndex);
-        if (!isFirstIdentifierCharacter(firstCharacterCode)) {
+        const isNumber = isDigitCharacter(firstCharacterCode);
+        if (!isNumber && !isFirstIdentifierCharacter(firstCharacterCode)) {
             index += 1;
             continue;
         }
@@ -28,17 +34,12 @@ function findNextIdentifier(text, index) {
             }
             endIndex += 1;
         }
-        return { startIndex, endIndex };
+        if (!isNumber) {
+            return { startIndex, endIndex };
+        }
+        index = endIndex;
     }
     return null;
-}
-
-function convertIdentifierToRegex(identifier) {
-    // Escape identifier text for use in a regex.
-    // https://stackoverflow.com/questions/3561493/is-there-a-regexp-escape-function-in-javascript
-    const regexText = identifier.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&")
-    // Match the identifier surrounded by non-identifier characters.
-    return new RegExp(`([^a-zA-Z0-9_]|^)(${regexText})([^a-zA-Z0-9_]|$)`, "g");
 }
 
 class PrepreprocessorDefinition {
@@ -80,7 +81,7 @@ class PrepreprocessorDefinition {
     }
     
     expand(argList) {
-        return this.lineList.map(line => this.expandLine(line, argList));
+        return this.lineList.map(line => this.expandLine(line, argList)).join("\n");
     }
 }
 
@@ -89,7 +90,8 @@ class Prepreprocessor {
     constructor(definitionsPath) {
         const tempContent = fs.readFileSync(definitionsPath, "utf8");
         const tempLineList = tempContent.split("\n");
-        this.definitionList = [];
+        // Map from name to PrepreprocessorDefinition.
+        this.definitionMap = {};
         let currentDefinition = null;
         for (const line of tempLineList) {
             if (line.length <= 0) {
@@ -109,7 +111,7 @@ class Prepreprocessor {
                         tempTermList[1],
                         tempTermList.slice(2, tempTermList.length)
                     );
-                    this.definitionList.push(currentDefinition);
+                    this.definitionMap[currentDefinition.name] = currentDefinition;
                 } else {
                     throw new Error(`Unexpected prepreprocessor directive "${tempDirective}".`);
                 }
@@ -123,38 +125,65 @@ class Prepreprocessor {
         }
     }
     
-    getDefinitionByName(name) {
-        for (const definition of this.definitionList) {
-            if (definition.name === name) {
-                return definition;
-            }
-        }
-        return null;
-    }
-    
     prepreprocessFile(sourcePath, destinationPath) {
-        const tempContent = fs.readFileSync(sourcePath, "utf8");
-        const sourceLineList = tempContent.split("\n");
-        const destinationLineList = [];
-        for (const line of sourceLineList) {
-            const trimmedLine = line.trim();
-            if (trimmedLine.startsWith("!!!")) {
-                const tempTermList = trimmedLine.substring(3, trimmedLine.length).split(" ");
-                const tempName = tempTermList[0];
-                const tempDefinition = this.getDefinitionByName(tempName);
-                if (tempDefinition === null) {
-                    throw new Error(`Unknown prepreprocessor definition "${tempName}".`);
-                }
-                const tempArgList = tempTermList.slice(1, tempTermList.length);
-                const tempLineList = tempDefinition.expand(tempArgList);
-                for (const tempLine of tempLineList) {
-                    destinationLineList.push(tempLine);
-                }
-            } else {
-                destinationLineList.push(line);
+        const sourceContent = fs.readFileSync(sourcePath, "utf8");
+        const textList = [];
+        let index = 0;
+        while (true) {
+            const lastIndex = index;
+            const tempResult = findNextIdentifier(sourceContent, index);
+            if (tempResult === null) {
+                textList.push(sourceContent.substring(lastIndex, sourceContent.length));
+                break;
             }
+            const { startIndex, endIndex } = tempResult;
+            const tempIdentifier = sourceContent.substring(startIndex, endIndex);
+            const tempDefinition = this.definitionMap[tempIdentifier];
+            if (typeof tempDefinition === "undefined") {
+                textList.push(sourceContent.substring(lastIndex, endIndex));
+                index = endIndex;
+                continue;
+            }
+            let hasFoundParenthesis = false;
+            index = endIndex;
+            while (index < sourceContent.length) {
+                const characterCode = sourceContent.charCodeAt(index);
+                if (characterCode === 40) {
+                    hasFoundParenthesis = true;
+                    break;
+                }
+                if (characterCode !== 32) {
+                    break;
+                }
+                index += 1;
+            }
+            if (!hasFoundParenthesis) {
+                textList.push(sourceContent.substring(lastIndex, index));
+                continue;
+            }
+            const startParenthesisIndex = index;
+            const endParenthesisIndex = commonUtils.findMatchingEndParenthesis(
+                sourceContent,
+                startParenthesisIndex,
+            );
+            if (endParenthesisIndex < 0) {
+                throw new Error(`Missing close parenthesis in file: ${sourcePath}`);
+            }
+            const argsText = sourceContent.substring(
+                startParenthesisIndex + 1,
+                endParenthesisIndex,
+            );
+            let argList = commonUtils.safeSplit(argsText, ",");
+            if (argList === null) {
+                throw new Error(`Could not parse file: ${sourcePath}`);
+            }
+            argList = argList.map((arg) => arg.trim());
+            const expandedDefinition = tempDefinition.expand(argList);
+            textList.push(sourceContent.substring(lastIndex, startIndex));
+            textList.push(expandedDefinition);
+            index = endParenthesisIndex + 1;
         }
-        fs.writeFileSync(destinationPath, destinationLineList.join("\n"));
+        fs.writeFileSync(destinationPath, textList.join(""));
     }
 }
 

@@ -25,18 +25,18 @@ typedef struct systemGlobalFrameHeader {
 #define createSystemApp(globalFrameSize, systemAppFunctionArray) (systemApp_t){globalFrameSize, systemAppFunctionArray, getArrayConstantLength(systemAppFunctionArray)}
 
 #define getSystemAppMember(id, memberName) \
-    !!!readArrayStructByPointer systemAppArray readArrayConstantValue id systemApp_t memberName
+    readArrayStructByPointer(systemAppArray, readArrayConstantValue, id, systemApp_t, memberName)
 #define getSystemAppFunctionListMember(systemAppFunctionArray, index, memberName) \
-    !!!readArrayStructByPointer systemAppFunctionArray readArrayConstantValue index systemAppFunction_t memberName
+    readArrayStructByPointer(systemAppFunctionArray, readArrayConstantValue, index, systemAppFunction_t, memberName)
 #define getSystemAppFunctionMember(id, index, memberName) ({ \
     arrayConstant_t(systemAppFunction_t) functionList = getSystemAppMember(id, functionList); \
     getSystemAppFunctionListMember(functionList, index, memberName); \
 })
 
 #define getSystemGlobalFrameMember(runningApp, memberName) \
-    !!!readStructByPointer runningApp readGlobalFrame systemGlobalFrameHeader_t memberName
+    readStructByPointer(runningApp, readGlobalFrame, systemGlobalFrameHeader_t, memberName)
 #define setSystemGlobalFrameMember(runningApp, memberName, value) \
-    !!!writeStructByPointer runningApp writeGlobalFrame systemGlobalFrameHeader_t memberName value
+    writeStructByPointer(runningApp, writeGlobalFrame, systemGlobalFrameHeader_t, memberName, value)
 
 #define getSystemGlobalFrameDataAddress(runningApp) \
     (getGlobalFrameDataAddress(runningApp) + sizeof(systemGlobalFrameHeader_t))
@@ -47,9 +47,9 @@ typedef struct systemGlobalFrameHeader {
     writeHeapMemory(getSystemGlobalFrameDataAddress(runningApp) + index, type, value)
 
 #define readSystemAppGlobalVariable(structDefinition, memberName) \
-    !!!readStructByPointer currentImplementer readSystemGlobalFrame structDefinition memberName
+    readStructByPointer(currentImplementer, readSystemGlobalFrame, structDefinition, memberName)
 #define writeSystemAppGlobalVariable(structDefinition, memberName, value) \
-    !!!writeStructByPointer currentImplementer writeSystemGlobalFrame structDefinition memberName value
+    writeStructByPointer(currentImplementer, writeSystemGlobalFrame, structDefinition, memberName, value)
 
 #define getRunningSystemAppMember(runningApp, memberName) ({ \
     int8_t systemAppId = getSystemGlobalFrameMember(runningApp, id); \

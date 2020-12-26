@@ -49,7 +49,7 @@ typedef struct dynamicAllocHeader {
         ///TYPE :Identifier
         ///DESC Name of member in `dynamicAllocHeader_t`.
 #define getDynamicAllocMember(pointer, memberName) \
-    !!!readStructByPointer pointer readAlloc dynamicAllocHeader_t memberName
+    readStructByPointer(pointer, readAlloc, dynamicAllocHeader_t, memberName)
 
 ///FUNC
     ///RET heapMemoryOffset_t

@@ -2,7 +2,7 @@
 #include "./headers.h"
 
 #define setDynamicAllocMember(pointer, memberName, value) \
-    !!!writeStructByPointer pointer writeAlloc dynamicAllocHeader_t memberName value
+    writeStructByPointer(pointer, writeAlloc, dynamicAllocHeader_t, memberName, value)
 
 allocPointer_t createDynamicAlloc(
     heapMemoryOffset_t size,

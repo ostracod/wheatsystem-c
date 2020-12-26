@@ -14,7 +14,7 @@
         ///TYPE int32_t
         ///DESC Number of bytes to read.
 
-///PPP_FUNC
+///FUNC
     ///RET type
     ///DESC Reads a value from some location determined by `readRange`.
     ///ARG address
@@ -43,7 +43,7 @@ END
         ///TYPE int32_t
         ///DESC Number of bytes to write.
 
-///PPP_FUNC
+///FUNC
     ///RET void
     ///DESC Writes a value to some location determined by `writeRange`.
     ///ARG address
@@ -72,7 +72,7 @@ END
         ///TYPE :Type
         ///DESC Type of value to read.
 
-///PPP_FUNC
+///FUNC
     ///RET :Type of `memberName` in `structDefinition`
     ///DESC Reads a member value in the struct at the given address.
     ///ARG address
@@ -104,7 +104,7 @@ END
         ///TYPE type
         ///DESC Value to write.
 
-///PPP_FUNC
+///FUNC
     ///RET void
     ///DESC Writes a member value in the struct at the given address.
     ///ARG address
@@ -142,7 +142,7 @@ END
         ///TYPE int32_t
         ///DESC Number of bytes to read.
 
-///PPP_FUNC
+///FUNC
     ///RET type
     ///DESC Reads a value from some location determined by `readRange`.
     ///ARG pointer
@@ -177,7 +177,7 @@ END
         ///TYPE int32_t
         ///DESC Number of bytes to write.
 
-///PPP_FUNC
+///FUNC
     ///RET void
     ///DESC Writes a value to some location determined by `writeRange`.
     ///ARG pointer
@@ -212,7 +212,7 @@ END
         ///TYPE :Type
         ///DESC Type of value to read.
 
-///PPP_FUNC
+///FUNC
     ///RET :Type of `memberName` in `structDefinition`
     ///DESC Reads a member value in the struct with the given pointer.
     ///ARG pointer
@@ -247,7 +247,7 @@ END
         ///TYPE type
         ///DESC Value to write.
 
-///PPP_FUNC
+///FUNC
     ///RET void
     ///DESC Writes a member value in the struct  with the given pointer.
     ///ARG pointer
@@ -269,7 +269,7 @@ DEFINE writeStructByPointer pointer writeValue structDefinition memberName value
 writeValue(pointer, getStructMemberOffset(structDefinition, memberName), getStructMemberType(structDefinition, memberName), value)
 END
 
-///PPP_FUNC
+///FUNC
     ///RET type
     ///DESC Reads an element of an array.
     ///ARG pointer
@@ -288,7 +288,7 @@ DEFINE readArrayElementByPointer pointer readValue arrayIndex type
 readValue(pointer, arrayIndex * sizeof(type), type)
 END
 
-///PPP_FUNC
+///FUNC
     ///RET :Type of `memberName` in `structDefinition`
     ///DESC Reads a member of a struct in an array.
     ///ARG pointer

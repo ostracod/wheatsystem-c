@@ -18,9 +18,9 @@ typedef struct fileHandle {
 #pragma pack(pop)
 
 #define getFileHandleMember(fileHandle, memberName) \
-    !!!readStructByPointer fileHandle readDynamicAlloc fileHandle_t memberName
+    readStructByPointer(fileHandle, readDynamicAlloc, fileHandle_t, memberName)
 #define setFileHandleMember(fileHandle, memberName, value) \
-    !!!writeStructByPointer fileHandle writeDynamicAlloc fileHandle_t memberName value
+    writeStructByPointer(fileHandle, writeDynamicAlloc, fileHandle_t, memberName, value)
 
 #define getFileHandleType(fileHandle) getFileHandleMember(fileHandle, type)
 #define getFileHandleRunningApp(fileHandle) getFileHandleMember(fileHandle, runningApp)

@@ -23,14 +23,14 @@ typedef struct fileHandle {
 #pragma pack(pop)
 
 #define getFileHeaderMember(address, memberName) \
-    !!!readStructByAddress address readStorageSpace fileHeader_t memberName
+    readStructByAddress(address, readStorageSpace, fileHeader_t, memberName)
 #define setFileHeaderMember(address, memberName, value) \
-    !!!writeStructByAddress address writeStorageSpace fileHeader_t memberName value
+    writeStructByAddress(address, writeStorageSpace, fileHeader_t, memberName, value)
 
 #define getFileHandleMember(fileHandle, memberName) \
-    !!!readStructByPointer fileHandle readDynamicAlloc fileHandle_t memberName
+    readStructByPointer(fileHandle, readDynamicAlloc, fileHandle_t, memberName)
 #define setFileHandleMember(fileHandle, memberName, value) \
-    !!!writeStructByPointer fileHandle writeDynamicAlloc fileHandle_t memberName value
+    writeStructByPointer(fileHandle, writeDynamicAlloc, fileHandle_t, memberName, value)
 
 #define initializeFileSystem() initializeStorageSpace()
 
@@ -46,7 +46,7 @@ typedef struct fileHandle {
     setFileHandleMember(fileHandle, initErr, initErrValue)
 
 #define readFile(fileHandle, pos, type) \
-    !!!readValueByPointer fileHandle readFileRange pos type
+    readValueByPointer(fileHandle, readFileRange, pos, type)
 
 allocPointer_t openFile(heapMemoryOffset_t nameAddress, heapMemoryOffset_t nameSize);
 void closeFile(allocPointer_t fileHandle);

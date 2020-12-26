@@ -35,6 +35,6 @@
         ///TYPE int32_t
         ///DESC Element index, measured as the number of elements from the beginning of the array.
 #define readArrayConstantElement(arrayConstant, index) \
-    !!!readArrayElementByPointer arrayConstant readArrayConstantValue index getArrayConstantElementType(arrayConstant)
+    readArrayElementByPointer(arrayConstant, readArrayConstantValue, index, getArrayConstantElementType(arrayConstant))
 
 

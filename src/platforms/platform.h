@@ -57,7 +57,7 @@
     ///RET type2
     ///DESC Retrieves a value within the given array constant. Note that `index` does not need to conform to element boundaries within the array.
     ///ARG arrayConstant
-        ///TYPE arrayConstant(type1)
+        ///TYPE arrayConstant_t(type1)
     ///ARG index
         ///TYPE int32_t
         ///DESC Index of byte from which to start reading.

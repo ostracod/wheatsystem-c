@@ -1,6 +1,7 @@
 
 const fs = require("fs");
 const pathUtils = require("path");
+const commonUtils = require("./commonUtils");
 
 const sourcePath = pathUtils.join(__dirname, "src");
 const templatePath = pathUtils.join(__dirname, "docTemplate.html");
@@ -247,7 +248,7 @@ class StructDefinitionExtension extends MemberDefinitionExtension {
     
     readDefinitionCode() {
         if (this.regexGroup !== null) {
-            const fieldCodeList = safeSplit(this.regexGroup, ";");
+            const fieldCodeList = commonUtils.safeSplit(this.regexGroup, ";");
             this.parseTypedDefinitionMembers(fieldCodeList);
         }
     }
@@ -305,7 +306,7 @@ class FunctionDefinitionExtension extends MemberDefinitionExtension {
         if (endParenthesisIndex < 0) {
             return;
         }
-        const startParenthesisIndex = findMatchingStartParenthesis(
+        const startParenthesisIndex = commonUtils.findMatchingStartParenthesis(
             definitionCode,
             endParenthesisIndex,
         );
@@ -317,7 +318,7 @@ class FunctionDefinitionExtension extends MemberDefinitionExtension {
         if (tempResult === null) {
             return;
         }
-        const argCodeList = safeSplit(definitionCode.substring(
+        const argCodeList = commonUtils.safeSplit(definitionCode.substring(
             startParenthesisIndex + 1,
             endParenthesisIndex,
         ), ",");
@@ -436,70 +437,10 @@ function getEnclosureDepthOffset(text) {
     return output;
 }
 
-function findMatchingStartParenthesis(text, endParenthesisIndex) {
-    let depth = 1;
-    for (let index = endParenthesisIndex - 1; index >= 0; index -= 1) {
-        const tempCharacter = text.charAt(index);
-        if (tempCharacter === "(") {
-            depth -= 1;
-            if (depth === 0) {
-                return index;
-            }
-        } else if (tempCharacter === ")") {
-            depth += 1;
-        }
-    }
-    return -1;
-}
-
-function findMatchingEndParenthesis(text, startParenthesisIndex) {
-    let depth = 1;
-    for (let index = startParenthesisIndex + 1; index < text.length; index += 1) {
-        const tempCharacter = text.charAt(index);
-        if (tempCharacter === ")") {
-            depth -= 1;
-            if (depth === 0) {
-                return index;
-            }
-        } else if (tempCharacter === "(") {
-            depth += 1;
-        }
-    }
-    return -1;
-}
-
 function safeSplit(text, delimiter) {
-    const output = [];
-    let termStartIndex = 0;
-    let index = 0;
-    while (true) {
-        let lastIndex = index;
-        let shouldAddTerm = false;
-        let shouldBreak = false;
-        if (index >= text.length) {
-            shouldAddTerm = true;
-            shouldBreak = true;
-        } else if (text.substring(index, index + delimiter.length) === delimiter) {
-            index += delimiter.length;
-            shouldAddTerm = true;
-        } else {
-            const tempCharacter = text.charAt(index);
-            if (tempCharacter === "(") {
-                index = findMatchingEndParenthesis(text, index);
-                if (index < 0) {
-                    throw new DocError("Missing close parenthesis.");
-                }
-            }
-            index += 1;
-        }
-        if (shouldAddTerm) {
-            const tempTerm = text.substring(termStartIndex, lastIndex);
-            output.push(tempTerm);
-            termStartIndex = index;
-        }
-        if (shouldBreak) {
-            break;
-        }
+    const output = commonUtils.safeSplit(text, delimiter);
+    if (output === null) {
+        throw new DocError("Missing close parenthesis.");
     }
     return output;
 }
@@ -586,19 +527,6 @@ function readSourceFile(path) {
     if (annotationList.length > 0) {
         fileAnnotationsMap[shortPath] = annotationList;
     }
-}
-
-function iterateOverDirectory(path) {
-    const nameList = fs.readdirSync(path);
-    nameList.forEach((name) => {
-        const tempPath = pathUtils.join(path, name);
-        const tempStats = fs.lstatSync(tempPath);
-        if (tempStats.isDirectory()) {
-            iterateOverDirectory(tempPath);
-        } else {
-            readSourceFile(tempPath);
-        }
-    });
 }
 
 function processAnnotations() {
@@ -698,7 +626,7 @@ try {
     
     console.log("Reading source files...");
     
-    iterateOverDirectory(sourcePath);
+    commonUtils.iterateOverDirectory(sourcePath, readSourceFile);
     
     console.log("Generating documentation...");
     

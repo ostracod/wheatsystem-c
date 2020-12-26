@@ -1,6 +1,38 @@
 
 const fs = require("fs");
 
+function isFirstIdentifierCharacter(characterCode) {
+    return ((characterCode >= 65 && characterCode <= 90)
+        || (characterCode >= 97 && characterCode <= 122)
+        || characterCode === 95);
+}
+
+function isIdentifierCharacter(characterCode) {
+    return (isFirstIdentifierCharacter(characterCode)
+        || (characterCode >= 48 && characterCode <= 57));
+}
+
+function findNextIdentifier(text, index) {
+    while (index < text.length) {
+        const startIndex = index;
+        const firstCharacterCode = text.charCodeAt(startIndex);
+        if (!isFirstIdentifierCharacter(firstCharacterCode)) {
+            index += 1;
+            continue;
+        }
+        let endIndex = startIndex + 1;
+        while (endIndex < text.length) {
+            const characterCode = text.charCodeAt(endIndex);
+            if (!isIdentifierCharacter(characterCode)) {
+                break;
+            }
+            endIndex += 1;
+        }
+        return { startIndex, endIndex };
+    }
+    return null;
+}
+
 function convertIdentifierToRegex(identifier) {
     // Escape identifier text for use in a regex.
     // https://stackoverflow.com/questions/3561493/is-there-a-regexp-escape-function-in-javascript
@@ -13,22 +45,38 @@ class PrepreprocessorDefinition {
     
     constructor(name, argNameList) {
         this.name = name;
-        this.argRegexList = argNameList.map(convertIdentifierToRegex);
+        this.argNameList = argNameList;
+        this.argIndexMap = {};
+        argNameList.forEach((argName, argIndex) => {
+            this.argIndexMap[argName] = argIndex;
+        });
         this.lineList = [];
     }
     
     expandLine(line, argList) {
-        if (argList.length !== this.argRegexList.length) {
+        if (argList.length !== this.argNameList.length) {
             throw new Error("Unexpected number of arguments for  prepreprocessor definition.");
         }
-        for (let index = 0; index < argList.length; index++) {
-            const tempArg = argList[index];
-            const tempRegex = this.argRegexList[index];
-            line = line.replace(tempRegex, (match, group1, group2, group3) => {
-                return group1 + tempArg + group3;
-            });
+        const textList = [];
+        let index = 0;
+        while (true) {
+            const tempResult = findNextIdentifier(line, index);
+            if (tempResult === null) {
+                textList.push(line.substring(index, line.length));
+                break;
+            }
+            const { startIndex, endIndex } = tempResult;
+            const tempIdentifier = line.substring(startIndex, endIndex);
+            const argIndex = this.argIndexMap[tempIdentifier];
+            if (typeof argIndex !== "undefined") {
+                textList.push(line.substring(index, startIndex));
+                textList.push(argList[argIndex]);
+            } else {
+                textList.push(line.substring(index, endIndex));
+            }
+            index = endIndex;
         }
-        return line;
+        return textList.join("");
     }
     
     expand(argList) {

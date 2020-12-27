@@ -15,7 +15,7 @@ const constantRegex = /^ *#define +([^ ]+) +.+$/;
 const variableRegex = /^ *(.*[^ ]) +([^ ]+) *; *$/;
 const structRegex = /^ *typedef +struct +.+ +{(.+)} +([^ ]+) *; *$/;
 const definitionMemberRegex = /^ *(.*[^ ][ \*]+)([^ ]+) *$/;
-const preprocessorMacroRegex = /^#define *([^ ]+) *\((.*)\) *.*$/;
+const preprocessorMacroRegex = /^#define *([^ \(]+) *\(([^\)]*)\) *.*$/;
 const prepreprocessorMacroRegex = /^DEFINE ([^ ]+) ?(.*)$/;
 
 const fileAnnotationsMap = {};
@@ -221,8 +221,17 @@ class MemberDefinitionExtension {
         memberCodeList.forEach((memberCode) => {
             const tempResult = memberCode.match(definitionMemberRegex);
             if (tempResult !== null) {
-                const tempMember = new DefinitionMember(tempResult[2]);
-                tempMember.type = tempResult[1].trim();
+                let tempName = tempResult[2];
+                const bracketIndex = tempName.indexOf("[");
+                let bracketText;
+                if (bracketIndex >= 0) {
+                    bracketText = tempName.substring(bracketIndex, tempName.length);
+                    tempName = tempName.substring(0, bracketIndex);
+                } else {
+                    bracketText = "";
+                }
+                const tempMember = new DefinitionMember(tempName);
+                tempMember.type = tempResult[1].trim() + bracketText;
                 this.members.push(tempMember);
             }
         });

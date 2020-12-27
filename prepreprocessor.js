@@ -42,6 +42,19 @@ function findNextIdentifier(text, index) {
     return null;
 }
 
+function removeComments(fileContent) {
+    const lineList = fileContent.split("\n");
+    for (let index = 0; index < lineList.length; index++) {
+        const tempLine = lineList[index];
+        const commentIndex = tempLine.indexOf("//");
+        if (commentIndex < 0) {
+            continue;
+        }
+        lineList[index] = tempLine.substring(0, commentIndex);
+    }
+    return lineList.join("\n");
+}
+
 class PrepreprocessorDefinition {
     
     constructor(name, argNameList) {
@@ -170,29 +183,29 @@ class Prepreprocessor {
         }
     }
     
-    prepreprocessFile(sourcePath, destinationPath) {
-        const sourceContent = fs.readFileSync(sourcePath, "utf8");
+    prepreprocessFileHelper(fileContent) {
         const textList = [];
+        let expansionCount = 0;
         let index = 0;
         while (true) {
             const lastIndex = index;
-            const tempResult = findNextIdentifier(sourceContent, index);
+            const tempResult = findNextIdentifier(fileContent, index);
             if (tempResult === null) {
-                textList.push(sourceContent.substring(lastIndex, sourceContent.length));
+                textList.push(fileContent.substring(lastIndex, fileContent.length));
                 break;
             }
             const { startIndex, endIndex } = tempResult;
-            const tempIdentifier = sourceContent.substring(startIndex, endIndex);
+            const tempIdentifier = fileContent.substring(startIndex, endIndex);
             const tempDefinition = this.definitionMap[tempIdentifier];
             if (typeof tempDefinition === "undefined") {
-                textList.push(sourceContent.substring(lastIndex, endIndex));
+                textList.push(fileContent.substring(lastIndex, endIndex));
                 index = endIndex;
                 continue;
             }
             let hasFoundParenthesis = false;
             index = endIndex;
-            while (index < sourceContent.length) {
-                const characterCode = sourceContent.charCodeAt(index);
+            while (index < fileContent.length) {
+                const characterCode = fileContent.charCodeAt(index);
                 if (characterCode === 40) {
                     hasFoundParenthesis = true;
                     break;
@@ -203,18 +216,18 @@ class Prepreprocessor {
                 index += 1;
             }
             if (!hasFoundParenthesis) {
-                textList.push(sourceContent.substring(lastIndex, index));
+                textList.push(fileContent.substring(lastIndex, index));
                 continue;
             }
             const startParenthesisIndex = index;
             const endParenthesisIndex = commonUtils.findMatchingEndParenthesis(
-                sourceContent,
+                fileContent,
                 startParenthesisIndex,
             );
             if (endParenthesisIndex < 0) {
                 throw new Error(`Missing close parenthesis in file: ${sourcePath}`);
             }
-            const argsText = sourceContent.substring(
+            const argsText = fileContent.substring(
                 startParenthesisIndex + 1,
                 endParenthesisIndex,
             );
@@ -224,11 +237,28 @@ class Prepreprocessor {
             }
             argList = argList.map((arg) => arg.trim());
             const expandedDefinition = tempDefinition.expandBody(argList);
-            textList.push(sourceContent.substring(lastIndex, startIndex));
+            textList.push(fileContent.substring(lastIndex, startIndex));
             textList.push(expandedDefinition);
+            expansionCount += 1;
             index = endParenthesisIndex + 1;
         }
-        fs.writeFileSync(destinationPath, textList.join(""));
+        return {
+            expansionCount,
+            fileContent: textList.join(""),
+        };
+    }
+    
+    prepreprocessFile(sourcePath, destinationPath) {
+        let fileContent = fs.readFileSync(sourcePath, "utf8");
+        fileContent = removeComments(fileContent);
+        while (true) {
+            const tempResult = this.prepreprocessFileHelper(fileContent);
+            if (tempResult.expansionCount <= 0) {
+                break;
+            }
+            fileContent = tempResult.fileContent;
+        }
+        fs.writeFileSync(destinationPath, fileContent);
     }
     
     getHeaders() {

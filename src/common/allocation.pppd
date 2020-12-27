@@ -1,6 +1,54 @@
 
 ///DESC This file provides common definitions for manipulating heap allocations. Every platform shares the same implementation of these definitions.
 
+///STRUCT allocPointer_t(type)
+    ///DESC Stores a pointer to a heap allocation. The data region of the allocation contains the type defined by `type`.
+    ///FIELD genericPointer
+        ///TYPE genericAllocPointer_t
+    ///FIELD typeCarrier
+        ///TYPE type *[0]
+        ///DESC Dummy member to store type information.
+DEFINE allocPointer_t inputType
+allocPointer_###inputType
+UNIQUE_HEADER
+typedef struct inputType inputType;
+typedef struct allocPointer_###inputType {
+    genericAllocPointer_t genericPointer;
+    inputType *typeCarrier[0];
+} allocPointer_###inputType;
+END
+
+///FUNC castGenericPointer
+    ///RET allocPointer_t(type)
+    ///DESC Converts the given generic pointer to a typed pointer.
+    ///ARG genericPointer
+        ///TYPE genericAllocPointer_t
+    ///ARG type
+        ///TYPE :Type
+DEFINE castGenericPointer genericPointer type
+(allocPointer_t(type)){genericPointer}
+END
+
+///FUNC castAllocPointer
+    ///RET allocPointer_t(type2)
+    ///DESC Converts the given pointer from one type to another.
+    ///ARG pointer
+        ///TYPE allocPointer_t(type1)
+    ///ARG type2
+        ///TYPE :Type
+DEFINE castAllocPointer pointer type2
+castGenericPointer(pointer.genericPointer, type2)
+END
+
+///FUNC nullAllocPointer
+    ///RET allocPointer_t(type)
+    ///DESC Creates a null pointer with the given type.
+    ///ARG type
+        ///TYPE :Type
+DEFINE nullAllocPointer type
+castGenericPointer(NULL_ALLOC_POINTER, type)
+END
+
 ///FUNC_TYPE readRangeByPointer_t
     ///RET void
     ///DESC Reads a range of bytes from some location.
@@ -8,7 +56,7 @@
         ///TYPE int8_t *
         ///DESC Destination for the data.
     ///ARG pointer
-        ///TYPE allocPointer_t
+        ///TYPE genericAllocPointer_t
         ///DESC Pointer of allocation to read.
     ///ARG index
         ///TYPE int32_t
@@ -21,7 +69,7 @@
     ///RET type
     ///DESC Reads a value from some location determined by `readRange`.
     ///ARG pointer
-        ///TYPE allocPointer_t
+        ///TYPE genericAllocPointer_t
         ///DESC Pointer of allocation to read.
     ///ARG readRange
         ///TYPE readRangeByPointer_t
@@ -40,7 +88,7 @@ END
     ///RET void
     ///DESC Writes a range of bytes to some location.
     ///ARG pointer
-        ///TYPE allocPointer_t
+        ///TYPE genericAllocPointer_t
         ///DESC Pointer of allocation to write.
     ///ARG index
         ///TYPE int32_t
@@ -56,7 +104,7 @@ END
     ///RET void
     ///DESC Writes a value to some location determined by `writeRange`.
     ///ARG pointer
-        ///TYPE allocPointer_t
+        ///TYPE genericAllocPointer_t
         ///DESC Pointer of allocation to write.
     ///ARG writeRange
         ///TYPE writeRangeByPointer_t
@@ -74,11 +122,11 @@ DEFINE writeValueByPointer pointer writeRange index type value
 ({type tempValue = value; writeRange(pointer, index, &tempValue, sizeof(type));})
 END
 
-///FUNC_TYPE readValueByPointer_t
+///FUNC_TYPE readValueByPointer_t(pointerType)
     ///RET type
     ///DESC Reads a value from some location.
     ///ARG pointer
-        ///TYPE allocPointer_t
+        ///TYPE pointerType
         ///DESC Pointer of allocation to read.
     ///ARG index
         ///TYPE int32_t
@@ -91,10 +139,10 @@ END
     ///RET :Type of `memberName` in `structDefinition`
     ///DESC Reads a member value in the struct with the given pointer.
     ///ARG pointer
-        ///TYPE allocPointer_t
+        ///TYPE pointerType
         ///DESC Pointer of allocation to read.
     ///ARG readValue
-        ///TYPE readValueByPointer_t
+        ///TYPE readValueByPointer_t(pointerType)
         ///DESC Function to read data.
     ///ARG structDefinition
         ///TYPE :Struct type
@@ -106,11 +154,11 @@ DEFINE readStructByPointer pointer readValue structDefinition memberName
 readValue(pointer, getStructMemberOffset(structDefinition, memberName), getStructMemberType(structDefinition, memberName))
 END
 
-///FUNC_TYPE writeValueByPointer_t
+///FUNC_TYPE writeValueByPointer_t(pointerType)
     ///RET void
     ///DESC Writes a value to some location.
     ///ARG pointer
-        ///TYPE allocPointer_t
+        ///TYPE pointerType
         ///DESC Pointer of allocation to write.
     ///ARG index
         ///TYPE int32_t
@@ -126,10 +174,10 @@ END
     ///RET void
     ///DESC Writes a member value in the struct  with the given pointer.
     ///ARG pointer
-        ///TYPE allocPointer_t
+        ///TYPE pointerType
         ///DESC Pointer of allocation to write.
     ///ARG writeValue
-        ///TYPE writeValueByPointer_t
+        ///TYPE writeValueByPointer_t(pointerType)
         ///DESC Function to write data.
     ///ARG structDefinition
         ///TYPE :Struct type
@@ -148,7 +196,7 @@ END
     ///RET type
     ///DESC Reads an element of an array.
     ///ARG pointer
-        ///TYPE allocPointer_t
+        ///TYPE genericAllocPointer_t
         ///DESC Pointer of allocation to read.
     ///ARG readValue
         ///TYPE readValueByPointer_t
@@ -167,7 +215,7 @@ END
     ///RET :Type of `memberName` in `structDefinition`
     ///DESC Reads a member of a struct in an array.
     ///ARG pointer
-        ///TYPE allocPointer_t
+        ///TYPE genericAllocPointer_t
         ///DESC Pointer of allocation to read.
     ///ARG readValue
         ///TYPE readValueByPointer_t

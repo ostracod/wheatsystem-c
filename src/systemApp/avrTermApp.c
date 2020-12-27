@@ -77,10 +77,13 @@ void getTermSize() {
 }
 
 void writeTermText() {
-    allocPointer_t previousArgFrame = getPreviousArgFrame();
-    int32_t posX = readAlloc(previousArgFrame, 0, int32_t);
-    int32_t posY = readAlloc(previousArgFrame, 4, int32_t);
-    allocPointer_t textAlloc = (allocPointer_t)readAlloc(previousArgFrame, 8, int32_t);
+    allocPointer_t(argFrame_t) previousArgFrame = getPreviousArgFrame();
+    int32_t posX = readArgFrame(previousArgFrame, 0, int32_t);
+    int32_t posY = readArgFrame(previousArgFrame, 4, int32_t);
+    allocPointer_t(dynamicAlloc_t) textAlloc = castGenericPointer(
+        readArgFrame(previousArgFrame, 8, int32_t),
+        dynamicAlloc_t
+    );
     heapMemoryOffset_t textSize = getDynamicAllocSize(textAlloc);
     sendLcdCommand(0x80 | (posX + posY * 0x40));
     for (heapMemoryOffset_t index = 0; index < textSize; index++) {

@@ -27,6 +27,6 @@
 #define convertNumberToText(destination, number) ltoa(number, (char *)destination, 10)
 
 typedef int16_t heapMemoryOffset_t;
-typedef int16_t allocPointer_t;
+typedef int16_t genericAllocPointer_t;
 
 

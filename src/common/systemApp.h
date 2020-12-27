@@ -1,6 +1,6 @@
 
 #pragma pack(push, 1)
-typedef struct systemAppFunction {
+typedef struct systemAppFunction_t {
     int8_t id;
     int8_t argFrameSize;
     int8_t localFrameSize;
@@ -9,7 +9,7 @@ typedef struct systemAppFunction {
 #pragma pack(pop)
 
 #pragma pack(push, 1)
-typedef struct systemApp {
+typedef struct systemApp_t {
     int8_t globalFrameSize;
     arrayConstant_t(systemAppFunction_t) functionList;
     int8_t functionAmount;
@@ -17,7 +17,7 @@ typedef struct systemApp {
 #pragma pack(pop)
 
 #pragma pack(push, 1)
-typedef struct systemGlobalFrameHeader {
+typedef struct systemGlobalFrameHeader_t {
     int8_t id;
 } systemGlobalFrameHeader_t;
 #pragma pack(pop)

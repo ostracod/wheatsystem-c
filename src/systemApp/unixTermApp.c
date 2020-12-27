@@ -22,8 +22,8 @@ void initializeTermApp() {
         timeout(0);
         handleResize();
     }
-    int32_t tempObserver = readTermAppGlobalVariable(observer);
-    if (tempObserver == NULL_ALLOC_POINTER) {
+    allocPointer_t(runningApp_t) tempObserver = readTermAppGlobalVariable(observer);
+    if (pointerIsNull(tempObserver)) {
         return;
     }
     // TODO: Check whether observer is still running.
@@ -44,14 +44,14 @@ void initializeTermApp() {
             return;
         }
     }
-    allocPointer_t nextArgFrame = createNextArgFrame(1);
-    writeAlloc(nextArgFrame, 0, int8_t, (int8_t)tempKey);
+    allocPointer_t(argFrame_t) nextArgFrame = createNextArgFrame(1);
+    writeArgFrame(nextArgFrame, 0, int8_t, (int8_t)tempKey);
     int32_t termInputIndex = readTermAppGlobalVariable(termInputIndex);
     callFunction(currentThreadApp, tempObserver, termInputIndex);
 }
 
 void setTermObserver() {
-    allocPointer_t tempCaller = getCurrentCaller();
+    allocPointer_t(runningApp_t) tempCaller = getCurrentCaller();
     int32_t termInputIndex = findFunctionById(tempCaller, TERM_INPUT_FUNC_ID);
     if (termInputIndex < 0) {
         unhandledErrorCode = MISSING_ERR_CODE;
@@ -65,17 +65,20 @@ void setTermObserver() {
 void getTermSize() {
     int32_t tempWidth = readTermAppGlobalVariable(width);
     int32_t tempHeight = readTermAppGlobalVariable(height);
-    allocPointer_t previousArgFrame = getPreviousArgFrame();
-    writeAlloc(previousArgFrame, 0, int32_t, tempWidth);
-    writeAlloc(previousArgFrame, 4, int32_t, tempHeight);
+    allocPointer_t(argFrame_t) previousArgFrame = getPreviousArgFrame();
+    writeArgFrame(previousArgFrame, 0, int32_t, tempWidth);
+    writeArgFrame(previousArgFrame, 4, int32_t, tempHeight);
     returnFromFunction();
 }
 
 void writeTermText() {
-    allocPointer_t previousArgFrame = getPreviousArgFrame();
-    int32_t posX = readAlloc(previousArgFrame, 0, int32_t);
-    int32_t posY = readAlloc(previousArgFrame, 4, int32_t);
-    allocPointer_t textAlloc = (allocPointer_t)readAlloc(previousArgFrame, 8, int32_t);
+    allocPointer_t(argFrame_t) previousArgFrame = getPreviousArgFrame();
+    int32_t posX = readArgFrame(previousArgFrame, 0, int32_t);
+    int32_t posY = readArgFrame(previousArgFrame, 4, int32_t);
+    allocPointer_t(dynamicAlloc_t) textAlloc = castGenericPointer(
+        readArgFrame(previousArgFrame, 8, int32_t),
+        dynamicAlloc_t
+    );
     heapMemoryOffset_t textSize = getDynamicAllocSize(textAlloc);
     wmove(window, posX, posY);
     for (heapMemoryOffset_t index = 0; index < textSize; index++) {

@@ -4,14 +4,14 @@
 #define setAllocMember(pointer, memberName, value) \
     writeHeapMemory(getAllocMemberAddress(pointer, memberName), getStructMemberType(allocHeader_t, memberName), value)
 
-allocPointer_t firstAlloc = NULL_ALLOC_POINTER;
+genericAllocPointer_t firstAlloc = NULL_ALLOC_POINTER;
 
-allocPointer_t createAlloc(int8_t type, heapMemoryOffset_t size) {
+genericAllocPointer_t createAlloc(int8_t type, heapMemoryOffset_t size) {
     
     heapMemoryOffset_t sizeWithHeader = sizeof(allocHeader_t) + size;
     heapMemoryOffset_t startAddress = 0;
-    allocPointer_t previousPointer = NULL_ALLOC_POINTER;
-    allocPointer_t nextPointer = firstAlloc;
+    genericAllocPointer_t previousPointer = NULL_ALLOC_POINTER;
+    genericAllocPointer_t nextPointer = firstAlloc;
     
     // Find a gap which is large enough for the new allocation.
     while (nextPointer != NULL_ALLOC_POINTER) {
@@ -30,7 +30,7 @@ allocPointer_t createAlloc(int8_t type, heapMemoryOffset_t size) {
     }
     
     // Set up output allocation.
-    allocPointer_t output = convertAddressToPointer(startAddress);
+    genericAllocPointer_t output = convertAddressToPointer(startAddress);
     setAllocMember(output, type, type);
     setAllocMember(output, size, size);
     setAllocMember(output, next, nextPointer);
@@ -45,17 +45,17 @@ allocPointer_t createAlloc(int8_t type, heapMemoryOffset_t size) {
     return output;
 }
 
-int8_t deleteAlloc(allocPointer_t pointer) {
+int8_t deleteAlloc(genericAllocPointer_t pointer) {
     
-    allocPointer_t previousPointer = NULL_ALLOC_POINTER;
-    allocPointer_t nextPointer = firstAlloc;
+    genericAllocPointer_t previousPointer = NULL_ALLOC_POINTER;
+    genericAllocPointer_t nextPointer = firstAlloc;
     
     // Find previous and next allocations.
     while (true) {
         if (nextPointer == NULL_ALLOC_POINTER) {
             return false;
         }
-        allocPointer_t tempPointer = nextPointer;
+        genericAllocPointer_t tempPointer = nextPointer;
         nextPointer = getAllocNext(nextPointer);
         if (tempPointer == pointer) {
             break;
@@ -74,12 +74,12 @@ int8_t deleteAlloc(allocPointer_t pointer) {
     return true;
 }
 
-void validateAllocPointer(allocPointer_t pointer) {
+void validateAllocPointer(genericAllocPointer_t pointer) {
     if (pointer == NULL_ALLOC_POINTER) {
         unhandledErrorCode = NULL_ERR_CODE;
         return;
     }
-    allocPointer_t tempAlloc = getFirstAlloc();
+    genericAllocPointer_t tempAlloc = getFirstAlloc();
     while (tempAlloc != NULL_ALLOC_POINTER) {
         if (tempAlloc == pointer) {
             return;

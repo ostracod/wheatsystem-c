@@ -11,8 +11,8 @@
 ///TYPE heapMemoryOffset_t
     ///DESC Stores an offset within heap memory. Must accommodate values between negative `HEAP_MEMORY_SIZE` and positive `HEAP_MEMORY_SIZE`.
 
-///TYPE allocPointer_t
-    ///DESC Stores a pointer to a heap allocation. Must accommodate the maximum possible pointer value.
+///TYPE genericAllocPointer_t
+    ///DESC Stores a pointer to a heap allocation. The data region of the allocation has unknown type. `genericAllocPointer_t` must accommodate the maximum possible pointer value.
 
 ///FUNC declareArrayConstantWithValue
     ///RET void
@@ -48,7 +48,7 @@
         ///DESC Name of an array constant.
 
 ///FUNC getArrayConstantElementType
-    ///RET :Type
+    ///RET type
     ///DESC Retrieves the type of each element in the given array constant.
     ///ARG arrayConstant
         ///TYPE arrayConstant_t(type)

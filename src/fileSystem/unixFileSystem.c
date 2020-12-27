@@ -19,7 +19,10 @@ int8_t initializeFileSystem() {
     return true;
 }
 
-allocPointer_t openFile(heapMemoryOffset_t nameAddress, heapMemoryOffset_t nameSize) {
+allocPointer_t(fileHandle_t) openFile(
+    heapMemoryOffset_t nameAddress,
+    heapMemoryOffset_t nameSize
+) {
     
     // Copy name from heap memory to native memory.
     int8_t *nativeName = malloc(nameSize + 1);
@@ -29,21 +32,25 @@ allocPointer_t openFile(heapMemoryOffset_t nameAddress, heapMemoryOffset_t nameS
     nativeName[nameSize] = 0;
     
     // Return matching file handle if it already exists.
-    allocPointer_t nextPointer = getFirstAlloc();
+    genericAllocPointer_t nextPointer = getFirstAlloc();
     while (nextPointer != NULL_ALLOC_POINTER) {
-        allocPointer_t tempPointer = nextPointer;
+        genericAllocPointer_t tempPointer = nextPointer;
         nextPointer = getAllocNext(tempPointer);
         if (!allocIsFileHandle(tempPointer)) {
             continue;
         }
-        int8_t *tempNativeName = getFileHandleMember(tempPointer, name);
+        allocPointer_t(fileHandle_t) fileHandle = castGenericPointer(
+            tempPointer,
+            fileHandle_t
+        );
+        int8_t *tempNativeName = getFileHandleMember(fileHandle, name);
         if (strcmp((char *)tempNativeName, (char *)nativeName) != 0) {
             continue;
         }
         free(nativeName);
-        int8_t tempDepth = getFileHandleMember(tempPointer, openDepth);
-        setFileHandleMember(tempPointer, openDepth, tempDepth + 1);
-        return tempPointer;
+        int8_t tempDepth = getFileHandleMember(fileHandle, openDepth);
+        setFileHandleMember(fileHandle, openDepth, tempDepth + 1);
+        return fileHandle;
     }
     
     // Try to open native file.
@@ -53,7 +60,7 @@ allocPointer_t openFile(heapMemoryOffset_t nameAddress, heapMemoryOffset_t nameS
         // File is missing.
         free(nativeName);
         free(unixPath);
-        return NULL_ALLOC_POINTER;
+        return nullAllocPointer(fileHandle_t);
     }
     
     // Read file content.
@@ -65,10 +72,9 @@ allocPointer_t openFile(heapMemoryOffset_t nameAddress, heapMemoryOffset_t nameS
     fclose(nativeFileHandle);
     
     // Create file handle.
-    allocPointer_t output = createDynamicAlloc(
-        sizeof(fileHandle_t),
-        true,
-        NULL_ALLOC_POINTER
+    allocPointer_t(fileHandle_t) output = castAllocPointer(
+        createDynamicAlloc(sizeof(fileHandle_t), true, nullAllocPointer(fileHandle_t)),
+        fileHandle_t
     );
     setFileHandleMember(output, name, nativeName);
     setFileHandleMember(output, unixPath, unixPath);
@@ -90,13 +96,13 @@ allocPointer_t openFile(heapMemoryOffset_t nameAddress, heapMemoryOffset_t nameS
     setFileHandleMember(output, contentSize, contentSize);
     setFileHandleMember(output, contentIsDirty, false);
     setFileHandleMember(output, content, content);
-    setFileHandleRunningApp(output, NULL_ALLOC_POINTER);
+    setFileHandleRunningApp(output, nullAllocPointer(runningApp_t));
     setFileHandleInitErr(output, 0);
     setFileHandleMember(output, openDepth, 1);
     return output;
 }
 
-void closeFile(allocPointer_t fileHandle) {
+void closeFile(allocPointer_t(fileHandle_t) fileHandle) {
     int8_t *unixPath = getFileHandleMember(fileHandle, unixPath);
     int8_t *content = getFileHandleMember(fileHandle, content);
     if (getFileHandleMember(fileHandle, contentIsDirty)) {
@@ -122,7 +128,7 @@ void closeFile(allocPointer_t fileHandle) {
     free(nativeName);
     free(unixPath);
     free(content);
-    deleteAlloc(fileHandle);
+    deleteAlloc(fileHandle.genericPointer);
 }
 
 

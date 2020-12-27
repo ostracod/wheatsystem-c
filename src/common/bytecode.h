@@ -1,6 +1,6 @@
 
 #pragma pack(push, 1)
-typedef struct bytecodeAppHeader {
+typedef struct bytecodeAppHeader_t {
     int32_t globalFrameSize;
     int32_t functionTableLength;
     int32_t appDataFilePos;
@@ -8,7 +8,7 @@ typedef struct bytecodeAppHeader {
 #pragma pack(pop)
 
 #pragma pack(push, 1)
-typedef struct bytecodeFunction {
+typedef struct bytecodeFunction_t {
     int32_t functionId;
     int8_t isGuarded;
     int32_t argFrameSize;
@@ -19,7 +19,7 @@ typedef struct bytecodeFunction {
 #pragma pack(pop)
 
 #pragma pack(push, 1)
-typedef struct bytecodeGlobalFrameHeader {
+typedef struct bytecodeGlobalFrameHeader_t {
     int32_t functionTableLength;
     int32_t appDataFilePos;
     int32_t appDataSize;
@@ -27,7 +27,7 @@ typedef struct bytecodeGlobalFrameHeader {
 #pragma pack(pop)
 
 #pragma pack(push, 1)
-typedef struct bytecodeLocalFrameHeader {
+typedef struct bytecodeLocalFrameHeader_t {
     int32_t instructionBodyStartFilePos;
     int32_t instructionBodyEndFilePos;
     int32_t instructionFilePos;

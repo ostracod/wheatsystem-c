@@ -2,14 +2,14 @@
 ///DESC This file provides an implementation of the definitions decribed by `memory/allocation`. This implementation uses a linked list to store heap allocations.
 
 #pragma pack(push, 1)
-typedef struct allocHeader {
+typedef struct allocHeader_t {
     int8_t type;
     heapMemoryOffset_t size;
-    allocPointer_t next;
+    genericAllocPointer_t next;
 } allocHeader_t;
 #pragma pack(pop)
 
-allocPointer_t firstAlloc;
+genericAllocPointer_t firstAlloc;
 
 // We need the zero pointer to be null, so we offset
 // all addresses by one.
@@ -34,8 +34,8 @@ allocPointer_t firstAlloc;
 #define getAllocSize(pointer) getAllocMember(pointer, size)
 #define getAllocNext(pointer) getAllocMember(pointer, next)
 
-allocPointer_t createAlloc(int8_t type, heapMemoryOffset_t size);
-int8_t deleteAlloc(allocPointer_t pointer);
-void validateAllocPointer(allocPointer_t pointer);
+genericAllocPointer_t createAlloc(int8_t type, heapMemoryOffset_t size);
+int8_t deleteAlloc(genericAllocPointer_t pointer);
+void validateAllocPointer(genericAllocPointer_t pointer);
 
 

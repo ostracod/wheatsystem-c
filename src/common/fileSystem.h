@@ -8,9 +8,14 @@
 #define getTypeFromFileAttributes(fileAttributes) (fileAttributes & 0x03)
 
 #define allocIsFileHandle(pointer) \
-    (getAllocType(pointer) == DYNAMIC_ALLOC_TYPE && getDynamicAllocMember(pointer, creator) == NULL_ALLOC_POINTER)
+    (getAllocType(pointer) == DYNAMIC_ALLOC_TYPE && pointerIsNull(getDynamicAllocMember(castGenericPointer(pointer, dynamicAlloc_t), creator)))
 
-allocPointer_t openFileByStringAlloc(allocPointer_t stringAlloc);
-void validateFileHandle(allocPointer_t fileHandle);
+allocPointer_t(fileHandle_t) openFileByStringAlloc(
+    allocPointer_t(stringAlloc_t) stringAlloc
+);
+allocPointer_t(fileHandle_t) openFileByDynamicStringAlloc(
+    allocPointer_t(dynamicAlloc_t) dynamicStringAlloc
+);
+void validateFileHandle(allocPointer_t(fileHandle_t) fileHandle);
 
 

@@ -20,27 +20,34 @@ int8_t memoryNameEqualsStorageName(
     return true;
 }
 
-allocPointer_t openFile(heapMemoryOffset_t nameAddress, heapMemoryOffset_t nameSize) {
+allocPointer_t(fileHandle_t) openFile(
+    heapMemoryOffset_t nameAddress,
+    heapMemoryOffset_t nameSize
+) {
     
     // Return matching file handle if it already exists.
-    allocPointer_t nextPointer = getFirstAlloc();
+    genericAllocPointer_t nextPointer = getFirstAlloc();
     while (nextPointer != NULL_ALLOC_POINTER) {
-        allocPointer_t tempPointer = nextPointer;
+        genericAllocPointer_t tempPointer = nextPointer;
         nextPointer = getAllocNext(tempPointer);
         if (!allocIsFileHandle(tempPointer)) {
             continue;
         }
+        allocPointer_t(fileHandle_t) fileHandle = castGenericPointer(
+            tempPointer,
+            fileHandle_t
+        );
         if (!memoryNameEqualsStorageName(
             nameAddress,
             nameSize,
-            getFileHandleMember(tempPointer, address) + sizeof(fileHeader_t),
-            getFileHandleMember(tempPointer, nameSize)
+            getFileHandleMember(fileHandle, address) + sizeof(fileHeader_t),
+            getFileHandleMember(fileHandle, nameSize)
         )) {
             continue;
         }
-        int8_t tempDepth = getFileHandleMember(tempPointer, openDepth);
-        setFileHandleMember(tempPointer, openDepth, tempDepth + 1);
-        return tempPointer;
+        int8_t tempDepth = getFileHandleMember(fileHandle, openDepth);
+        setFileHandleMember(fileHandle, openDepth, tempDepth + 1);
+        return fileHandle;
     }
     
     // Try to find file in storage.
@@ -48,7 +55,7 @@ allocPointer_t openFile(heapMemoryOffset_t nameAddress, heapMemoryOffset_t nameS
     while (true) {
         if (fileAddress == 0) {
             // File is missing.
-            return NULL_ALLOC_POINTER;
+            return nullAllocPointer(fileHandle_t);
         }
         if (memoryNameEqualsStorageName(
             nameAddress,
@@ -66,34 +73,33 @@ allocPointer_t openFile(heapMemoryOffset_t nameAddress, heapMemoryOffset_t nameS
     int32_t contentSize = getFileHeaderMember(fileAddress, contentSize);
     
     // Create file handle.
-    allocPointer_t output = createDynamicAlloc(
-        sizeof(fileHandle_t),
-        true,
-        NULL_ALLOC_POINTER
+    allocPointer_t(fileHandle_t) output = castAllocPointer(
+        createDynamicAlloc(sizeof(fileHandle_t), true, nullAllocPointer(fileHandle_t)),
+        fileHandle_t
     );
     setFileHandleMember(output, address, fileAddress);
     setFileHandleMember(output, attributes, fileAttributes);
     setFileHandleMember(output, nameSize, nameSize);
     setFileHandleMember(output, contentSize, contentSize);
-    setFileHandleRunningApp(output, NULL_ALLOC_POINTER);
+    setFileHandleRunningApp(output, nullAllocPointer(runningApp_t));
     setFileHandleInitErr(output, 0);
     setFileHandleMember(output, openDepth, 1);
     return output;
 }
 
-void closeFile(allocPointer_t fileHandle) {
+void closeFile(allocPointer_t(fileHandle_t) fileHandle) {
     flushStorageSpace();
     int8_t openDepth = getFileHandleMember(fileHandle, openDepth);
     if (openDepth > 1) {
         setFileHandleMember(fileHandle, openDepth, openDepth - 1);
         return;
     }
-    deleteAlloc(fileHandle);
+    deleteAlloc(fileHandle.genericPointer);
 }
 
 void readFileRange(
     void *destination,
-    allocPointer_t fileHandle,
+    allocPointer_t(fileHandle_t) fileHandle,
     int32_t pos,
     int32_t amount
 ) {

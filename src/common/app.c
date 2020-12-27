@@ -3,14 +3,14 @@
 
 declareArrayConstantWithValue(BOOT_STRING_CONSTANT, int8_t, "boot");
 
-allocPointer_t currentThreadApp;
-allocPointer_t currentLocalFrame;
-allocPointer_t currentImplementer;
-allocPointer_t currentImplementerFileHandle;
+allocPointer_t(runningApp_t) currentThreadApp;
+allocPointer_t(localFrame_t) currentLocalFrame;
+allocPointer_t(runningApp_t) currentImplementer;
+allocPointer_t(fileHandle_t) currentImplementerFileHandle;
 int8_t currentImplementerFileType;
 
-int32_t findFunctionById(allocPointer_t runningApp, int32_t functionId) {
-    allocPointer_t fileHandle = getRunningAppMember(runningApp, fileHandle);
+int32_t findFunctionById(allocPointer_t(runningApp_t) runningApp, int32_t functionId) {
+    allocPointer_t(fileHandle_t) fileHandle = getRunningAppMember(runningApp, fileHandle);
     int8_t fileType = getFileHandleType(fileHandle);
     if (fileType == BYTECODE_APP_FILE_TYPE) {
         int32_t functionTableLength = getBytecodeGlobalFrameMember(
@@ -40,36 +40,39 @@ int32_t findFunctionById(allocPointer_t runningApp, int32_t functionId) {
     return -1;
 }
 
-allocPointer_t getCurrentCaller() {
-    allocPointer_t previousLocalFrame = getLocalFrameMember(
+allocPointer_t(runningApp_t) getCurrentCaller() {
+    allocPointer_t(localFrame_t) previousLocalFrame = getLocalFrameMember(
         currentLocalFrame,
         previousLocalFrame
     );
-    if (previousLocalFrame == NULL_ALLOC_POINTER) {
-        return NULL_ALLOC_POINTER;
+    if (pointerIsNull(previousLocalFrame)) {
+        return nullAllocPointer(runningApp_t);
     }
     return getLocalFrameMember(previousLocalFrame, implementer);
 }
 
-allocPointer_t createNextArgFrame(heapMemoryOffset_t size) {
+allocPointer_t(argFrame_t) createNextArgFrame(heapMemoryOffset_t size) {
     cleanUpNextArgFrame();
-    allocPointer_t output = createAlloc(ARG_FRAME_ALLOC_TYPE, size);
+    allocPointer_t(argFrame_t) output = castGenericPointer(
+        createAlloc(ARG_FRAME_ALLOC_TYPE, size),
+        argFrame_t
+    );
     setLocalFrameMember(currentLocalFrame, nextArgFrame, output);
     return output;
 }
 
-void cleanUpNextArgFrameHelper(allocPointer_t localFrame) {
-    allocPointer_t nextArgFrame = getLocalFrameMember(localFrame, nextArgFrame);
-    if (nextArgFrame != NULL_ALLOC_POINTER) {
-        deleteAlloc(nextArgFrame);
+void cleanUpNextArgFrameHelper(allocPointer_t(localFrame_t) localFrame) {
+    allocPointer_t(argFrame_t) nextArgFrame = getLocalFrameMember(localFrame, nextArgFrame);
+    if (!pointerIsNull(nextArgFrame)) {
+        deleteAlloc(nextArgFrame.genericPointer);
     }
 }
 
-void launchApp(allocPointer_t fileHandle) {
+void launchApp(allocPointer_t(fileHandle_t) fileHandle) {
     
     // Do not launch app again if it is already running.
-    allocPointer_t runningApp = getFileHandleRunningApp(fileHandle);
-    if (runningApp != NULL_ALLOC_POINTER) {
+    allocPointer_t(runningApp_t) runningApp = getFileHandleRunningApp(fileHandle);
+    if (!pointerIsNull(runningApp)) {
         return;
     }
     int8_t fileType = getFileHandleType(fileHandle);
@@ -125,12 +128,12 @@ void launchApp(allocPointer_t fileHandle) {
     }
     
     // Create allocation for the running app.
-    runningApp = createAlloc(
-        RUNNING_APP_ALLOC_TYPE,
-        sizeof(runningAppHeader_t) + globalFrameSize
+    runningApp = castGenericPointer(
+        createAlloc(RUNNING_APP_ALLOC_TYPE, sizeof(runningAppHeader_t) + globalFrameSize),
+        runningApp_t
     );
     setRunningAppMember(runningApp, fileHandle, fileHandle);
-    setRunningAppMember(runningApp, localFrame, NULL_ALLOC_POINTER);
+    setRunningAppMember(runningApp, localFrame, nullAllocPointer(localFrame_t));
     setRunningAppMember(runningApp, isWaiting, false);
     setFileHandleRunningApp(fileHandle, runningApp);
     setFileHandleInitErr(fileHandle, 0);
@@ -154,29 +157,35 @@ void launchApp(allocPointer_t fileHandle) {
     }
 }
 
-void hardKillApp(allocPointer_t runningApp, int8_t errorCode) {
+void hardKillApp(allocPointer_t(runningApp_t) runningApp, int8_t errorCode) {
     
     // Delete local frames and argument frames.
-    allocPointer_t localFrame = getRunningAppMember(runningApp, localFrame);
-    while (localFrame != NULL_ALLOC_POINTER) {
+    allocPointer_t(localFrame_t) localFrame = getRunningAppMember(runningApp, localFrame);
+    while (!pointerIsNull(localFrame)) {
         cleanUpNextArgFrameHelper(localFrame);
-        allocPointer_t previousLocalFrame = getLocalFrameMember(
+        allocPointer_t(localFrame_t) previousLocalFrame = getLocalFrameMember(
             localFrame,
             previousLocalFrame
         );
-        deleteAlloc(localFrame);
+        deleteAlloc(localFrame.genericPointer);
         localFrame = previousLocalFrame;
     }
     
     // Delete dynamic allocations.
-    allocPointer_t fileHandle = getRunningAppMember(currentThreadApp, fileHandle);
-    allocPointer_t tempAlloc = getFirstAlloc();
+    allocPointer_t(fileHandle_t) fileHandle = getRunningAppMember(
+        currentThreadApp,
+        fileHandle
+    );
+    genericAllocPointer_t tempAlloc = getFirstAlloc();
     while (tempAlloc != NULL_ALLOC_POINTER) {
-        allocPointer_t nextAlloc = getAllocNext(tempAlloc);
+        genericAllocPointer_t nextAlloc = getAllocNext(tempAlloc);
         int8_t tempType = getAllocType(tempAlloc);
         if (tempType == DYNAMIC_ALLOC_TYPE) {
-            allocPointer_t tempCreator = getDynamicAllocMember(tempAlloc, creator);
-            if (tempCreator == fileHandle) {
+            allocPointer_t(fileHandle_t) tempCreator = getDynamicAllocMember(
+                castGenericPointer(tempAlloc, dynamicAlloc_t),
+                creator
+            );
+            if (pointersAreEqual(tempCreator, fileHandle)) {
                 deleteAlloc(tempAlloc);
             }
         }
@@ -184,21 +193,24 @@ void hardKillApp(allocPointer_t runningApp, int8_t errorCode) {
     }
     
     // Update file handle and delete running app.
-    setFileHandleRunningApp(fileHandle, NULL_ALLOC_POINTER);
+    setFileHandleRunningApp(fileHandle, nullAllocPointer(runningApp_t));
     setFileHandleInitErr(fileHandle, errorCode);
     closeFile(fileHandle);
-    deleteAlloc(runningApp);
+    deleteAlloc(runningApp.genericPointer);
 }
 
 void callFunction(
-    allocPointer_t threadApp,
-    allocPointer_t implementer,
+    allocPointer_t(runningApp_t) threadApp,
+    allocPointer_t(runningApp_t) implementer,
     int32_t functionIndex
 ) {
     
-    allocPointer_t fileHandle = getRunningAppMember(implementer, fileHandle);
+    allocPointer_t(fileHandle_t) fileHandle = getRunningAppMember(implementer, fileHandle);
     int8_t fileType = getFileHandleType(fileHandle);
-    allocPointer_t previousLocalFrame = getRunningAppMember(threadApp, localFrame);
+    allocPointer_t(localFrame_t) previousLocalFrame = getRunningAppMember(
+        threadApp,
+        localFrame
+    );
     arrayConstant_t(systemAppFunction_t) systemAppFunctionList;
     
     // Validate function index.
@@ -227,14 +239,14 @@ void callFunction(
         );
     }
     if (argFrameSize > 0) {
-        allocPointer_t previousArgFrame;
-        if (previousLocalFrame == NULL_ALLOC_POINTER) {
-            previousArgFrame = NULL_ALLOC_POINTER;
+        allocPointer_t(argFrame_t) previousArgFrame;
+        if (pointerIsNull(previousLocalFrame)) {
+            previousArgFrame = nullAllocPointer(argFrame_t);
         } else {
             previousArgFrame = getLocalFrameMember(previousLocalFrame, nextArgFrame);
         }
-        if (previousArgFrame == NULL_ALLOC_POINTER
-                || getAllocSize(previousArgFrame) != argFrameSize) {
+        if (pointerIsNull(previousArgFrame)
+                || getArgFrameSize(previousArgFrame) != argFrameSize) {
             unhandledErrorCode = ARG_FRAME_ERR_CODE;
             return;
         }
@@ -253,11 +265,14 @@ void callFunction(
     }
     
     // Create allocation for the local frame.
-    allocPointer_t localFrame = createAlloc(LOCAL_FRAME_ALLOC_TYPE, localFrameSize);
+    allocPointer_t(localFrame_t) localFrame = castGenericPointer(
+        createAlloc(LOCAL_FRAME_ALLOC_TYPE, localFrameSize),
+        localFrame_t
+    );
     setLocalFrameMember(localFrame, implementer, implementer);
     setLocalFrameMember(localFrame, functionIndex, functionIndex);
     setLocalFrameMember(localFrame, previousLocalFrame, previousLocalFrame);
-    setLocalFrameMember(localFrame, nextArgFrame, NULL_ALLOC_POINTER);
+    setLocalFrameMember(localFrame, nextArgFrame, nullAllocPointer(argFrame_t));
     
     if (fileType == BYTECODE_APP_FILE_TYPE) {
         // Initialize members specific to bytecode functions.
@@ -290,7 +305,7 @@ void callFunction(
 }
 
 // Does not update currentThreadApp.
-void setCurrentLocalFrame(allocPointer_t localFrame) {
+void setCurrentLocalFrame(allocPointer_t(localFrame_t) localFrame) {
     currentLocalFrame = localFrame;
     currentImplementer = getLocalFrameMember(currentLocalFrame, implementer);
     currentImplementerFileHandle = getRunningAppMember(currentImplementer, fileHandle);
@@ -299,20 +314,23 @@ void setCurrentLocalFrame(allocPointer_t localFrame) {
 
 void returnFromFunction() {
     cleanUpNextArgFrame();
-    allocPointer_t previousLocalFrame = getLocalFrameMember(
+    allocPointer_t(localFrame_t) previousLocalFrame = getLocalFrameMember(
         currentLocalFrame,
         previousLocalFrame
     );
-    deleteAlloc(currentLocalFrame);
+    deleteAlloc(currentLocalFrame.genericPointer);
     setRunningAppMember(currentThreadApp, localFrame, previousLocalFrame);
     setCurrentLocalFrame(previousLocalFrame);
 }
 
-void scheduleAppThread(allocPointer_t runningApp) {
+void scheduleAppThread(allocPointer_t(runningApp_t) runningApp) {
     
     currentThreadApp = runningApp;
-    allocPointer_t tempFrame = getRunningAppMember(currentThreadApp, localFrame);
-    if (tempFrame == NULL_ALLOC_POINTER) {
+    allocPointer_t(localFrame_t) tempFrame = getRunningAppMember(
+        currentThreadApp,
+        localFrame
+    );
+    if (pointerIsNull(tempFrame)) {
         return;
     }
     setCurrentLocalFrame(tempFrame);
@@ -354,7 +372,7 @@ void scheduleAppThread(allocPointer_t runningApp) {
                 break;
             }
             returnFromFunction();
-            if (currentLocalFrame == NULL_ALLOC_POINTER) {
+            if (pointerIsNull(currentLocalFrame)) {
                 hardKillApp(currentThreadApp, unhandledErrorCode);
                 break;
             }
@@ -366,10 +384,12 @@ void scheduleAppThread(allocPointer_t runningApp) {
 void runAppSystem() {
     
     // Launch boot application.
-    allocPointer_t bootFileName = createStringAllocFromArrayConstant(BOOT_STRING_CONSTANT);
-    allocPointer_t bootFileHandle = openFileByStringAlloc(bootFileName);
-    deleteAlloc(bootFileName);
-    if (bootFileHandle == NULL_ALLOC_POINTER) {
+    allocPointer_t(stringAlloc_t) bootFileName = createStringAllocFromArrayConstant(
+        BOOT_STRING_CONSTANT
+    );
+    allocPointer_t(fileHandle_t) bootFileHandle = openFileByStringAlloc(bootFileName);
+    deleteAlloc(bootFileName.genericPointer);
+    if (pointerIsNull(bootFileHandle)) {
         return;
     }
     launchApp(bootFileHandle);
@@ -382,18 +402,22 @@ void runAppSystem() {
     while (true) {
         
         // Find running app with index equal to runningAppIndex.
-        allocPointer_t runningApp = NULL_ALLOC_POINTER;
-        allocPointer_t firstRunningApp = NULL_ALLOC_POINTER;
+        allocPointer_t(runningApp_t) runningApp = nullAllocPointer(runningApp_t);
+        allocPointer_t(runningApp_t) firstRunningApp = nullAllocPointer(runningApp_t);
         int8_t index = 0;
-        allocPointer_t tempAlloc = getFirstAlloc();
+        genericAllocPointer_t tempAlloc = getFirstAlloc();
         while (tempAlloc != NULL_ALLOC_POINTER) {
             int8_t tempType = getAllocType(tempAlloc);
             if (tempType == RUNNING_APP_ALLOC_TYPE) {
+                allocPointer_t(runningApp_t) tempRunningApp = castGenericPointer(
+                    tempAlloc,
+                    runningApp_t
+                );
                 if (index == 0) {
-                    firstRunningApp = tempAlloc;
+                    firstRunningApp = tempRunningApp;
                 }
                 if (index == runningAppIndex) {
-                    runningApp = tempAlloc;
+                    runningApp = tempRunningApp;
                     break;
                 }
                 index += 1;
@@ -403,8 +427,8 @@ void runAppSystem() {
         
         // If we couldn't find running app at runningAppIndex,
         // try to schedule the first running app.
-        if (runningApp == NULL_ALLOC_POINTER) {
-            if (firstRunningApp == NULL_ALLOC_POINTER) {
+        if (pointerIsNull(runningApp)) {
+            if (pointerIsNull(firstRunningApp)) {
                 return;
             }
             runningApp = firstRunningApp;

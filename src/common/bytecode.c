@@ -14,7 +14,7 @@
 #define SIGNED_INT_32_TYPE 0x1
 
 #pragma pack(push, 1)
-typedef struct instructionArg {
+typedef struct instructionArg_t {
     uint8_t prefix;
     union {
         // For HEAP_MEM_REF_TYPE, the union contains startAddress, size, and index.
@@ -67,28 +67,19 @@ typedef struct instructionArg {
     tempResult; \
 });
 #define readArgDynamicAlloc(index) ({ \
-    allocPointer_t pointer = (allocPointer_t)readArgInt(index); \
+    allocPointer_t(dynamicAlloc_t) pointer = castGenericPointer(readArgInt(index), dynamicAlloc_t); \
     validateDynamicAlloc(pointer); \
-    if (unhandledErrorCode != 0) { \
-        return; \
-    } \
     pointer; \
 })
 
 #define readArgFileHandle(index) ({ \
-    allocPointer_t fileHandle = (allocPointer_t)readArgInt(index); \
+    allocPointer_t(fileHandle_t) fileHandle = castGenericPointer(readArgInt(index), fileHandle_t); \
     validateFileHandle(fileHandle); \
-    if (unhandledErrorCode != 0) { \
-        return; \
-    } \
     fileHandle; \
 });
 #define readArgRunningApp(index) ({ \
-    allocPointer_t runningApp; \
+    allocPointer_t(runningApp_t) runningApp; \
     readArgRunningAppHelper(&runningApp, index); \
-    if (unhandledErrorCode != 0) { \
-        return; \
-    } \
     runningApp; \
 });
 
@@ -219,7 +210,10 @@ void parseInstructionArg(instructionArg_t *destination) {
             heapMemoryOffset_t tempSize;
             heapMemoryOffset_t index;
             if (referenceType == DYNAMIC_ALLOC_REF_TYPE) {
-                allocPointer_t tempPointer = (allocPointer_t)argValue1;
+                allocPointer_t(dynamicAlloc_t) tempPointer = castGenericPointer(
+                    argValue1,
+                    dynamicAlloc_t
+                );
                 validateDynamicAlloc(tempPointer);
                 if (unhandledErrorCode != 0) {
                     return;
@@ -244,13 +238,13 @@ void parseInstructionArg(instructionArg_t *destination) {
                     startAddress = getBytecodeLocalFrameDataAddress(currentLocalFrame);
                     tempSize = getBytecodeLocalFrameSize(currentLocalFrame);
                 } else {
-                    allocPointer_t tempLocalFrame;
+                    allocPointer_t(localFrame_t) tempLocalFrame;
                     if (referenceType == PREV_ARG_FRAME_REF_TYPE) {
                         tempLocalFrame = getLocalFrameMember(
                             currentLocalFrame,
                             previousLocalFrame
                         );
-                        if (tempLocalFrame == NULL_ALLOC_POINTER) {
+                        if (pointerIsNull(tempLocalFrame)) {
                             unhandledErrorCode = ARG_FRAME_ERR_CODE;
                             return;
                         }
@@ -260,13 +254,16 @@ void parseInstructionArg(instructionArg_t *destination) {
                         unhandledErrorCode = TYPE_ERR_CODE;
                         return;
                     }
-                    allocPointer_t argFrame = getLocalFrameMember(tempLocalFrame, nextArgFrame);
-                    if (argFrame == NULL_ALLOC_POINTER) {
+                    allocPointer_t(argFrame_t) argFrame = getLocalFrameMember(
+                        tempLocalFrame,
+                        nextArgFrame
+                    );
+                    if (pointerIsNull(argFrame)) {
                         unhandledErrorCode = ARG_FRAME_ERR_CODE;
                         return;
                     }
-                    startAddress = getAllocDataAddress(argFrame);
-                    tempSize = getAllocSize(argFrame);
+                    startAddress = getArgFrameDataAddress(argFrame);
+                    tempSize = getArgFrameSize(argFrame);
                 }
             }
             destination->prefix = (HEAP_MEM_REF_TYPE << 4) | dataType;
@@ -298,10 +295,10 @@ int32_t readArgConstantIntHelper(int8_t index) {
     return tempArg->constantValue;
 }
 
-void readArgRunningAppHelper(allocPointer_t *destination, int8_t index) {
-    allocPointer_t appHandle = readArgFileHandle(index);
-    allocPointer_t runningApp = getFileHandleRunningApp(appHandle);
-    if (runningApp == NULL_ALLOC_POINTER) {
+void readArgRunningAppHelper(allocPointer_t(runningApp_t) *destination, int8_t index) {
+    allocPointer_t(fileHandle_t) appHandle = readArgFileHandle(index);
+    allocPointer_t(runningApp_t) runningApp = getFileHandleRunningApp(appHandle);
+    if (pointerIsNull(runningApp)) {
         if (getFileHandleType(runningApp) == GENERIC_FILE_TYPE) {
             unhandledErrorCode = TYPE_ERR_CODE;
         } else {
@@ -397,26 +394,29 @@ void evaluateBytecodeInstruction() {
                 unhandledErrorCode = NUM_RANGE_ERR_CODE;
                 return;
             }
-            allocPointer_t tempAlloc = createDynamicAlloc(
+            allocPointer_t(dynamicAlloc_t) tempAlloc = createDynamicAlloc(
                 tempSize,
                 isGuarded,
                 currentImplementerFileHandle
             );
-            writeArgInt(0, tempAlloc);
+            writeArgInt(0, tempAlloc.genericPointer);
         } else if (opcodeOffset == 0x4) {
             // delAlloc.
-            allocPointer_t tempAlloc = readArgDynamicAlloc(0);
-            deleteAlloc(tempAlloc);
+            allocPointer_t(dynamicAlloc_t) tempAlloc = readArgDynamicAlloc(0);
+            deleteAlloc(tempAlloc.genericPointer);
         } else if (opcodeOffset == 0x5) {
             // allocSize.
-            allocPointer_t tempAlloc = readArgDynamicAlloc(1);
+            allocPointer_t(dynamicAlloc_t) tempAlloc = readArgDynamicAlloc(1);
             heapMemoryOffset_t tempSize = getDynamicAllocSize(tempAlloc);
             writeArgInt(0, tempSize);
         } else if (opcodeOffset == 0x6) {
             // allocCreator.
-            allocPointer_t tempAlloc = readArgDynamicAlloc(1);
-            allocPointer_t tempCreator = getDynamicAllocMember(tempAlloc, creator);
-            writeArgInt(0, tempCreator);
+            allocPointer_t(dynamicAlloc_t) tempAlloc = readArgDynamicAlloc(1);
+            allocPointer_t(fileHandle_t) tempCreator = getDynamicAllocMember(
+                tempAlloc,
+                creator
+            );
+            writeArgInt(0, tempCreator.genericPointer);
         } else {
             unhandledErrorCode = NO_IMPL_ERR_CODE;
             return;
@@ -475,7 +475,7 @@ void evaluateBytecodeInstruction() {
         // Function instructions.
         if (opcodeOffset == 0x0) {
             // findFunc.
-            allocPointer_t runningApp = readArgRunningApp(1);
+            allocPointer_t(runningApp_t) runningApp = readArgRunningApp(1);
             int32_t functionId = readArgInt(2);
             int32_t functionIndex = findFunctionById(runningApp, functionId);
             writeArgInt(0, functionIndex);
@@ -489,7 +489,7 @@ void evaluateBytecodeInstruction() {
             );
         } else if (opcodeOffset == 0x2) {
             // callRemote.
-            allocPointer_t tempImplementer = readArgRunningApp(0);
+            allocPointer_t(runningApp_t) tempImplementer = readArgRunningApp(0);
             int32_t functionIndex = readArgInt(1);
             callFunction(
                 currentThreadApp,
@@ -501,14 +501,14 @@ void evaluateBytecodeInstruction() {
             returnFromFunction();
         } else if (opcodeOffset == 0x4) {
             // caller.
-            allocPointer_t tempCaller = getCurrentCaller();
-            allocPointer_t fileHandle;
-            if (tempCaller == NULL_ALLOC_POINTER) {
-                fileHandle = NULL_ALLOC_POINTER;
+            allocPointer_t(runningApp_t) tempCaller = getCurrentCaller();
+            allocPointer_t(fileHandle_t) fileHandle;
+            if (pointerIsNull(tempCaller)) {
+                fileHandle = nullAllocPointer(fileHandle_t);
             } else {
                 fileHandle = getRunningAppMember(tempCaller, fileHandle);
             }
-            writeArgInt(0, fileHandle);
+            writeArgInt(0, fileHandle.genericPointer);
         } else {
             unhandledErrorCode = NO_IMPL_ERR_CODE;
             return;
@@ -603,7 +603,7 @@ void evaluateBytecodeInstruction() {
         // Application instructions.
         if (opcodeOffset == 0x0) {
             // launch.
-            allocPointer_t appHandle = readArgFileHandle(0);
+            allocPointer_t(fileHandle_t) appHandle = readArgFileHandle(0);
             launchApp(appHandle);
         } else {
             unhandledErrorCode = NO_IMPL_ERR_CODE;
@@ -613,16 +613,16 @@ void evaluateBytecodeInstruction() {
         // File instructions.
         if (opcodeOffset == 0x2) {
             // openFile.
-            allocPointer_t fileName = readArgDynamicAlloc(1);
-            allocPointer_t fileHandle = openFileByStringAlloc(fileName);
-            if (fileHandle == NULL_ALLOC_POINTER) {
+            allocPointer_t(dynamicAlloc_t) fileName = readArgDynamicAlloc(1);
+            allocPointer_t(fileHandle_t) fileHandle = openFileByDynamicStringAlloc(fileName);
+            if (pointerIsNull(fileHandle)) {
                 unhandledErrorCode = MISSING_ERR_CODE;
                 return;
             }
-            writeArgInt(0, fileHandle);
+            writeArgInt(0, fileHandle.genericPointer);
         } else if (opcodeOffset == 0x3) {
             // closeFile.
-            allocPointer_t fileHandle = readArgFileHandle(0);
+            allocPointer_t(fileHandle_t) fileHandle = readArgFileHandle(0);
             closeFile(fileHandle);
         } else {
             unhandledErrorCode = NO_IMPL_ERR_CODE;

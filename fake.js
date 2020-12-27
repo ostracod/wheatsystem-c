@@ -16,6 +16,25 @@ const sourceExtensionSet = [".pppd", ".h", ".c"];
 const platformDefinitionsPath = pathUtils.join(__dirname, "platformDefinitions.json");
 const platformDefinitionList = JSON.parse(fs.readFileSync(platformDefinitionsPath), "utf8");
 
+class BuildFile {
+    constructor() {
+        this.sourcePath = null;
+        this.intermediatePath = null;
+        this.isCommon = null;
+    }
+    
+    initializeBySourcePath(path) {
+        this.sourcePath = path;
+        const directoryName = pathUtils.basename(pathUtils.dirname(this.sourcePath));
+        this.isCommon = (directoryName === "common");
+    }
+    
+    initializeByIntermediatePath(path, isCommon) {
+        this.intermediatePath = path;
+        this.isCommon = isCommon;
+    }
+}
+
 function printUsage() {
     console.log("Usage:\nnode ./fake.js list\nnode ./fake.js [platform name]");
 }
@@ -44,12 +63,14 @@ function getBaseFileNamesInDirectory(directoryPath) {
     return Array.from(baseFileNameSet);
 }
 
-function getFilePathsWithExtension(extension) {
+function getBuildFilesWithExtension(extension) {
     const output = [];
     for (const baseFilePath of baseFilePathList) {
         const filePath = baseFilePath + extension;
         if (fs.existsSync(filePath)) {
-            output.push(filePath);
+            const tempFile = new BuildFile();
+            tempFile.initializeBySourcePath(filePath);
+            output.push(tempFile);
         }
     }
     return output;
@@ -65,26 +86,20 @@ function convertToBaseFileName(filePath) {
     }
 }
 
-function findFirstCommonFile(pathList) {
-    for (let index = 0; index < pathList.length; index++) {
-        const tempPath = pathList[index];
-        const directoryName = pathUtils.basename(pathUtils.dirname(tempPath));
-        if (directoryName === "common") {
-            return index;
-        }
-    }
-    return -1;
+function insertBeforeCommonFiles(buildFileList, buildFile) {
+    const firstCommonFileIndex = buildFileList.findIndex((file) => file.isCommon);
+    buildFileList.splice(firstCommonFileIndex, 0, buildFile);
+    
 }
 
-function prepreprocessFiles(filePathList) {
-    const output = [];
-    for (const sourceFilePath of filePathList) {
+function prepreprocessFiles(buildFileList) {
+    for (const buildFile of buildFileList) {
+        const sourceFilePath = buildFile.sourcePath;
         const fileName = pathUtils.basename(sourceFilePath);
         const destinationFilePath = pathUtils.join(intermediatePath, fileName);
         prepreprocessor.prepreprocessFile(sourceFilePath, destinationFilePath);
-        output.push(destinationFilePath);
+        buildFile.intermediatePath = destinationFilePath;
     }
-    return output;
 }
 
 function substituteConstantInvocations(text) {
@@ -168,22 +183,18 @@ for (const baseFilePath of targetPlatformDefinition.baseFilePaths) {
 console.log("Base file paths for compilation:");
 console.log(baseFilePathList.join("\n"));
 
-const prepreprocessorFilePathList = getFilePathsWithExtension(".pppd");
-let headerFilePathList = getFilePathsWithExtension(".h");
-let implementationFilePathList = getFilePathsWithExtension(".c");
+const prepreprocessorFileList = getBuildFilesWithExtension(".pppd");
+let headerFileList = getBuildFilesWithExtension(".h");
+let implementationFileList = getBuildFilesWithExtension(".c");
 
 console.log("Prepreprocessor file paths:");
-console.log(prepreprocessorFilePathList.join("\n"));
+console.log(prepreprocessorFileList.map((file) => file.sourcePath).join("\n"));
 
 console.log("Header file paths:");
-console.log(headerFilePathList.join("\n"));
+console.log(headerFileList.map((file) => file.sourcePath).join("\n"));
 
 console.log("Implementation file paths:");
-console.log(implementationFilePathList.join("\n"));
-
-
-const firstCommonHeaderIndex = findFirstCommonFile(headerFilePathList);
-const firstCommonImplementationIndex = findFirstCommonFile(implementationFilePathList);
+console.log(implementationFileList.map((file) => file.sourcePath).join("\n"));
 
 if (fs.existsSync(intermediatePath)) {
     fs.rmdirSync(intermediatePath, {recursive: true});
@@ -193,20 +204,21 @@ fs.mkdirSync(intermediatePath);
 console.log("Running prepreprocessor...");
 
 const prepreprocessor = new Prepreprocessor();
-for (const prepreprocessorFilePath of prepreprocessorFilePathList) {
-    prepreprocessor.readDefinitionsFile(prepreprocessorFilePath);
+for (const prepreprocessorFile of prepreprocessorFileList) {
+    prepreprocessor.readDefinitionsFile(prepreprocessorFile.sourcePath);
 }
 prepreprocessor.initializeDefinitions();
-headerFilePathList = prepreprocessFiles(headerFilePathList);
-implementationFilePathList = prepreprocessFiles(implementationFilePathList);
+prepreprocessFiles(headerFileList);
+prepreprocessFiles(implementationFileList);
 const prepreprocessorHeadersList = prepreprocessor.getHeaders();
 const prepreprocessorHeadersPath = pathUtils.join(
     intermediatePath,
     "prepreprocessorHeaders.h",
 );
 fs.writeFileSync(prepreprocessorHeadersPath, prepreprocessorHeadersList.join("\n"));
-// TODO: Use a less cumbersome mechanism to insert build files.
-headerFilePathList.splice(firstCommonHeaderIndex, 0, prepreprocessorHeadersPath);
+const prepreprocessorHeadersFile = new BuildFile();
+prepreprocessorHeadersFile.initializeByIntermediatePath(prepreprocessorHeadersPath, false);
+insertBeforeCommonFiles(headerFileList, prepreprocessorHeadersFile);
 
 console.log("Creating argument amount array...");
 
@@ -244,27 +256,38 @@ fs.writeFileSync(argumentAmountsImplementationPath, `
 declareArrayConstantWithValue(argumentAmountOffsetArray, int8_t, {${argumentAmountOffsetArray.join(",")}});
 declareArrayConstantWithValue(argumentAmountArray, int8_t, {${argumentAmountArray.join(",")}});
 `);
-headerFilePathList.splice(firstCommonHeaderIndex, 0, argumentAmountsHeaderPath);
-implementationFilePathList.splice(firstCommonImplementationIndex, 0, argumentAmountsImplementationPath);
+const argumentAmountsHeaderFile = new BuildFile();
+const argumentAmountsImplementationFile = new BuildFile();
+argumentAmountsHeaderFile.initializeByIntermediatePath(
+    argumentAmountsHeaderPath,
+    true,
+);
+argumentAmountsImplementationFile.initializeByIntermediatePath(
+    argumentAmountsImplementationPath,
+    true,
+);
+insertBeforeCommonFiles(headerFileList, argumentAmountsHeaderFile);
+insertBeforeCommonFiles(implementationFileList, argumentAmountsImplementationFile);
 
 console.log("Creating headers.h...");
 
-const headersLineList = headerFilePathList.map(filePath => `#include "${filePath}"`);
+const headersLineList = headerFileList.map((file) => `#include "${file.intermediatePath}"`);
 const headersPath = pathUtils.join(intermediatePath, "headers.h");
 fs.writeFileSync(headersPath, headersLineList.join("\n"));
 
 console.log("Compiling object files...");
 
 let objectFilePathList = [];
-for (const implementationfilePath of implementationFilePathList) {
-    const tempBaseFileName = convertToBaseFileName(implementationfilePath);
+for (const implementationFile of implementationFileList) {
+    const implementationFilePath = implementationFile.intermediatePath;
+    const tempBaseFileName = convertToBaseFileName(implementationFilePath);
     const objectFilePath = pathUtils.join(intermediatePath, tempBaseFileName + ".o");
     const compilerArgumentList = ["-Wall"];
     for (let flag of targetPlatformDefinition.compiler.flags) {
         flag = substituteConstantInvocations(flag);
         compilerArgumentList.push(flag);
     }
-    compilerArgumentList.push("-c", implementationfilePath, "-o", objectFilePath);
+    compilerArgumentList.push("-c", implementationFilePath, "-o", objectFilePath);
     invokeCompiler(compilerArgumentList);
     objectFilePathList.push(objectFilePath);
 }

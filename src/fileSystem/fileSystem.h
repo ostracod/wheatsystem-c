@@ -52,7 +52,7 @@
 
 ///FUNC openFile
     ///RET allocPointer_t(fileHandle_t)
-    ///DESC Opens the file with the given name, returning a file handle. If the file has already been opened, this function returns the existing file handle and increments its open depth.
+    ///DESC Opens the file with the given name, returning a file handle. If the file has already been opened, this function returns the existing file handle and increments its open depth. If the file is missing, this function returns null.
     ///ARG nameAddress
         ///TYPE heapMemoryOffset_t
         ///DESC Heap memory address of first byte in the name.

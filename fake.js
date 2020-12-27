@@ -11,6 +11,8 @@ const intermediatePath = pathUtils.join(__dirname, "intermediate");
 const buildPath = pathUtils.join(__dirname, "build");
 const bytecodeInstructionsPath = pathUtils.join(__dirname, "..", "wheatsystem-spec", "bytecodeInstructions.json");
 
+const sourceExtensionSet = [".pppd", ".h", ".c"];
+
 const platformDefinitionsPath = pathUtils.join(__dirname, "platformDefinitions.json");
 const platformDefinitionList = JSON.parse(fs.readFileSync(platformDefinitionsPath), "utf8");
 
@@ -29,12 +31,13 @@ function getBaseFileNamesInDirectory(directoryPath) {
     const fileNameList = fs.readdirSync(directoryPath);
     const baseFileNameSet = new Set();
     for (const fileName of fileNameList) {
-        if (fileName.length < 2) {
+        const periodIndex = fileName.lastIndexOf(".");
+        if (periodIndex < 0) {
             continue;
         }
-        const tempSuffix = fileName.substring(fileName.length - 2, fileName.length);
-        if (tempSuffix === ".h" || tempSuffix === ".c") {
-            const baseFileName = fileName.substring(0, fileName.length - 2);
+        const tempExtension = fileName.substring(periodIndex, fileName.length);
+        if (sourceExtensionSet.includes(tempExtension)) {
+            const baseFileName = fileName.substring(0, periodIndex);
             baseFileNameSet.add(baseFileName);
         }
     }
@@ -165,8 +168,12 @@ for (const baseFilePath of targetPlatformDefinition.baseFilePaths) {
 console.log("Base file paths for compilation:");
 console.log(baseFilePathList.join("\n"));
 
+const prepreprocessorFilePathList = getFilePathsWithExtension(".pppd");
 let headerFilePathList = getFilePathsWithExtension(".h");
 let implementationFilePathList = getFilePathsWithExtension(".c");
+
+console.log("Prepreprocessor file paths:");
+console.log(prepreprocessorFilePathList.join("\n"));
 
 console.log("Header file paths:");
 console.log(headerFilePathList.join("\n"));
@@ -184,8 +191,10 @@ fs.mkdirSync(intermediatePath);
 
 console.log("Running prepreprocessor...");
 
-const prepreprocessorDefinitionsPath = pathUtils.join(sourcePath, "prepreprocessorDefinitions.pppd");
-const prepreprocessor = new Prepreprocessor(prepreprocessorDefinitionsPath);
+const prepreprocessor = new Prepreprocessor();
+for (const prepreprocessorFilePath of prepreprocessorFilePathList) {
+    prepreprocessor.readDefinitionsFile(prepreprocessorFilePath);
+}
 headerFilePathList = prepreprocessFiles(headerFilePathList);
 implementationFilePathList = prepreprocessFiles(implementationFilePathList);
 

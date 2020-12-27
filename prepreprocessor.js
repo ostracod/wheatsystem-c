@@ -87,11 +87,14 @@ class PrepreprocessorDefinition {
 
 class Prepreprocessor {
     
-    constructor(definitionsPath) {
-        const tempContent = fs.readFileSync(definitionsPath, "utf8");
-        const tempLineList = tempContent.split("\n");
+    constructor() {
         // Map from name to PrepreprocessorDefinition.
         this.definitionMap = {};
+    }
+    
+    readDefinitionsFile(definitionsPath) {
+        const tempContent = fs.readFileSync(definitionsPath, "utf8");
+        const tempLineList = tempContent.split("\n");
         let currentDefinition = null;
         for (const line of tempLineList) {
             if (line.length <= 0) {

@@ -57,11 +57,11 @@ Each platform definition has the following format:
 
 When building a platform, `./fake.js` will incorporate the following files:
 
-1. `.c` and `.h` files with the base path `platforms/(platform name)`
+1. Files with the base path `platforms/(platform name)`
 1. All files provided in `./src/common`
-1. `.c` and `.h` files corresponding to each base path in `baseFilePaths`
+1. Files corresponding to each base path in `baseFilePaths`
 
-As part of the build process, `./fake.js` uses `./prepreprocessor.js` to expand prepreprocessor invocations in `.c` and `.h` files. Prepreprocessor definitions are read from `./src/prepreprocessorDefinitions.pppd`.
+As part of the build process, `./fake.js` uses `./prepreprocessor.js` to expand prepreprocessor invocations in `.c` and `.h` files. Prepreprocessor definitions are read from files with the  extension `.pppd`.
 
 `./fake.js` creates a header file in `./intermediate/headers.h` which includes all headers for the target platform. This header should be included in each `.c` file with the statement below:
 
@@ -79,9 +79,17 @@ To invoke a constant, write a dollar sign followed by the constant name in paren
 
 After `./fake.js` finishes building, the WheatSystem executable will have the path `./build/(executable name)`. The build directory and exectable path are available as the constants `BUILD_DIR` and `EXECUTABLE_PATH` respectively.
 
+## Documentation
+
+To generate documentation of this code base:
+
+```
+node ./generateDocs.js
+```
+
 ## Common Source Definitions
 
-The following definitions are shared between all platform implementations:
+**NOTE**: The documenation below is being ported to the output of `./generateDocs.js`.
 
 ### Common Constants
 
@@ -288,84 +296,5 @@ The following definitions are shared between all platform implementations:
     * `void printDebugStringConstant(arrayConstant_t(int8_t) stringConstant)`
     * `void printDebugNumber(int32_t number)`
     * `void printDebugNewline()`
-
-## Platform-Specific Source Definitions
-
-The following definitions must be provided by each platform implementation:
-
-### Platform-Specific Types
-
-* `arrayConstant_t(<type>)` may occupy non-volatile memory
-* `heapMemoryOffset_t` must accommodate values up to `HEAP_MEMORY_SIZE`
-* `allocPointer_t` must accommodate maximum pointer value
-
-### Platform-Specific Constants
-
-* `heapMemoryOffset_t HEAP_MEMORY_SIZE`
-* `arrayConstant_t(systemApp_t) systemAppArray`
-
-### Platform-Specific Functions
-
-* Debug functions
-    * `void printDebugCharacter(int8_t character)`
-    * `void sleepMilliseconds(int32_t milliseconds)`
-* Memory functions
-    * `void declareArrayConstantWithValue(<name>, <type>, arrayConstant_t(<type>) arrayConstant)`
-    * `void declareArrayConstantWithLength(<name>, <type>, int32_t size)`
-    * `int32_t getArrayConstantLength(<name>)`
-    * `<type> getArrayConstantElementType(arrayConstant_t(<type>) arrayConstant)`
-    * `<type1> readArrayConstantValue(arrayConstant_t(<type2>) arrayConstant, int32_t index, <type1>)`
-    * `<type> readHeapMemory(heapMemoryOffset_t address, <type>)`
-    * `void writeHeapMemory(heapMemoryOffset_t address, <type>, <type> value)`
-    * `void convertNumberToText(int8_t *destination, int32_t number)`
-* Heap allocation functions
-    * `heapMemoryOffset_t convertPointerToAddress(allocPointer_t pointer)`
-    * `allocPointer_t convertAddressToPointer(heapMemoryOffset_t address)`
-    * `allocPointer_t getFirstAlloc()`
-    * `heapMemoryOffset_t getAllocDataAddress(allocPointer_t pointer)`
-    * `<type> readAlloc(allocPointer_t pointer, heapMemoryOffset_t index, <type>)`
-    * `void writeAlloc(allocPointer_t pointer, heapMemoryOffset_t index, <type>, <type> value)`
-    * `int8_t getAllocType(allocPointer_t pointer)`
-    * `heapMemoryOffset_t getAllocSize(allocPointer_t pointer)`
-    * `allocPointer_t getAllocNext(allocPointer_t pointer)`
-    * `allocPointer_t createAlloc(int8_t type, heapMemoryOffset_t size)`
-    * `int8_t deleteAlloc(allocPointer_t pointer)`
-    * `void validateAllocPointer(allocPointer_t pointer)`
-* File system functions
-    * `int8_t initializeFileSystem()`
-    * `int8_t getFileHandleType(allocPointer_t fileHandle)`
-    * `int32_t getFileHandleSize(allocPointer_t fileHandle)`
-    * `allocPointer_t getFileHandleRunningApp(allocPointer_t fileHandle)`
-    * `int8_t getFileHandleInitErr(allocPointer_t fileHandle)`
-    * `void setFileHandleRunningApp(allocPointer_t fileHandle, allocPointer_t runningApp)`
-    * `void setFileHandleInitErr(allocPointer_t fileHandle, int8_t initErr)`
-    * `allocPointer_t openFile(heapMemoryOffset_t nameAddress, uint8_t nameSize)`
-    * `void closeFile(allocPointer_t fileHandle)`
-    * `<type> readFile(allocPointer_t fileHandle, int32_t pos, <type>)`
-
-## Prepreprocessor Definitions
-
-The following definitions are recognized by the prepreprocessor:
-
-* `!!!readValueByAddress address readRange type`
-    * `<type> readRange(int8_t *destination, int32_t address, int32_t amount)`
-* `!!!writeValueByAddress address writeRange type value`
-    * `void writeRange(int32_t address, int8_t *source, int32_t amount)`
-* `!!!readStructByAddress address readValue structType memberName`
-    * `<type> readValue(int32_t address, <type>)`
-* `!!!writeStructByAddress address writeValue structType memberName value`
-    * `void writeValue(int32_t address, <type>, <type> value)`
-* `!!!readValueByPointer pointer readRange index type`
-    * `<type> readRange(int8_t *destination, allocPointer_t pointer, int32_t index, int32_t amount)`
-* `!!!writeValueByPointer pointer writeRange index type value`
-    * `void writeRange(allocPointer_t pointer, int32_t index, int8_t *source, int32_t amount)`
-* `!!!readStructByPointer pointer readValue structType memberName`
-    * `<type> readValue(allocPointer_t pointer, int32_t index, <type>)`
-* `!!!writeStructByPointer pointer writeValue structType memberName value`
-    * `void writeValue(allocPointer_t pointer, int32_t index, <type>, <type> value)`
-* `!!!readArrayElementByPointer pointer readValue arrayIndex type`
-    * `<type> readValue(allocPointer_t pointer, int32_t index, <type>)`
-* `!!!readArrayStructByPointer pointer readValue arrayIndex structDefinition memberName`
-    * `<type> readValue(allocPointer_t pointer, int32_t index, <type>)`
 
 

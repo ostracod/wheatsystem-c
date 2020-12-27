@@ -625,7 +625,8 @@ try {
     processAnnotations();
     createDocument();
     
-    console.log("Finished.");
+    console.log("Finished. Documentation path:");
+    console.log(documentPath);
     
 } catch (error) {
     if (error instanceof DocError) {

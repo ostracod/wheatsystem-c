@@ -51,37 +51,66 @@ class PrepreprocessorDefinition {
         argNameList.forEach((argName, argIndex) => {
             this.argIndexMap[argName] = argIndex;
         });
-        this.lineList = [];
+        this.bodyLineList = [];
+        this.headerLineList = [];
+        this.body = null;
+        this.header = null;
+        this.invocationMap = {};
     }
     
-    expandLine(line, argList) {
+    initialize() {
+        this.body = this.bodyLineList.join("\n");
+        if (this.headerLineList.length > 0) {
+            this.header = this.headerLineList.join("\n");
+        } else {
+            this.header = null;
+        }
+    }
+    
+    expand(inputText, argList) {
         if (argList.length !== this.argNameList.length) {
             throw new Error("Unexpected number of arguments for  prepreprocessor definition.");
         }
+        this.invocationMap[argList.join(",")] = argList;
         const textList = [];
         let index = 0;
         while (true) {
-            const tempResult = findNextIdentifier(line, index);
+            const tempResult = findNextIdentifier(inputText, index);
             if (tempResult === null) {
-                textList.push(line.substring(index, line.length));
+                textList.push(inputText.substring(index, inputText.length));
                 break;
             }
             const { startIndex, endIndex } = tempResult;
-            const tempIdentifier = line.substring(startIndex, endIndex);
+            const tempIdentifier = inputText.substring(startIndex, endIndex);
             const argIndex = this.argIndexMap[tempIdentifier];
             if (typeof argIndex !== "undefined") {
-                textList.push(line.substring(index, startIndex));
+                textList.push(inputText.substring(index, startIndex));
                 textList.push(argList[argIndex]);
             } else {
-                textList.push(line.substring(index, endIndex));
+                textList.push(inputText.substring(index, endIndex));
             }
             index = endIndex;
         }
-        return textList.join("");
+        const expandedText = textList.join("");
+        return expandedText.split("###").join("");
     }
     
-    expand(argList) {
-        return this.lineList.map(line => this.expandLine(line, argList)).join("\n");
+    expandBody(argList) {
+        return this.expand(this.body, argList);
+    }
+    
+    expandHeader(argList) {
+        return this.expand(this.header, argList);
+    }
+    
+    getHeaders() {
+        if (this.header === null) {
+            return [];
+        }
+        return Object.keys(this.invocationMap).map((key) => {
+            const argList = this.invocationMap[key];
+            return this.expandHeader(argList);
+        });
     }
 }
 
@@ -96,6 +125,7 @@ class Prepreprocessor {
         const tempContent = fs.readFileSync(definitionsPath, "utf8");
         const tempLineList = tempContent.split("\n");
         let currentDefinition = null;
+        let isInHeader = false;
         for (const line of tempLineList) {
             if (line.length <= 0) {
                 continue;
@@ -121,10 +151,22 @@ class Prepreprocessor {
             } else {
                 if (line === "END") {
                     currentDefinition = null;
+                    isInHeader = false;
+                } else if (line === "UNIQUE_HEADER") {
+                    isInHeader = true;
+                } else if (isInHeader) {
+                    currentDefinition.headerLineList.push(line);
                 } else {
-                    currentDefinition.lineList.push(line);
+                    currentDefinition.bodyLineList.push(line);
                 }
             }
+        }
+    }
+    
+    initializeDefinitions() {
+        for (const name in this.definitionMap) {
+            const tempDefinition = this.definitionMap[name];
+            tempDefinition.initialize();
         }
     }
     
@@ -181,12 +223,24 @@ class Prepreprocessor {
                 throw new Error(`Could not parse file: ${sourcePath}`);
             }
             argList = argList.map((arg) => arg.trim());
-            const expandedDefinition = tempDefinition.expand(argList);
+            const expandedDefinition = tempDefinition.expandBody(argList);
             textList.push(sourceContent.substring(lastIndex, startIndex));
             textList.push(expandedDefinition);
             index = endParenthesisIndex + 1;
         }
         fs.writeFileSync(destinationPath, textList.join(""));
+    }
+    
+    getHeaders() {
+        const output = [];
+        for (const name in this.definitionMap) {
+            const tempDefinition = this.definitionMap[name];
+            const headerList = tempDefinition.getHeaders();
+            for (const header of headerList) {
+                output.push(header);
+            }
+        }
+        return output;
     }
 }
 

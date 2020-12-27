@@ -181,6 +181,7 @@ console.log(headerFilePathList.join("\n"));
 console.log("Implementation file paths:");
 console.log(implementationFilePathList.join("\n"));
 
+
 const firstCommonHeaderIndex = findFirstCommonFile(headerFilePathList);
 const firstCommonImplementationIndex = findFirstCommonFile(implementationFilePathList);
 
@@ -195,8 +196,17 @@ const prepreprocessor = new Prepreprocessor();
 for (const prepreprocessorFilePath of prepreprocessorFilePathList) {
     prepreprocessor.readDefinitionsFile(prepreprocessorFilePath);
 }
+prepreprocessor.initializeDefinitions();
 headerFilePathList = prepreprocessFiles(headerFilePathList);
 implementationFilePathList = prepreprocessFiles(implementationFilePathList);
+const prepreprocessorHeadersList = prepreprocessor.getHeaders();
+const prepreprocessorHeadersPath = pathUtils.join(
+    intermediatePath,
+    "prepreprocessorHeaders.h",
+);
+fs.writeFileSync(prepreprocessorHeadersPath, prepreprocessorHeadersList.join("\n"));
+// TODO: Use a less cumbersome mechanism to insert build files.
+headerFilePathList.splice(firstCommonHeaderIndex, 0, prepreprocessorHeadersPath);
 
 console.log("Creating argument amount array...");
 
@@ -214,8 +224,14 @@ for (const instructionCategory of instructionCategoryList) {
         }
     }
 }
-argumentAmountsHeaderPath = pathUtils.join(intermediatePath, "argumentAmount.h");
-argumentAmountsImplementationPath = pathUtils.join(intermediatePath, "argumentAmount.c");
+const argumentAmountsHeaderPath = pathUtils.join(
+    intermediatePath,
+    "argumentAmount.h",
+);
+const argumentAmountsImplementationPath = pathUtils.join(
+    intermediatePath,
+    "argumentAmount.c",
+);
 fs.writeFileSync(argumentAmountsHeaderPath, `
 #define MAXIMUM_ARG_AMOUNT ${maximumArgAmount}
 

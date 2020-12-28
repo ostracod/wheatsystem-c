@@ -1,4 +1,6 @@
 
+///DESC This file provides common definitions pertaining to errors. Every platform shares the same implementation of these definitions.
+
 ///CONST
     ///TYPE int8_t
 #define GENERIC_ERR_CODE 0x01

@@ -1,4 +1,6 @@
 
+///DESC This file provides common definitions for printing debug information. Every platform shares the same implementation of these definitions.
+
 ///FUNC
     ///RET void
     ///DESC Prints a newline character for debugging purposes.

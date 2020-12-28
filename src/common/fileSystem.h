@@ -1,4 +1,6 @@
 
+///DESC This file provides common definitions for manipulating files. Every platform shares the same implementation of these definitions.
+
 ///CONST
     ///TYPE int8_t
 #define GENERIC_FILE_TYPE 0

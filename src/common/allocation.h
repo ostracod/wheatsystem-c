@@ -23,7 +23,7 @@
 
 ///CONST
     ///TYPE int8_t
-#define GUARD_ALLOC_ATTR 1
+#define GUARDED_ALLOC_ATTR 1
 ///CONST
     ///TYPE int8_t
 #define SENTRY_ALLOC_ATTR 2

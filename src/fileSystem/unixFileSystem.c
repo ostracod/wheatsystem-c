@@ -75,7 +75,7 @@ allocPointer_t(fileHandle_t) openFile(
     allocPointer_t(fileHandle_t) output = castAllocPointer(
         createDynamicAlloc(
             sizeof(fileHandle_t),
-            GUARD_ALLOC_ATTR | SENTRY_ALLOC_ATTR,
+            GUARDED_ALLOC_ATTR | SENTRY_ALLOC_ATTR,
             nullAllocPointer(fileHandle_t)
         ),
         fileHandle_t

@@ -389,7 +389,7 @@ void evaluateBytecodeInstruction() {
         } else if (opcodeOffset == 0x3) {
             // newAlloc.
             int8_t tempAttributes = (int8_t)readArgInt(1)
-                & (GUARD_ALLOC_ATTR | SENTRY_ALLOC_ATTR);
+                & (GUARDED_ALLOC_ATTR | SENTRY_ALLOC_ATTR);
             heapMemoryOffset_t tempSize = (heapMemoryOffset_t)readArgInt(2);
             if (tempSize < 0) {
                 unhandledErrorCode = NUM_RANGE_ERR_CODE;

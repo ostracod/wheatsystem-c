@@ -31,14 +31,6 @@
 #define getTypeFromFileAttributes(fileAttributes) (fileAttributes & 0x03)
 
 ///FUNC
-    ///RET int8_t
-    ///DESC Retrieves whether the given heap allocation is a file handle.
-    ///ARG pointer
-        ///TYPE genericAllocPointer_t
-#define allocIsFileHandle(pointer) \
-    (getAllocType(pointer) == DYNAMIC_ALLOC_TYPE && pointerIsNull(getDynamicAllocMember(castGenericPointer(pointer, dynamicAlloc_t), creator)))
-
-///FUNC
     ///DESC Opens a file with the given name. Uses `openFile` for underlying logic.
     ///ARG stringAlloc
         ///DESC Name of file to open.
@@ -52,6 +44,9 @@ allocPointer_t(fileHandle_t) openFileByStringAlloc(
 allocPointer_t(fileHandle_t) openFileByDynamicStringAlloc(
     allocPointer_t(dynamicAlloc_t) dynamicStringAlloc
 );
+///FUNC
+    ///DESC Retrieves whether the given heap allocation is a file handle.
+int8_t allocIsFileHandle(genericAllocPointer_t pointer);
 ///FUNC
     ///DESC Verifies whether the given pointer references a valid file handle. May assign a new value to `unhandledErrorCode`.
 void validateFileHandle(allocPointer_t(fileHandle_t) fileHandle);

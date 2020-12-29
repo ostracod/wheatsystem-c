@@ -73,7 +73,11 @@ allocPointer_t(fileHandle_t) openFile(
     
     // Create file handle.
     allocPointer_t(fileHandle_t) output = castAllocPointer(
-        createDynamicAlloc(sizeof(fileHandle_t), true, nullAllocPointer(fileHandle_t)),
+        createDynamicAlloc(
+            sizeof(fileHandle_t),
+            GUARD_ALLOC_ATTR | SENTRY_ALLOC_ATTR,
+            nullAllocPointer(fileHandle_t)
+        ),
         fileHandle_t
     );
     setFileHandleMember(output, name, nativeName);

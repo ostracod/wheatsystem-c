@@ -2,6 +2,10 @@
 ///DESC This file provides common definitions for manipulating heap allocations. Every platform shares the same implementation of these definitions.
 
 ///CONST
+    ///TYPE genericAllocPointer_t
+#define NULL_ALLOC_POINTER 0
+
+///CONST
     ///TYPE int8_t
 #define RUNNING_APP_ALLOC_TYPE 0
 ///CONST
@@ -18,18 +22,21 @@
 #define STRING_ALLOC_TYPE 4
 
 ///CONST
-    ///TYPE genericAllocPointer_t
-#define NULL_ALLOC_POINTER 0
+    ///TYPE int8_t
+#define GUARD_ALLOC_ATTR 1
+///CONST
+    ///TYPE int8_t
+#define SENTRY_ALLOC_ATTR 2
 
 #pragma pack(push, 1)
 ///STRUCT
     ///DESC Stored at the beginning of a dynamic allocation.
-    ///FIELD isGuarded
-        ///DESC Whether the allocation is guarded.
+    ///FIELD attributes
+        ///DESC Guard and sentry flags.
     ///FIELD creator
         ///DESC File handle of app which created the allocation.
 typedef struct dynamicAllocHeader_t {
-    int8_t isGuarded;
+    int8_t attributes;
     allocPointer_t(fileHandle_t) creator;
 } dynamicAllocHeader_t;
 #pragma pack(pop)
@@ -195,7 +202,7 @@ typedef struct stringAlloc_t {
         ///DESC File handle of an app.
 allocPointer_t(dynamicAlloc_t) createDynamicAlloc(
     heapMemoryOffset_t size,
-    int8_t isGuarded,
+    int8_t attributes,
     allocPointer_t(fileHandle_t) creator
 );
 allocPointer_t(stringAlloc_t) createStringAllocFromArrayConstantHelper(

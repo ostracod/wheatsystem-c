@@ -388,7 +388,8 @@ void evaluateBytecodeInstruction() {
             createNextArgFrame(argFrameSize);
         } else if (opcodeOffset == 0x3) {
             // newAlloc.
-            int8_t isGuarded = (int8_t)readArgInt(1);
+            int8_t tempAttributes = (int8_t)readArgInt(1)
+                & (GUARD_ALLOC_ATTR | SENTRY_ALLOC_ATTR);
             heapMemoryOffset_t tempSize = (heapMemoryOffset_t)readArgInt(2);
             if (tempSize < 0) {
                 unhandledErrorCode = NUM_RANGE_ERR_CODE;
@@ -396,7 +397,7 @@ void evaluateBytecodeInstruction() {
             }
             allocPointer_t(dynamicAlloc_t) tempAlloc = createDynamicAlloc(
                 tempSize,
-                isGuarded,
+                tempAttributes,
                 currentImplementerFileHandle
             );
             writeArgInt(0, tempAlloc.genericPointer);
@@ -405,11 +406,16 @@ void evaluateBytecodeInstruction() {
             allocPointer_t(dynamicAlloc_t) tempAlloc = readArgDynamicAlloc(0);
             deleteAlloc(tempAlloc.genericPointer);
         } else if (opcodeOffset == 0x5) {
+            // allocAttrs.
+            allocPointer_t(dynamicAlloc_t) tempAlloc = readArgDynamicAlloc(1);
+            int8_t tempAttributes = getDynamicAllocMember(tempAlloc, attributes);
+            writeArgInt(0, tempAttributes);
+        } else if (opcodeOffset == 0x6) {
             // allocSize.
             allocPointer_t(dynamicAlloc_t) tempAlloc = readArgDynamicAlloc(1);
             heapMemoryOffset_t tempSize = getDynamicAllocSize(tempAlloc);
             writeArgInt(0, tempSize);
-        } else if (opcodeOffset == 0x6) {
+        } else if (opcodeOffset == 0x7) {
             // allocCreator.
             allocPointer_t(dynamicAlloc_t) tempAlloc = readArgDynamicAlloc(1);
             allocPointer_t(fileHandle_t) tempCreator = getDynamicAllocMember(

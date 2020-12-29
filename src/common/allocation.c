@@ -6,14 +6,14 @@
 
 allocPointer_t(dynamicAlloc_t) createDynamicAlloc(
     heapMemoryOffset_t size,
-    int8_t isGuarded,
+    int8_t attributes,
     allocPointer_t(fileHandle_t) creator
 ) {
     allocPointer_t(dynamicAlloc_t) output = castGenericPointer(
         createAlloc(DYNAMIC_ALLOC_TYPE, sizeof(dynamicAllocHeader_t) + size),
         dynamicAlloc_t
     );
-    setDynamicAllocMember(output, isGuarded, isGuarded);
+    setDynamicAllocMember(output, attributes, attributes);
     setDynamicAllocMember(output, creator, creator);
     for (heapMemoryOffset_t index = 0; index < size; index++) {
         writeDynamicAlloc(output, index, int8_t, 0);

@@ -620,7 +620,7 @@ void evaluateBytecodeInstruction() {
         if (opcodeOffset == 0x2) {
             // openFile.
             allocPointer_t(dynamicAlloc_t) fileName = readArgDynamicAlloc(1);
-            allocPointer_t(fileHandle_t) fileHandle = openFileByDynamicStringAlloc(fileName);
+            allocPointer_t(fileHandle_t) fileHandle = openFileByStringAlloc(fileName);
             if (pointerIsNull(fileHandle)) {
                 unhandledErrorCode = MISSING_ERR_CODE;
                 return;

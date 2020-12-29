@@ -17,9 +17,6 @@
 ///CONST
     ///TYPE int8_t
 #define DYNAMIC_ALLOC_TYPE 3
-///CONST
-    ///TYPE int8_t
-#define STRING_ALLOC_TYPE 4
 
 ///CONST
     ///TYPE int8_t
@@ -51,17 +48,6 @@ typedef struct dynamicAlloc_t {
     dynamicAllocHeader_t header;
     int8_t data[0];
 } dynamicAlloc_t;
-#pragma pack(pop)
-
-#pragma pack(push, 1)
-///STRUCT
-    ///DESC A heap allocation which stores a string. This type of allocation is not accessible by WheatSystem apps.
-    ///FIELD data
-        ///TYPE :Array of bytes
-        ///DESC Data region of the string allocation.
-typedef struct stringAlloc_t {
-    int8_t data[0];
-} stringAlloc_t;
 #pragma pack(pop)
 
 ///FUNC
@@ -145,49 +131,7 @@ typedef struct stringAlloc_t {
     (getAllocSize(pointer.genericPointer) - sizeof(dynamicAllocHeader_t))
 
 ///FUNC
-    ///RET heapMemoryOffset_t
-    ///DESC Retrieves the address of the data region in the given string allocation.
-    ///ARG pointer
-        ///TYPE allocPointer_t(stringAlloc_t)
-#define getStringAllocDataAddress(pointer) getAllocDataAddress(pointer.genericPointer)
-///FUNC
-    ///RET type
-    ///DESC Reads a value from the data region of the given string allocation.
-    ///ARG pointer
-        ///TYPE allocPointer_t(stringAlloc_t)
-    ///ARG index
-        ///TYPE heapMemoryOffset
-        ///DESC Offset of first byte to read.
-    ///ARG type
-        ///TYPE :Type
-        ///DESC Type of value to read.
-#define readStringAlloc(pointer, index, type) \
-    readAlloc(pointer.genericPointer, index, type)
-///FUNC
-    ///RET void
-    ///DESC Writes a value to the data region of the given string allocation.
-    ///ARG pointer
-        ///TYPE allocPointer_t(stringAlloc_t)
-    ///ARG index
-        ///TYPE heapMemoryOffset
-        ///DESC Offset of first byte to write.
-    ///ARG type
-        ///TYPE :Type
-        ///DESC Type of value to write.
-    ///ARG value
-        ///TYPE type
-        ///DESC Value to write.
-#define writeStringAlloc(pointer, index, type, value) \
-    writeAlloc(pointer.genericPointer, index, type, value)
-///FUNC
-    ///RET heapMemoryOffset_t
-    ///DESC Retrieves the size of the data region in the given string allocation.
-    ///ARG pointer
-        ///TYPE allocPointer_t(stringAlloc_t)
-#define getStringAllocSize(pointer) getAllocSize(pointer.genericPointer)
-
-///FUNC
-    ///RET allocPointer_t(stringAlloc_t)
+    ///RET allocPointer_t(dynamicAlloc_t)
     ///DESC Creates a dynamic allocation whose data region contains the string in the given array constant.
     ///ARG arrayConstant
         ///TYPE arrayConstant_t(int8_t)
@@ -205,7 +149,7 @@ allocPointer_t(dynamicAlloc_t) createDynamicAlloc(
     int8_t attributes,
     allocPointer_t(fileHandle_t) creator
 );
-allocPointer_t(stringAlloc_t) createStringAllocFromArrayConstantHelper(
+allocPointer_t(dynamicAlloc_t) createStringAllocFromArrayConstantHelper(
     arrayConstant_t(int8_t) arrayConstant,
     heapMemoryOffset_t size
 );

@@ -35,14 +35,7 @@
     ///ARG stringAlloc
         ///DESC Name of file to open.
 allocPointer_t(fileHandle_t) openFileByStringAlloc(
-    allocPointer_t(stringAlloc_t) stringAlloc
-);
-///FUNC
-    ///DESC Opens a file with the given name. Uses `openFile` for underlying logic.
-    ///ARG dynamicStringAlloc
-        ///DESC Name of file to open.
-allocPointer_t(fileHandle_t) openFileByDynamicStringAlloc(
-    allocPointer_t(dynamicAlloc_t) dynamicStringAlloc
+    allocPointer_t(dynamicAlloc_t) stringAlloc
 );
 ///FUNC
     ///DESC Retrieves whether the given heap allocation is a file handle.

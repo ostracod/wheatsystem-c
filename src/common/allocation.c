@@ -21,17 +21,18 @@ allocPointer_t(dynamicAlloc_t) createDynamicAlloc(
     return output;
 }
 
-allocPointer_t(stringAlloc_t) createStringAllocFromArrayConstantHelper(
+allocPointer_t(dynamicAlloc_t) createStringAllocFromArrayConstantHelper(
     arrayConstant_t(int8_t) arrayConstant,
     heapMemoryOffset_t size
 ) {
-    allocPointer_t(stringAlloc_t) output = castGenericPointer(
-        createAlloc(STRING_ALLOC_TYPE, size),
-        stringAlloc_t
+    allocPointer_t(dynamicAlloc_t) output = createDynamicAlloc(
+        size,
+        GUARDED_ALLOC_ATTR,
+        nullAllocPointer(fileHandle_t)
     );
     for (heapMemoryOffset_t index = 0; index < size; index++) {
         int8_t tempCharacter = readArrayConstantElement(arrayConstant, index);
-        writeStringAlloc(output, index, int8_t, tempCharacter);
+        writeDynamicAlloc(output, index, int8_t, tempCharacter);
     }
     return output;
 }

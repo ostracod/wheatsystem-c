@@ -2,18 +2,10 @@
 #include "./headers.h"
 
 allocPointer_t(fileHandle_t) openFileByStringAlloc(
-    allocPointer_t(stringAlloc_t) stringAlloc
+    allocPointer_t(dynamicAlloc_t) stringAlloc
 ) {
-    heapMemoryOffset_t tempAddress = getStringAllocDataAddress(stringAlloc);
-    heapMemoryOffset_t tempSize = getStringAllocSize(stringAlloc);
-    return openFile(tempAddress, (uint8_t)tempSize);
-}
-
-allocPointer_t(fileHandle_t) openFileByDynamicStringAlloc(
-    allocPointer_t(dynamicAlloc_t) dynamicStringAlloc
-) {
-    heapMemoryOffset_t tempAddress = getDynamicAllocDataAddress(dynamicStringAlloc);
-    heapMemoryOffset_t tempSize = getDynamicAllocSize(dynamicStringAlloc);
+    heapMemoryOffset_t tempAddress = getDynamicAllocDataAddress(stringAlloc);
+    heapMemoryOffset_t tempSize = getDynamicAllocSize(stringAlloc);
     return openFile(tempAddress, (uint8_t)tempSize);
 }
 

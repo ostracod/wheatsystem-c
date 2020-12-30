@@ -9,6 +9,20 @@ int8_t *convertFileNameToUnixPath(int8_t *name) {
     return output;
 }
 
+allocPointer_t(dynamicAlloc_t) createStringAllocFromNativeString(int8_t *nativeString) {
+    int32_t stringLength = strlen((char *)nativeString);
+    allocPointer_t(dynamicAlloc_t) output = createDynamicAlloc(
+        stringLength,
+        GUARDED_ALLOC_ATTR,
+        currentImplementerFileHandle
+    );
+    for (heapMemoryOffset_t index = 0; index < stringLength; index++) {
+        int8_t tempCharacter = nativeString[index];
+        writeDynamicAlloc(output, index, int8_t, tempCharacter);
+    }
+    return output;
+}
+
 int8_t initializeFileSystem() {
     DIR *volumeDirectory = opendir((char *)unixVolumePath);
     if (!volumeDirectory) {
@@ -133,6 +147,53 @@ void closeFile(allocPointer_t(fileHandle_t) fileHandle) {
     free(unixPath);
     free(content);
     deleteAlloc(fileHandle.genericPointer);
+}
+
+allocPointer_t(dynamicAlloc_t) getAllFileNames() {
+    
+    // First find the number of native files in the directory.
+    int32_t nativeFileCount = 0;
+    DIR *volumeDirectory = opendir((char *)unixVolumePath);
+    while (true) {
+        struct dirent *directoryEntry = readdir(volumeDirectory);
+        if (directoryEntry == NULL) {
+            break;
+        }
+        nativeFileCount += 1;
+    }
+    
+    // Retrieve the names of WheatSystem files.
+    allocPointer_t(dynamicAlloc_t) nameList[nativeFileCount];
+    // fileCount may be less than nativeFileCount.
+    int32_t fileCount = 0;
+    rewinddir(volumeDirectory);
+    while (true) {
+        struct dirent *directoryEntry = readdir(volumeDirectory);
+        if (directoryEntry == NULL) {
+            break;
+        }
+        int8_t *nativeName = (int8_t *)(directoryEntry->d_name);
+        if (nativeName[0] == '.') {
+            continue;
+        }
+        nameList[fileCount] = createStringAllocFromNativeString(nativeName);
+        fileCount += 1;
+    }
+    closedir(volumeDirectory);
+    
+    // Then create the array allocation.
+    allocPointer_t(dynamicAlloc_t) output = createDynamicAlloc(
+        fileCount * 4,
+        GUARDED_ALLOC_ATTR,
+        currentImplementerFileHandle
+    );
+    int32_t index = 0;
+    while (index < fileCount) {
+        allocPointer_t(dynamicAlloc_t) nameAlloc = nameList[index];
+        writeDynamicAlloc(output, index * 4, int32_t, nameAlloc.genericPointer);
+        index += 1;
+    }
+    return output;
 }
 
 

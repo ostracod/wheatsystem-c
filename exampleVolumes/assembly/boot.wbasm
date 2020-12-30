@@ -36,12 +36,24 @@ FUNC init, init_ID
     
     callRemote termHandle, listenTermIndex
     
+    VAR fileNames, s32
+    VAR fileNamesSize, s32
+    VAR index, s32
+    VAR condition, s8
+    allFileNames fileNames
+    allocSize fileNamesSize, fileNames
     newArgFrame 12
-    wrt nextArgFrame[0]:s32, 2
-    wrt nextArgFrame[4]:s32, 2
-    wrt nextArgFrame[8]:s32, termName
+    wrt nextArgFrame[0]:s32, 10
+    wrt index, 0
+    LBL nameLoop
+    gre condition, fileNamesSize, index
+    jmpZ nameBreak, condition
+    wrt nextArgFrame[4]:s32, index
+    wrt nextArgFrame[8]:s32, fileNames[index]:s32
     callRemote termHandle, wrtTermIndex
-    
+    add index, index, 4
+    jmp nameLoop
+    LBL nameBreak
 END
 
 APP_DATA

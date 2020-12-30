@@ -80,7 +80,7 @@ void writeTermText() {
         dynamicAlloc_t
     );
     heapMemoryOffset_t textSize = getDynamicAllocSize(textAlloc);
-    wmove(window, posX, posY);
+    wmove(window, posY, posX);
     for (heapMemoryOffset_t index = 0; index < textSize; index++) {
         int8_t tempCharacter = readDynamicAlloc(textAlloc, index, int8_t);
         waddch(window, (char)tempCharacter);

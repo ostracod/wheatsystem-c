@@ -38,5 +38,6 @@ typedef struct fileHandle_t {
 int8_t initializeFileSystem();
 allocPointer_t(fileHandle_t) openFile(heapMemoryOffset_t nameAddress, heapMemoryOffset_t nameSize);
 void closeFile(allocPointer_t(fileHandle_t) fileHandle);
+allocPointer_t(dynamicAlloc_t) getAllFileNames();
 
 

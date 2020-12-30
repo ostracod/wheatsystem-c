@@ -78,4 +78,8 @@
         ///TYPE :Type
         ///DESC Type of value to read.
 
+///FUNC getAllFileNames
+    ///RET allocPointer(dynamicAlloc_t)
+    ///DESC Retrieves a list of all file names in the system volume. The output stores an array of pointers to dynamic allocations.
+
 

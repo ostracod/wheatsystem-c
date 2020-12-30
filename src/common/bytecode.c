@@ -634,6 +634,16 @@ void evaluateBytecodeInstruction() {
             unhandledErrorCode = NO_IMPL_ERR_CODE;
             return;
         }
+    } else if (opcodeCategory == 0x9) {
+        // File metadata instructions.
+        if (opcodeOffset == 0x0) {
+            // allFileNames.
+            allocPointer_t(dynamicAlloc_t) nameArray = getAllFileNames();
+            writeArgInt(0, nameArray.genericPointer);
+        } else {
+            unhandledErrorCode = NO_IMPL_ERR_CODE;
+            return;
+        }
     } else {
         unhandledErrorCode = NO_IMPL_ERR_CODE;
         return;

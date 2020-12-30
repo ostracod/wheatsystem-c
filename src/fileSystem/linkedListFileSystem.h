@@ -56,5 +56,6 @@ void readFileRange(
     int32_t pos,
     int32_t amount
 );
+allocPointer_t(dynamicAlloc_t) getAllFileNames();
 
 

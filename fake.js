@@ -26,9 +26,8 @@ const platformDefinitionsPath = pathUtils.join(__dirname, "platformDefinitions.j
 const platformDefinitionList = JSON.parse(fs.readFileSync(platformDefinitionsPath), "utf8");
 
 class BuildFile {
-    constructor(category, depth, sourcePath, intermediatePath) {
+    constructor(category, sourcePath, intermediatePath) {
         this.categoryIndex = fileCategoryInclusionOrder.indexOf(category);
-        this.depth = depth;
         this.sourcePath = sourcePath;
         this.intermediatePath = intermediatePath;
         const tempExtension = pathUtils.extname(this.intermediatePath);
@@ -67,8 +66,7 @@ function determineBuildFiles() {
     commonUtils.iterateOverDirectory(sourcePath, (path) => {
         const relativePath = pathUtils.relative(sourcePath, path);
         const componentList = splitPath(relativePath);
-        const fileDepth = componentList.length - 1;
-        if (fileDepth < 1) {
+        if (componentList.length < 2) {
             return;
         }
         const fileCategory = componentList[0];
@@ -95,7 +93,7 @@ function determineBuildFiles() {
         }
         const intermediateFileName = componentList.join("_");
         const intermediateFilePath = pathUtils.join(intermediatePath, intermediateFileName);
-        new BuildFile(fileCategory, fileDepth, path, intermediateFilePath);
+        new BuildFile(fileCategory, path, intermediateFilePath);
     });
 }
 
@@ -116,9 +114,9 @@ function prepreprocessFiles(buildFileList) {
 }
 
 function substituteConstantInvocations(text) {
-    for (const name in targetPlatformConstants) {
+    for (const name in platformConstants) {
         const tempPattern = `$(${name})`;
-        const tempValue = targetPlatformDefinition.constants[name];
+        const tempValue = platformConstants[name];
         while (true) {
             const index = text.indexOf(tempPattern);
             if (index < 0) {
@@ -176,9 +174,9 @@ if (fs.existsSync(executablePath)) {
     fs.unlinkSync(executablePath);
 }
 
-const targetPlatformConstants = targetPlatformDefinition.constants;
-targetPlatformConstants["BUILD_DIR"] = buildPath;
-targetPlatformConstants["EXECUTABLE_PATH"] = executablePath;
+const platformConstants = targetPlatformDefinition.constants;
+platformConstants["BUILD_DIR"] = buildPath;
+platformConstants["EXECUTABLE_PATH"] = executablePath;
 
 const baseFilePathList = targetPlatformDefinition.baseFilePaths;
 
@@ -221,9 +219,9 @@ const prepreprocessorHeadersPath = pathUtils.join(
     "prepreprocessorHeaders.h",
 );
 fs.writeFileSync(prepreprocessorHeadersPath, prepreprocessorHeadersList.join("\n"));
-new BuildFile("generics", 1, null, prepreprocessorHeadersPath);
+new BuildFile("generics", null, prepreprocessorHeadersPath);
 
-console.log("Creating argument amount array...");
+console.log("Creating constants files...");
 
 const instructionCategoryList = JSON.parse(fs.readFileSync(bytecodeInstructionsPath, "utf8"));
 const argumentAmountOffsetArray = [];
@@ -259,15 +257,24 @@ fs.writeFileSync(argumentAmountsImplementationPath, `
 declareArrayConstantWithValue(argumentAmountOffsetArray, int8_t, {${argumentAmountOffsetArray.join(",")}});
 declareArrayConstantWithValue(argumentAmountArray, int8_t, {${argumentAmountArray.join(",")}});
 `);
-new BuildFile("constants", 1, null, argumentAmountsHeaderPath);
-new BuildFile("constants", 1, null, argumentAmountsImplementationPath);
+new BuildFile("constants", null, argumentAmountsHeaderPath);
+new BuildFile("constants", null, argumentAmountsImplementationPath);
+
+const platformConstantsPath = pathUtils.join(
+    intermediatePath,
+    "platformConstants.h",
+);
+const constantLineList = [];
+for (const name in platformConstants) {
+    const tempValue = platformConstants[name];
+    constantLineList.push(`#define ${name} ${JSON.stringify(tempValue)}`);
+}
+fs.writeFileSync(platformConstantsPath, constantLineList.join("\n"));
+new BuildFile("constants", null, platformConstantsPath);
 
 console.log("Creating headers.h...");
 
-headerFileList.sort((file1, file2) => {
-    const tempResult = file1.categoryIndex - file2.categoryIndex;
-    return (tempResult === 0) ? file1.depth - file2.depth : tempResult;
-});
+headerFileList.sort((file1, file2) => file1.categoryIndex - file2.categoryIndex);
 const headersLineList = headerFileList.map((file) => `#include "${file.intermediatePath}"`);
 const headersPath = pathUtils.join(intermediatePath, "headers.h");
 fs.writeFileSync(headersPath, headersLineList.join("\n"));

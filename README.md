@@ -57,9 +57,8 @@ Each platform definition has the following format:
 
 When building a platform, `./fake.js` will incorporate the following files:
 
-1. Files with the base path `platforms/(platform name)`
-1. All files provided in `./src/common`
-1. Files corresponding to each base path in `baseFilePaths`
+* All files matching `./src/**/common/*`
+* All files matching `./src/*/(BASE_PATH).*`, where `BASE_PATH` is in `baseFilePaths`
 
 As part of the build process, `./fake.js` uses `./prepreprocessor.js` to expand prepreprocessor invocations in `.c` and `.h` files. Prepreprocessor definitions are read from files with the  extension `.pppd`.
 
@@ -69,15 +68,15 @@ As part of the build process, `./fake.js` uses `./prepreprocessor.js` to expand 
 #include "./headers.h"
 ```
 
-The `./fake.js` script will use the `constants` map to substitute constant invocations in the following contexts:
+The `./fake.js` script exposes all values in the `constants` map as macros to source code files. These values may also be used in the following `./platformDefinitions.json` fields:
 
 * `compiler.flags`
 * `linker.flags`
 * `commandsAfterBuild`
 
-To invoke a constant, write a dollar sign followed by the constant name in parentheses. For example: `$(MY_CONSTANT)`
+To invoke a constant in `./platformDefinitions.json`, write a dollar sign followed by the constant name in parentheses. For example: `$(MY_CONSTANT)`
 
-After `./fake.js` finishes building, the WheatSystem executable will have the path `./build/(executable name)`. The build directory and exectable path are available as the constants `BUILD_DIR` and `EXECUTABLE_PATH` respectively.
+After `./fake.js` finishes building, the WheatSystem executable will have the path `./build/(executableName)`. The build directory and exectable path are available as the constants `BUILD_DIR` and `EXECUTABLE_PATH` respectively.
 
 ## Documentation
 

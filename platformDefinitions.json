@@ -2,11 +2,13 @@
     {
         "name": "unix",
         "description": "Executable for Unix-like systems",
-        "constants": {},
+        "constants": {
+            "HEAP_MEMORY_SIZE": 30000
+        },
         "baseFilePaths": [
             "unixDefs",
-            "memory/unixHeapMemory",
             "memory/unixArrayConstant",
+            "memory/smallHeapMemory",
             "memory/nativeHeapMemory",
             "memory/linkedListAllocation",
             "communication/unixNativeFile",
@@ -33,12 +35,13 @@
         "name": "avr",
         "description": "Firmware for AVR microcontrollers",
         "constants": {
-            "DEVICE": "atmega328p"
+            "HEAP_MEMORY_SIZE": 1000,
+            "DEVICE_NAME": "atmega328p"
         },
         "baseFilePaths": [
             "avrDefs",
-            "memory/avrHeapMemory",
             "memory/avrArrayConstant",
+            "memory/smallHeapMemory",
             "memory/nativeHeapMemory",
             "memory/linkedListAllocation",
             "communication/avrSpi",
@@ -53,17 +56,17 @@
         ],
         "compiler": {
             "name": "avr-gcc",
-            "flags": ["-Wno-char-subscripts", "-Os", "-DF_CPU=8000000", "-mmcu=$(DEVICE)", "-fstack-usage"]
+            "flags": ["-Wno-char-subscripts", "-Os", "-DF_CPU=8000000", "-mmcu=$(DEVICE_NAME)", "-fstack-usage"]
         },
         "linker": {
             "name": "avr-gcc",
-            "flags": ["-mmcu=$(DEVICE)"]
+            "flags": ["-mmcu=$(DEVICE_NAME)"]
         },
         "executableName": "avrWheatSystem.elf",
         "commandsAfterBuild": [
             "rm -f ./build/avrWheatSystem.hex",
             "avr-objcopy -j .text -j .data -O ihex $(EXECUTABLE_PATH) $(BUILD_DIR)/avrWheatSystem.hex",
-            "avr-size --format=avr --mcu=$(DEVICE) $(EXECUTABLE_PATH)"
+            "avr-size --format=avr --mcu=$(DEVICE_NAME) $(EXECUTABLE_PATH)"
         ]
     }
 ]

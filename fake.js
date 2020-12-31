@@ -42,14 +42,32 @@ class BuildFile {
     }
 }
 
+function configIsDefault(config) {
+    const { isDefault } = config;
+    if (typeof isDefault === "undefined") {
+        return false;
+    }
+    return isDefault;
+}
+
 function printUsage() {
-    console.log("Usage:\nnode ./fake.js list\nnode ./fake.js [platform name]");
+    console.log("Usage:\nnode ./fake.js list\nnode ./fake.js [platform name] [config name?]");
 }
 
 function printPlatformDefinitions() {
     console.log("List of available platforms:");
     for (const definition of platformDefinitionList) {
         console.log(`${definition.name} (${definition.description})`);
+        if ("configs" in definition) {
+            const textList = definition.configs.map((config) => {
+                let output = config.name;
+                if (configIsDefault(config)) {
+                    output += " (default)";
+                }
+                return output;
+            });
+            console.log(`    Available configurations: ${textList.join(", ")}`);
+        }
     }
 }
 
@@ -147,20 +165,33 @@ function invokeLinker(argumentList) {
     }
 }
 
-if (process.argv.length !== 3) {
+const processArgAmount = process.argv.length;
+if (processArgAmount < 3) {
     printUsage();
     process.exit(1);
 }
 
-const processArgument = process.argv[2];
+const processArg1 = process.argv[2];
 
-if (processArgument === "list") {
+if (processArg1 === "list") {
+    if (processArgAmount > 3) {
+        printUsage();
+        process.exit(1);
+    }
     printPlatformDefinitions();
     process.exit(0);
 }
 
-let targetPlatformName = processArgument;
-let targetPlatformDefinition = platformDefinitionList.find((definition) => (
+if (processArgAmount > 4) {
+    printUsage();
+    process.exit(1);
+}
+
+const processArg2 = (processArgAmount < 4) ? null : process.argv[3];
+
+const targetPlatformName = processArg1;
+const targetConfigName = processArg2;
+const targetPlatformDefinition = platformDefinitionList.find((definition) => (
     targetPlatformName === definition.name
 ));
 if (typeof targetPlatformDefinition === "undefined") {
@@ -168,6 +199,36 @@ if (typeof targetPlatformDefinition === "undefined") {
     printPlatformDefinitions();
     process.exit(1);
 }
+let targetConfig;
+if (targetConfigName === null) {
+    if ("configs" in targetPlatformDefinition) {
+        targetConfig = targetPlatformDefinition.configs.find(configIsDefault);
+        if (typeof targetConfig === "undefined") {
+            console.log(`Platform "${targetPlatformName}" has no default configuration.`);
+            printPlatformDefinitions();
+            process.exit(1);
+        }
+    } else {
+        targetConfig = null;
+    }
+} else {
+    if (!("configs" in targetPlatformDefinition)) {
+        console.log(`Platform "${targetPlatformName}" has no available configurations.`);
+        process.exit(1);
+    }
+    targetConfig = targetPlatformDefinition.configs.find((config) => (
+        config.name === targetConfigName
+    ));
+    if (typeof targetConfig === "undefined") {
+        console.log(`Platform "${targetPlatformName}" has no configuration with name "${targetConfigName}".`);
+        printPlatformDefinitions();
+        process.exit(1);
+    }
+}
+
+console.log("Selected platform: " + targetPlatformDefinition.name);
+const tempNameText = (targetConfig === null) ? "(None)" : targetConfig.name;
+console.log("Selected configuration: " + tempNameText);
 
 const executablePath = pathUtils.join(buildPath, targetPlatformDefinition.executableName);
 if (fs.existsSync(executablePath)) {
@@ -179,6 +240,11 @@ platformConstants["BUILD_DIR"] = buildPath;
 platformConstants["EXECUTABLE_PATH"] = executablePath;
 
 const baseFilePathList = targetPlatformDefinition.baseFilePaths;
+if (targetConfig !== null) {
+    for (const baseFilePath of targetConfig.baseFilePaths) {
+        baseFilePathList.push(baseFilePath);
+    }
+}
 
 console.log("Base file paths for compilation:");
 console.log(baseFilePathList.join("\n"));

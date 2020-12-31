@@ -12,13 +12,27 @@
             "memory/nativeHeapMemory",
             "memory/linkedListAllocation",
             "communication/unixNativeFile",
-            "fileSystem/unixStorageSpace",
-            "fileSystem/linkedListFileSystem",
             "systemApp/unixTermApp",
             "systemApp/termApp",
             "systemApp/unixSystemApps",
             "debug/unixDebug",
             "entryPoint/unixEntryPoint"
+        ],
+        "configs": [
+            {
+                "name": "linkedListFileSystem",
+                "isDefault": true,
+                "baseFilePaths": [
+                    "fileSystem/unixStorageSpace",
+                    "fileSystem/linkedListFileSystem"
+                ]
+            },
+            {
+                "name": "unixFileSystem",
+                "baseFilePaths": [
+                    "fileSystem/unixFileSystem"
+                ]
+            }
         ],
         "compiler": {
             "name": "gcc",

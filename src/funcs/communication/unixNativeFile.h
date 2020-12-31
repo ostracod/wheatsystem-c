@@ -1,5 +1,5 @@
 
-///DESC This file provides platform-specific functions for interacting with the native Unix file system. A platform only requires these definitions when using `funcs/fileSystem/unixFileSystem`.
+///DESC This file provides platform-specific functions for interacting with the native Unix file system. A platform requires these definitions when using `funcs/fileSystem/unixFileSystem` or `funcs/fileSystem/unixStorageSpace`.
 
 #include <stdio.h>
 

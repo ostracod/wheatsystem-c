@@ -28,7 +28,7 @@ node ./fake.js unix
 
 ## Build System
 
-The `./fake.js` script reads `./platformDefinitions.json` to determine available target platforms. To display all target platforms:
+The `./fake.js` script reads `./platformDefinitions.json` to determine available target platforms and configurations. To display all target platforms:
 
 ```
 node ./fake.js list
@@ -42,6 +42,11 @@ Each platform definition has the following format:
     "description": (platform description),
     "constants": (map from name to value),
     "baseFilePaths": (list of base paths in ./src),
+    "configs": {
+        "name": (configuration name),
+        "isDefault": (boolean),
+        "baseFilePaths": (list of base paths in ./src)
+    }[],
     "compiler": {
         "name": (compiler name),
         "flags": (list of compiler flags)
@@ -58,7 +63,8 @@ Each platform definition has the following format:
 When building a platform, `./fake.js` will incorporate the following files:
 
 * All files matching `./src/**/common/*`
-* All files matching `./src/*/(BASE_PATH).*`, where `BASE_PATH` is in `baseFilePaths`
+* All files matching `./src/*/(PLATFORM_BASE_PATH).*`, where `PLATFORM_BASE_PATH` is in `baseFilePaths` of the selected platform
+* All files matching `./src/*/(CONFIG_BASE_PATH).*`, where `CONFIG_BASE_PATH` is in `baseFilePaths` of the selected configuration (if any)
 
 As part of the build process, `./fake.js` uses `./prepreprocessor.js` to expand prepreprocessor invocations in `.c` and `.h` files. Prepreprocessor definitions are read from files with the  extension `.pppd`.
 

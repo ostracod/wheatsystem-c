@@ -6,6 +6,7 @@ const commonUtils = require("./commonUtils");
 const sourcePath = pathUtils.join(__dirname, "src");
 const templatePath = pathUtils.join(__dirname, "docTemplate.html");
 const documentPath = pathUtils.join(__dirname, "cImplDoc.html");
+const docExtensionSet = [".h", ".pppd", ".txt"];
 const commentPrefix = "///";
 const commentIndentation = "    ";
 const openEnclosureCharacterSet = "([{";
@@ -238,6 +239,9 @@ class MemberDefinitionExtension {
     }
     
     getMembersHtml() {
+        if (this.members.length <= 0) {
+            return "";
+        }
         const htmlList = [`<table><tr><th>${this.getMemberDisplayName()} name</th><th>Type</th><th>Description</th></tr>`];
         this.members.forEach((member) => {
             htmlList.push(member.convertToHtml());
@@ -501,7 +505,7 @@ function readDefinitionCode(lineList, startIndex) {
 
 function readSourceFile(path) {
     const tempExtension = pathUtils.extname(path);
-    if (tempExtension !== ".h" && tempExtension !== ".pppd") {
+    if (!docExtensionSet.includes(tempExtension)) {
         return;
     }
     const fileContent = fs.readFileSync(path, "utf8");

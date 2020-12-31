@@ -1,0 +1,37 @@
+
+///DESC This file describes platform-specific definitions to access memory which will be used for heap allocation. Every platform must implement all definitions in this file.
+
+///TYPE heapMemoryOffset_t
+    ///DESC Stores an offset within heap memory. Must accommodate values between negative `HEAP_MEMORY_SIZE` and positive `HEAP_MEMORY_SIZE`.
+
+///TYPE genericAllocPointer_t
+    ///DESC Stores a pointer to a heap allocation. The data region of the allocation has unknown type. `genericAllocPointer_t` must accommodate the maximum possible pointer value.
+
+///CONST HEAP_MEMORY_SIZE
+    ///TYPE heapMemoryOffset_t
+    ///DESC Defines the size of memory available in the heap.
+
+///FUNC readHeapMemory
+    ///RET type
+    ///DESC Reads a value from heap memory.
+    ///ARG address
+        ///TYPE heapMemoryOffset_t
+        ///DESC Address of first byte to read.
+    ///ARG type
+        ///TYPE :Type
+        ///DESC Type of value to read.
+
+///FUNC writeHeapMemory
+    ///RET void
+    ///DESC Writes a value to heap memory.
+    ///ARG address
+        ///TYPE heapMemoryOffset_t
+        ///DESC Address of first byte to write.
+    ///ARG type
+        ///TYPE :Type
+        ///DESC Type of value to write.
+    ///ARG value
+        ///TYPE type
+        ///DESC Value to write.
+
+

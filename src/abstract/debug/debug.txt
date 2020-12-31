@@ -1,0 +1,26 @@
+
+///DESC This file describes platform-specific definitions for debugging. Every platform must implement all definitions in this file.
+
+///FUNC printDebugCharacter
+    ///RET void
+    ///DESC Prints a single character for debugging purposes.
+    ///ARG character
+        ///TYPE int8_t
+
+///FUNC sleepMilliseconds
+    ///RET void
+    ///DESC Pauses the WheatSystem implementation for the given number of milliseconds.
+    ///ARG delay
+        ///TYPE int32_t
+        ///DESC Number of milliseconds to wait.
+
+///FUNC convertNumberToText
+    ///RET void
+    ///DESC Converts the given number to a decimal string.
+    ///ARG destination
+        ///TYPE int8_t *
+        ///DESC Destination for the decimal string.
+    ///ARG number
+        ///TYPE int_32
+
+

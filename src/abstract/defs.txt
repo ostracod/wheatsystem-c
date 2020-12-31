@@ -1,0 +1,25 @@
+
+///DESC This file describes basic platform-specific definitions. Every platform must implement all definitions in this file.
+
+///TYPE uint8_t
+    ///DESC Unsigned 8-bit integer.
+///TYPE int8_t
+    ///DESC Signed 8-bit integer.
+///TYPE uint16_t
+    ///DESC Unsigned 16-bit integer.
+///TYPE int16_t
+    ///DESC Signed 16-bit integer.
+///TYPE uint32_t
+    ///DESC Unsigned 32-bit integer.
+///TYPE int32_t
+    ///DESC Signed 32-bit integer.
+///TYPE uint64_t
+    ///DESC Unsigned 64-bit integer.
+///TYPE int64_t
+    ///DESC Signed 64-bit integer.
+
+///CONST NULL
+    ///TYPE void *
+    ///DESC Null pointer in native memory.
+
+

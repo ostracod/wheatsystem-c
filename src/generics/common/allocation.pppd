@@ -1,0 +1,52 @@
+
+///DESC This file provides common parameterizable types for heap allocations. Every platform shares the same implementation of these definitions.
+
+///STRUCT allocPointer_t(type)
+    ///DESC Stores a pointer to a heap allocation. The data region of the allocation contains the type defined by `type`.
+    ///FIELD genericPointer
+        ///TYPE genericAllocPointer_t
+    ///FIELD typeCarrier
+        ///TYPE type *[0]
+        ///DESC Dummy member to store type information.
+DEFINE allocPointer_t inputType
+allocPointer_###inputType
+UNIQUE_HEADER
+typedef struct inputType inputType;
+typedef struct allocPointer_###inputType {
+    genericAllocPointer_t genericPointer;
+    inputType *typeCarrier[0];
+} allocPointer_###inputType;
+END
+
+///FUNC castGenericPointer
+    ///RET allocPointer_t(type)
+    ///DESC Converts the given generic pointer to a typed pointer.
+    ///ARG genericPointer
+        ///TYPE genericAllocPointer_t
+    ///ARG type
+        ///TYPE :Type
+DEFINE castGenericPointer genericPointer type
+(allocPointer_t(type)){genericPointer}
+END
+
+///FUNC castAllocPointer
+    ///RET allocPointer_t(type2)
+    ///DESC Converts the given pointer from one type to another.
+    ///ARG pointer
+        ///TYPE allocPointer_t(type1)
+    ///ARG type2
+        ///TYPE :Type
+DEFINE castAllocPointer pointer type2
+castGenericPointer(pointer.genericPointer, type2)
+END
+
+///FUNC nullAllocPointer
+    ///RET allocPointer_t(type)
+    ///DESC Creates a null pointer with the given type.
+    ///ARG type
+        ///TYPE :Type
+DEFINE nullAllocPointer type
+castGenericPointer(NULL_ALLOC_POINTER, type)
+END
+
+

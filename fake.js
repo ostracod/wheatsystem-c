@@ -2,6 +2,7 @@
 const fs = require("fs");
 const pathUtils = require("path");
 const childProcess = require("child_process");
+const commonUtils = require("./commonUtils");
 const Prepreprocessor = require("./prepreprocessor").Prepreprocessor;
 
 const sourcePath = pathUtils.join(__dirname, "src");
@@ -12,26 +13,33 @@ const buildPath = pathUtils.join(__dirname, "build");
 const bytecodeInstructionsPath = pathUtils.join(__dirname, "..", "wheatsystem-spec", "bytecodeInstructions.json");
 
 const sourceExtensionSet = [".pppd", ".h", ".c"];
+const fileCategoryInclusionOrder = [
+    "ints",
+    "generics",
+    "structs",
+    "constants",
+    "vars",
+    "funcs",
+];
 
 const platformDefinitionsPath = pathUtils.join(__dirname, "platformDefinitions.json");
 const platformDefinitionList = JSON.parse(fs.readFileSync(platformDefinitionsPath), "utf8");
 
 class BuildFile {
-    constructor() {
-        this.sourcePath = null;
-        this.intermediatePath = null;
-        this.isCommon = null;
-    }
-    
-    initializeBySourcePath(path) {
-        this.sourcePath = path;
-        const directoryName = pathUtils.basename(pathUtils.dirname(this.sourcePath));
-        this.isCommon = (directoryName === "common");
-    }
-    
-    initializeByIntermediatePath(path, isCommon) {
-        this.intermediatePath = path;
-        this.isCommon = isCommon;
+    constructor(category, depth, sourcePath, intermediatePath) {
+        this.categoryIndex = fileCategoryInclusionOrder.indexOf(category);
+        this.depth = depth;
+        this.sourcePath = sourcePath;
+        this.intermediatePath = intermediatePath;
+        const tempExtension = pathUtils.extname(this.intermediatePath);
+        buildFileList.push(this);
+        if (tempExtension === ".pppd") {
+            prepreprocessorFileList.push(this);
+        } else if (tempExtension === ".h") {
+            headerFileList.push(this);
+        } else if (tempExtension === ".c") {
+            implementationFileList.push(this);
+        }
     }
 }
 
@@ -46,34 +54,49 @@ function printPlatformDefinitions() {
     }
 }
 
-function getBaseFileNamesInDirectory(directoryPath) {
-    const fileNameList = fs.readdirSync(directoryPath);
-    const baseFileNameSet = new Set();
-    for (const fileName of fileNameList) {
-        const periodIndex = fileName.lastIndexOf(".");
-        if (periodIndex < 0) {
-            continue;
-        }
-        const tempExtension = fileName.substring(periodIndex, fileName.length);
-        if (sourceExtensionSet.includes(tempExtension)) {
-            const baseFileName = fileName.substring(0, periodIndex);
-            baseFileNameSet.add(baseFileName);
-        }
-    }
-    return Array.from(baseFileNameSet);
-}
-
-function getBuildFilesWithExtension(extension) {
+function splitPath(path) {
     const output = [];
-    for (const baseFilePath of baseFilePathList) {
-        const filePath = baseFilePath + extension;
-        if (fs.existsSync(filePath)) {
-            const tempFile = new BuildFile();
-            tempFile.initializeBySourcePath(filePath);
-            output.push(tempFile);
-        }
+    while (path !== ".") {
+        output.unshift(pathUtils.basename(path));
+        path = pathUtils.dirname(path);
     }
     return output;
+}
+
+function determineBuildFiles() {
+    commonUtils.iterateOverDirectory(sourcePath, (path) => {
+        const relativePath = pathUtils.relative(sourcePath, path);
+        const componentList = splitPath(relativePath);
+        const fileDepth = componentList.length - 1;
+        if (fileDepth < 1) {
+            return;
+        }
+        const fileCategory = componentList[0];
+        if (!fileCategoryInclusionOrder.includes(fileCategory)) {
+            return;
+        }
+        const fileName = componentList[componentList.length - 1];
+        const periodIndex = fileName.lastIndexOf(".");
+        if (periodIndex < 0) {
+            return;
+        }
+        const tempExtension = fileName.substring(periodIndex, fileName.length);
+        if (!sourceExtensionSet.includes(tempExtension)) {
+            return;
+        }
+        const baseFileName = fileName.substring(0, periodIndex);
+        const baseComponentList = componentList.slice(1, componentList.length);
+        baseComponentList[baseComponentList.length - 1] = baseFileName;
+        if (componentList[componentList.length - 2] !== "common") {
+            const baseFilePath = pathUtils.join(...baseComponentList);
+            if (!baseFilePathList.includes(baseFilePath)) {
+                return;
+            }
+        }
+        const intermediateFileName = componentList.join("_");
+        const intermediateFilePath = pathUtils.join(intermediatePath, intermediateFileName);
+        new BuildFile(fileCategory, fileDepth, path, intermediateFilePath);
+    });
 }
 
 function convertToBaseFileName(filePath) {
@@ -86,19 +109,9 @@ function convertToBaseFileName(filePath) {
     }
 }
 
-function insertBeforeCommonFiles(buildFileList, buildFile) {
-    const firstCommonFileIndex = buildFileList.findIndex((file) => file.isCommon);
-    buildFileList.splice(firstCommonFileIndex, 0, buildFile);
-    
-}
-
 function prepreprocessFiles(buildFileList) {
     for (const buildFile of buildFileList) {
-        const sourceFilePath = buildFile.sourcePath;
-        const fileName = pathUtils.basename(sourceFilePath);
-        const destinationFilePath = pathUtils.join(intermediatePath, fileName);
-        prepreprocessor.prepreprocessFile(sourceFilePath, destinationFilePath);
-        buildFile.intermediatePath = destinationFilePath;
+        prepreprocessor.prepreprocessFile(buildFile.sourcePath, buildFile.intermediatePath);
     }
 }
 
@@ -149,14 +162,10 @@ if (processArgument === "list") {
 }
 
 let targetPlatformName = processArgument;
-let targetPlatformDefinition = null;
-for (const definition of platformDefinitionList) {
-    if (targetPlatformName === definition.name) {
-        targetPlatformDefinition = definition;
-        break;
-    }
-}
-if (targetPlatformDefinition === null) {
+let targetPlatformDefinition = platformDefinitionList.find((definition) => (
+    targetPlatformName === definition.name
+));
+if (typeof targetPlatformDefinition === "undefined") {
     console.log(`Could not find platform with name "${targetPlatformName}".`);
     printPlatformDefinitions();
     process.exit(1);
@@ -171,21 +180,17 @@ const targetPlatformConstants = targetPlatformDefinition.constants;
 targetPlatformConstants["BUILD_DIR"] = buildPath;
 targetPlatformConstants["EXECUTABLE_PATH"] = executablePath;
 
-const baseFilePathList = [pathUtils.join(platformsPath, targetPlatformDefinition.name)];
-const commonBaseFileNames = getBaseFileNamesInDirectory(commonPath);
-for (const baseFileName of commonBaseFileNames) {
-    baseFilePathList.push(pathUtils.join(commonPath, baseFileName));
-}
-for (const baseFilePath of targetPlatformDefinition.baseFilePaths) {
-    baseFilePathList.push(pathUtils.join(sourcePath, baseFilePath));
-}
+const baseFilePathList = targetPlatformDefinition.baseFilePaths;
 
 console.log("Base file paths for compilation:");
 console.log(baseFilePathList.join("\n"));
 
-const prepreprocessorFileList = getBuildFilesWithExtension(".pppd");
-let headerFileList = getBuildFilesWithExtension(".h");
-let implementationFileList = getBuildFilesWithExtension(".c");
+const buildFileList = [];
+const prepreprocessorFileList = [];
+const headerFileList = [];
+const implementationFileList = [];
+
+determineBuildFiles();
 
 console.log("Prepreprocessor file paths:");
 console.log(prepreprocessorFileList.map((file) => file.sourcePath).join("\n"));
@@ -216,9 +221,7 @@ const prepreprocessorHeadersPath = pathUtils.join(
     "prepreprocessorHeaders.h",
 );
 fs.writeFileSync(prepreprocessorHeadersPath, prepreprocessorHeadersList.join("\n"));
-const prepreprocessorHeadersFile = new BuildFile();
-prepreprocessorHeadersFile.initializeByIntermediatePath(prepreprocessorHeadersPath, false);
-insertBeforeCommonFiles(headerFileList, prepreprocessorHeadersFile);
+new BuildFile("generics", 1, null, prepreprocessorHeadersPath);
 
 console.log("Creating argument amount array...");
 
@@ -256,21 +259,15 @@ fs.writeFileSync(argumentAmountsImplementationPath, `
 declareArrayConstantWithValue(argumentAmountOffsetArray, int8_t, {${argumentAmountOffsetArray.join(",")}});
 declareArrayConstantWithValue(argumentAmountArray, int8_t, {${argumentAmountArray.join(",")}});
 `);
-const argumentAmountsHeaderFile = new BuildFile();
-const argumentAmountsImplementationFile = new BuildFile();
-argumentAmountsHeaderFile.initializeByIntermediatePath(
-    argumentAmountsHeaderPath,
-    true,
-);
-argumentAmountsImplementationFile.initializeByIntermediatePath(
-    argumentAmountsImplementationPath,
-    true,
-);
-insertBeforeCommonFiles(headerFileList, argumentAmountsHeaderFile);
-insertBeforeCommonFiles(implementationFileList, argumentAmountsImplementationFile);
+new BuildFile("constants", 1, null, argumentAmountsHeaderPath);
+new BuildFile("constants", 1, null, argumentAmountsImplementationPath);
 
 console.log("Creating headers.h...");
 
+headerFileList.sort((file1, file2) => {
+    const tempResult = file1.categoryIndex - file2.categoryIndex;
+    return (tempResult === 0) ? file1.depth - file2.depth : tempResult;
+});
 const headersLineList = headerFileList.map((file) => `#include "${file.intermediatePath}"`);
 const headersPath = pathUtils.join(intermediatePath, "headers.h");
 fs.writeFileSync(headersPath, headersLineList.join("\n"));

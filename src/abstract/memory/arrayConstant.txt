@@ -1,0 +1,58 @@
+
+///DESC This file describes platform-specific definitions to access immutable values. Every platform must implement all definitions in this file.
+
+///TYPE arrayConstant_t(type)
+    ///DESC References an array of immutable values. Each array element has the type defined by `type`.
+
+///FUNC declareArrayConstantWithValue
+    ///RET void
+    ///DESC Declares an array constant with the given values.
+    ///ARG name
+        ///TYPE :Identifier
+        ///DESC Name of the array constant to declare.
+    ///ARG type
+        ///TYPE :Type
+        ///DESC Type of each element in the array.
+    ///ARG arrayConstant
+        ///TYPE arrayConstant_t(type)
+        ///DESC Values to populate in the array.
+
+///FUNC declareArrayConstantWithLength
+    ///RET void
+    ///DESC Declares an array constant with the given length. The array must later be populated with values using `declareArrayConstantWithValue`.
+    ///ARG name
+        ///TYPE :Identifier
+        ///DESC Name of the array constant to declare.
+    ///ARG type
+        ///TYPE :Type
+        ///DESC Type of each element in the array.
+    ///ARG length
+        ///TYPE int32_t
+        ///DESC Number of elements to allocate in the array.
+
+///FUNC getArrayConstantLength
+    ///RET int32_t
+    ///DESC Retrieves the number of elements in the given array constant.
+    ///ARG name
+        ///TYPE :Identifier
+        ///DESC Name of an array constant.
+
+///FUNC getArrayConstantElementType
+    ///RET type
+    ///DESC Retrieves the type of each element in the given array constant.
+    ///ARG arrayConstant
+        ///TYPE arrayConstant_t(type)
+
+///FUNC readArrayConstantValue
+    ///RET type2
+    ///DESC Retrieves a value within the given array constant. Note that `index` does not need to conform to element boundaries within the array.
+    ///ARG arrayConstant
+        ///TYPE arrayConstant_t(type1)
+    ///ARG index
+        ///TYPE int32_t
+        ///DESC Index of byte from which to start reading.
+    ///ARG type2
+        ///TYPE :Type
+        ///DESC Type of value to read from the array constant.
+
+

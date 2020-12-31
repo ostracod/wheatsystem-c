@@ -1,0 +1,23 @@
+
+///DESC This file describes platform-specific definitions for terminal driver system apps. A platform only needs to implement these definitions when using certain implementations of `abstract/systemApp/systemApps`.
+
+///STRUCT termAppGlobalFrame_t
+    ///DESC Stores the global variables of a terminal driver.
+
+///FUNC initializeTermApp
+    ///RET void
+    ///DESC Implements the `init` WheatSystem function.
+
+///FUNC setTermObserver
+    ///RET void
+    ///DESC Implements the `listenTerm` WheatSystem function.
+
+///FUNC getTermSize
+    ///RET void
+    ///DESC Implements the `termSize` WheatSystem function.
+
+///FUNC writeTermText
+    ///RET void
+    ///DESC Implements the `wrtTerm` WheatSystem function.
+
+

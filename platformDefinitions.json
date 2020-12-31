@@ -4,6 +4,9 @@
         "description": "Executable for Unix-like systems",
         "constants": {},
         "baseFilePaths": [
+            "unixDefs",
+            "memory/unixHeapMemory",
+            "memory/unixArrayConstant",
             "memory/nativeHeapMemory",
             "memory/linkedListAllocation",
             "communication/unixNativeFile",
@@ -11,7 +14,9 @@
             "fileSystem/linkedListFileSystem",
             "systemApp/unixTermApp",
             "systemApp/termApp",
-            "systemApp/unixSystemApps"
+            "systemApp/unixSystemApps",
+            "debug/unixDebug",
+            "entryPoint/unixEntryPoint"
         ],
         "compiler": {
             "name": "gcc",
@@ -31,6 +36,9 @@
             "DEVICE": "atmega328p"
         },
         "baseFilePaths": [
+            "avrDefs",
+            "memory/avrHeapMemory",
+            "memory/avrArrayConstant",
             "memory/nativeHeapMemory",
             "memory/linkedListAllocation",
             "communication/avrSpi",
@@ -39,7 +47,9 @@
             "fileSystem/linkedListFileSystem",
             "systemApp/avrTermApp",
             "systemApp/termApp",
-            "systemApp/avrSystemApps"
+            "systemApp/avrSystemApps",
+            "debug/avrDebug",
+            "entryPoint/avrEntryPoint"
         ],
         "compiler": {
             "name": "avr-gcc",

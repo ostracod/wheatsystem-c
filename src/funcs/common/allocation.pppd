@@ -1,14 +1,14 @@
 
 ///DESC This file provides common functions for manipulating heap allocations. Every platform shares the same implementation of these definitions.
 
-///FUNC_TYPE readRangeByPointer_t
+///FUNC_TYPE readRangeByPointer_t(pointerType)
     ///RET void
     ///DESC Reads a range of bytes from some location.
     ///ARG destination
         ///TYPE int8_t *
         ///DESC Destination for the data.
     ///ARG pointer
-        ///TYPE genericAllocPointer_t
+        ///TYPE pointerType
         ///DESC Pointer of allocation to read.
     ///ARG index
         ///TYPE int32_t
@@ -21,10 +21,10 @@
     ///RET type
     ///DESC Reads a value from some location determined by `readRange`.
     ///ARG pointer
-        ///TYPE genericAllocPointer_t
+        ///TYPE pointerType
         ///DESC Pointer of allocation to read.
     ///ARG readRange
-        ///TYPE readRangeByPointer_t
+        ///TYPE readRangeByPointer_t(pointerType)
         ///DESC Function to read data.
     ///ARG index
         ///TYPE int32_t
@@ -36,11 +36,11 @@ DEFINE readValueByPointer pointer readRange index type
 ({type result; readRange(&result, pointer, index, sizeof(type)); result;})
 END
 
-///FUNC_TYPE writeRangeByPointer_t
+///FUNC_TYPE writeRangeByPointer_t(pointerType)
     ///RET void
     ///DESC Writes a range of bytes to some location.
     ///ARG pointer
-        ///TYPE genericAllocPointer_t
+        ///TYPE pointerType
         ///DESC Pointer of allocation to write.
     ///ARG index
         ///TYPE int32_t
@@ -56,10 +56,10 @@ END
     ///RET void
     ///DESC Writes a value to some location determined by `writeRange`.
     ///ARG pointer
-        ///TYPE genericAllocPointer_t
+        ///TYPE pointerType
         ///DESC Pointer of allocation to write.
     ///ARG writeRange
-        ///TYPE writeRangeByPointer_t
+        ///TYPE writeRangeByPointer_t(pointerType)
         ///DESC Function to write data.
     ///ARG index
         ///TYPE int32_t
@@ -148,10 +148,10 @@ END
     ///RET type
     ///DESC Reads an element of an array.
     ///ARG pointer
-        ///TYPE genericAllocPointer_t
+        ///TYPE pointerType
         ///DESC Pointer of allocation to read.
     ///ARG readValue
-        ///TYPE readValueByPointer_t
+        ///TYPE readValueByPointer_t(pointerType)
         ///DESC Function to read data.
     ///ARG arrayIndex
         ///TYPE int32_t
@@ -167,10 +167,10 @@ END
     ///RET :Type of `memberName` in `structDefinition`
     ///DESC Reads a member of a struct in an array.
     ///ARG pointer
-        ///TYPE genericAllocPointer_t
+        ///TYPE pointerType
         ///DESC Pointer of allocation to read.
     ///ARG readValue
-        ///TYPE readValueByPointer_t
+        ///TYPE readValueByPointer_t(pointerType)
         ///DESC Function to read data.
     ///ARG arrayIndex
         ///TYPE int32_t

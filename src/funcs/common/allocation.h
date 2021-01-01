@@ -2,13 +2,6 @@
 ///DESC This file provides common functions for manipulating heap allocations. Every platform shares the same implementation of these definitions.
 
 ///FUNC
-    ///RET type
-    ///DESC Retrieves the type of data referenced by the given pointer.
-    ///ARG pointer
-        ///TYPE allocPointer_t(type)
-#define getAllocPointerType(pointer) typeof(*(((typeof(pointer) *)NULL)->typeCarrier[0]))
-
-///FUNC
     ///RET int8_t
     ///DESC Retrieves whether the given pointer is null.
     ///ARG pointer
